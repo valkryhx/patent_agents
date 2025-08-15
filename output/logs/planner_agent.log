@@ -44,3 +44,7 @@
 2025-08-15 12:15:32 INFO agent.planner_agent: EXECUTE task_id=cf77c2f2-bf88-441c-97fa-9eae9d40a2d2_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
 2025-08-15 12:17:49 INFO agent.planner_agent: COMPLETE task_id=9cb2834f-158f-4e62-8672-c8e00af6452d_stage_0 success=True time=184.87s
 2025-08-15 12:18:08 INFO agent.planner_agent: COMPLETE task_id=cf77c2f2-bf88-441c-97fa-9eae9d40a2d2_stage_0 success=True time=156.10s
+2025-08-15 13:33:04 INFO agent.planner_agent: planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 13:33:05 INFO agent.planner_agent: RECV id=36a667db-1bac-455f-9e23-11f4d1037713 type=coordination from=coordinator_agent pri=5
+2025-08-15 13:33:05 INFO agent.planner_agent: EXECUTE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
+2025-08-15 13:34:10 INFO agent.planner_agent: COMPLETE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_0 success=True time=65.45s

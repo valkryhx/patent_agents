@@ -26,3 +26,4 @@
 2025-08-15 12:21:11 INFO agent.discusser_agent: RECV id=f54ff111-2184-4afd-a5bc-aaa7d63ae418 type=coordination from=coordinator_agent pri=5
 2025-08-15 12:21:11 INFO agent.discusser_agent: EXECUTE task_id=cf77c2f2-bf88-441c-97fa-9eae9d40a2d2_stage_2 type=innovation_discussion meta={'topic': task_data.get('topic')}
 2025-08-15 12:21:11 INFO agent.discusser_agent: COMPLETE task_id=cf77c2f2-bf88-441c-97fa-9eae9d40a2d2_stage_2 success=True time=0.00s
+2025-08-15 13:33:04 INFO agent.discusser_agent: discusser_agent initialized with capabilities: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
