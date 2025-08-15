@@ -9,7 +9,8 @@ from typing import Dict, Any, List
 from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
-from ..google_a2a_client import get_google_a2a_client, PatentDraft
+from ..openai_client import OpenAIClient
+from ..google_a2a_client import PatentDraft
 
 logger = logging.getLogger(__name__)
 
@@ -40,15 +41,14 @@ class RewriterAgent(BaseAgent):
             name="rewriter_agent",
             capabilities=["patent_rewriting", "patent_rewrite", "feedback_implementation", "quality_improvement", "compliance_optimization"]
         )
-        self.google_a2a_client = None
+        self.openai_client = None
         self.improvement_strategies = self._load_improvement_strategies()
         self.rewrite_templates = self._load_rewrite_templates()
         
     async def start(self):
         """Start the rewriter agent"""
         await super().start()
-        from ..telemetry import A2ALoggingProxy
-        self.google_a2a_client = A2ALoggingProxy(self.name, await get_google_a2a_client(), self)
+        self.openai_client = OpenAIClient()
         logger.info("Rewriter Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
@@ -322,7 +322,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved title.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             improved_title = response.strip()
@@ -350,7 +350,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved abstract.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             improved_abstract = response.strip()
@@ -378,7 +378,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved background section.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             improved_background = response.strip()
@@ -405,7 +405,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved summary section.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             improved_summary = response.strip()
@@ -433,7 +433,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved description.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             improved_description = response.strip()
@@ -461,7 +461,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved claims as a numbered list.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract claims
             # This is a simplified approach
@@ -491,7 +491,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved drawing descriptions.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract drawings
             # This is a simplified approach
@@ -538,7 +538,7 @@ class RewriterAgent(BaseAgent):
             Return only the improved text.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             improved_text = response.strip()
@@ -580,7 +580,7 @@ class RewriterAgent(BaseAgent):
             Return only the enhanced description.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             enhanced_description = response.strip()
@@ -666,7 +666,7 @@ class RewriterAgent(BaseAgent):
             Keep it between 50-150 words.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             abstract = response.strip()
@@ -693,7 +693,7 @@ class RewriterAgent(BaseAgent):
             Create clear, precise claims with proper structure.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract claims
             # This is a simplified approach
@@ -722,7 +722,7 @@ class RewriterAgent(BaseAgent):
             Create a comprehensive technical description with implementation details.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and validate response
             description = response.strip()

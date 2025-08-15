@@ -10,7 +10,8 @@ import os
 from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
-from ..google_a2a_client import get_google_a2a_client, PatentDraft
+from ..openai_client import OpenAIClient
+from ..google_a2a_client import PatentDraft
 from ..telemetry import A2ALoggingProxy
 
 logger = logging.getLogger(__name__)
@@ -43,15 +44,14 @@ class WriterAgent(BaseAgent):
             name="writer_agent",
             capabilities=["patent_drafting", "technical_writing", "claim_writing", "legal_compliance"]
         )
-        self.google_a2a_client = None
+        self.openai_client = None
         self.writing_templates = self._load_writing_templates()
         self.legal_requirements = self._load_legal_requirements()
         
     async def start(self):
         """Start the writer agent"""
         await super().start()
-        base_client = await get_google_a2a_client()
-        self.google_a2a_client = A2ALoggingProxy(self.name, base_client, self)
+        self.openai_client = OpenAIClient()
         logger.info("Writer Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
@@ -119,9 +119,9 @@ class WriterAgent(BaseAgent):
             except Exception:
                 pass
             
-            # Generate patent draft using Google A2A
+            # Generate patent draft using OpenAI GPT-5
             analysis_input = self._extract_analysis(previous_results)
-            patent_draft = await self.google_a2a_client.generate_patent_draft(
+            patent_draft = await self.openai_client.generate_patent_draft(
                 topic, description, analysis_input
             )
 
@@ -135,7 +135,7 @@ class WriterAgent(BaseAgent):
             detailed_sections = await self._write_detailed_sections(writing_task, patent_draft, progress_dir)
             
             # Generate technical diagrams
-            technical_diagrams = await self.google_a2a_client.generate_technical_diagrams(description)
+            technical_diagrams = await self.openai_client.generate_technical_diagrams(description)
             
             # Update patent draft with detailed content
             patent_draft.detailed_description = detailed_sections.get("detailed_description", "")
@@ -205,7 +205,7 @@ class WriterAgent(BaseAgent):
 - 预计字数：每章≥800字
 仅输出分章要点清单。
 """
-            outline_text = await self.google_a2a_client._generate_response(outline_prompt)
+            outline_text = await self.openai_client._generate_response(outline_prompt)
             try:
                 self._write_progress(progress_dir, "01_outline.md", "撰写大纲", outline_text)
             except Exception:
@@ -229,8 +229,8 @@ class WriterAgent(BaseAgent):
 """
             
             # 并发执行背景和摘要生成
-            background_task = self.google_a2a_client._generate_response(background_prompt)
-            summary_task = self.google_a2a_client._generate_response(summary_prompt)
+            background_task = self.openai_client._generate_response(background_prompt)
+            summary_task = self.openai_client._generate_response(summary_prompt)
             
             background, summary = await asyncio.gather(background_task, summary_task)
             
@@ -266,7 +266,7 @@ class WriterAgent(BaseAgent):
             
             # 并发执行所有子章节
             subchapter_results = await asyncio.gather(*[
-                self.google_a2a_client._generate_response(prompt) 
+                self.openai_client._generate_response(prompt) 
                 for sc, prompt in subchapter_tasks
             ])
             
@@ -297,7 +297,7 @@ class WriterAgent(BaseAgent):
 - 从属项细化关键策略
 - 术语统一、避免结果性限定
 """
-            claims_text = await self.google_a2a_client._generate_response(claims_prompt)
+            claims_text = await self.openai_client._generate_response(claims_prompt)
             detailed_sections["claims"] = claims_text.splitlines()
             try:
                 self._write_progress(progress_dir, "06_claims.md", "权利要求书", claims_text)
@@ -311,7 +311,7 @@ class WriterAgent(BaseAgent):
 - 每幅图提供对应的mermaid示意
 - 指出与步骤/模块的对应关系
 """
-            drawings_description = await self.google_a2a_client._generate_response(drawings_prompt)
+            drawings_description = await self.openai_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
             try:
                 self._write_progress(progress_dir, "07_drawings.md", "附图说明", drawings_description)
@@ -348,7 +348,7 @@ class WriterAgent(BaseAgent):
             - Be specific and implementation-oriented
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and format response
             background_section = f"""
@@ -395,7 +395,7 @@ class WriterAgent(BaseAgent):
             - Avoid marketing claims; stay technical
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and format response
             summary_section = f"""
@@ -438,7 +438,7 @@ class WriterAgent(BaseAgent):
             - 保持术语一致
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and format response
             detailed_description = f"""
@@ -476,7 +476,7 @@ class WriterAgent(BaseAgent):
             Output numbered list.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract claims
             # This is a simplified approach
@@ -514,7 +514,7 @@ class WriterAgent(BaseAgent):
             Write in formal patent language, 200-300 words.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse and format response
             drawings_description = f"""

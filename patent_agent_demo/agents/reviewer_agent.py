@@ -9,7 +9,8 @@ from typing import Dict, Any, List
 from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
-from ..google_a2a_client import get_google_a2a_client, PatentDraft
+from ..openai_client import OpenAIClient
+from ..google_a2a_client import PatentDraft
 
 logger = logging.getLogger(__name__)
 
@@ -41,14 +42,14 @@ class ReviewerAgent(BaseAgent):
             name="reviewer_agent",
             capabilities=["patent_review", "quality_assessment", "compliance_checking", "feedback_generation"]
         )
-        self.google_a2a_client = None
+        self.openai_client = None
         self.review_criteria = self._load_review_criteria()
         self.quality_standards = self._load_quality_standards()
         
     async def start(self):
         """Start the reviewer agent"""
         await super().start()
-        self.google_a2a_client = await get_google_a2a_client()
+        self.openai_client = OpenAIClient()
         logger.info("Reviewer Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:

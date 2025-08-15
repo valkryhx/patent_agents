@@ -9,7 +9,8 @@ from typing import Dict, Any, List
 from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
-from ..google_a2a_client import get_google_a2a_client, PatentAnalysis
+from ..openai_client import OpenAIClient
+from ..google_a2a_client import PatentAnalysis
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +48,13 @@ class PlannerAgent(BaseAgent):
             name="planner_agent",
             capabilities=["patent_planning", "strategy_development", "risk_assessment", "timeline_planning"]
         )
-        self.google_a2a_client = None
+        self.openai_client = None
         self.strategy_templates = self._load_strategy_templates()
         
     async def start(self):
         """Start the planner agent"""
         await super().start()
-        from ..telemetry import A2ALoggingProxy
-        self.google_a2a_client = A2ALoggingProxy(self.name, await get_google_a2a_client(), self)
+        self.openai_client = OpenAIClient()
         logger.info("Planner Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
@@ -101,7 +101,7 @@ class PlannerAgent(BaseAgent):
             logger.info(f"Creating patent strategy for: {topic}")
             
             # Analyze patent topic using Google A2A
-            analysis = await self.google_a2a_client.analyze_patent_topic(topic, description)
+            analysis = await self.openai_client.analyze_patent_topic(topic, description)
             
             # Create development strategy
             strategy = await self._develop_strategy(topic, description, analysis)
@@ -214,7 +214,7 @@ class PlannerAgent(BaseAgent):
             Please identify 3-5 key innovation areas that should be the focus of patent protection.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract innovation areas
             # This is a simplified approach - in production, you'd want more robust parsing

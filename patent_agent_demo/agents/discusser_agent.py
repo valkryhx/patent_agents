@@ -9,7 +9,7 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
-from ..google_a2a_client import get_google_a2a_client
+from ..openai_client import OpenAIClient
 
 logger = logging.getLogger(__name__)
 
@@ -44,15 +44,14 @@ class DiscusserAgent(BaseAgent):
             name="discusser_agent",
             capabilities=["innovation_discussion", "discussion_facilitation", "brainstorming", "consensus_building", "idea_refinement"]
         )
-        self.google_a2a_client = None
+        self.openai_client = None
         self.active_sessions: Dict[str, DiscussionSession] = {}
         self.discussion_templates = self._load_discussion_templates()
         
     async def start(self):
         """Start the discusser agent"""
         await super().start()
-        from ..telemetry import A2ALoggingProxy
-        self.google_a2a_client = A2ALoggingProxy(self.name, await get_google_a2a_client(), self)
+        self.openai_client = OpenAIClient()
         logger.info("Discusser Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
@@ -258,7 +257,7 @@ class DiscusserAgent(BaseAgent):
             Consider different perspectives, technologies, and methodologies.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract alternatives
             # This is a simplified approach
@@ -289,7 +288,7 @@ class DiscusserAgent(BaseAgent):
             Create a clear, actionable consensus that all participants can agree on.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract consensus
             # This is a simplified approach
@@ -315,7 +314,7 @@ class DiscusserAgent(BaseAgent):
             Focus on concrete, measurable actions that move the project forward.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract next steps
             # This is a simplified approach
