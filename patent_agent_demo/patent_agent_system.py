@@ -50,6 +50,10 @@ class PatentAgentSystem:
             # Initialize FastMCP
             await self.fastmcp_config.initialize()
             
+            # Initialize logging to files
+            from .logging_utils import setup_root_file_logging
+            setup_root_file_logging()
+
             # Create and start all agents
             await self._create_agents()
             await self._start_agents()

@@ -370,7 +370,7 @@ class PatentAgentDemo:
             elif args.topic:
                 # Run single workflow
                 await self.run_demo_workflow()
-                				console.print("\n[cyan]生成文档默认输出目录：[/cyan] /output (可在协调器自动导出为 markdown)。")
+                				console.print("\n[cyan]生成文档默认输出目录：[/cyan] /workspace/output (可在协调器自动导出为 markdown)。")
             else:
                 # Show status and wait
                 console.print("\n[yellow]System running. Press Ctrl+C to stop.[/yellow]")

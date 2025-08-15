@@ -1,0 +1,1 @@
+2025-08-15 09:52:34 INFO agent.searcher_agent: searcher_agent initialized with capabilities: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']

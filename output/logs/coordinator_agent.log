@@ -1,0 +1,1 @@
+2025-08-15 09:52:34 INFO agent.coordinator_agent: coordinator_agent initialized with capabilities: ['workflow_orchestration', 'agent_coordination', 'progress_tracking', 'quality_assurance']

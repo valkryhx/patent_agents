@@ -1,0 +1,3 @@
+2025-08-15 09:52:34 INFO agent.planner_agent: planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 09:52:34 INFO agent.planner_agent: RECV id=9b2d2646-ffdd-404b-9dc3-46eb40fce67d type=coordination from=coordinator_agent pri=5
+2025-08-15 09:52:34 INFO agent.planner_agent: EXECUTE task_id=db7c7f86-a8cf-4bb5-8834-6fc06ae6cce4_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
