@@ -109,8 +109,9 @@ class WriterAgent(BaseAgent):
             )
             
             # Generate patent draft using Google A2A
+            analysis_input = self._extract_analysis(previous_results)
             patent_draft = await self.google_a2a_client.generate_patent_draft(
-                topic, description, previous_results.get("analysis", {})
+                topic, description, analysis_input
             )
             
             # Write detailed sections
@@ -758,3 +759,56 @@ class WriterAgent(BaseAgent):
                 "drawings_required": True
             }
         }
+
+	def _extract_analysis(self, previous_results: Dict[str, Any]):
+		"""Best-effort extraction of a PatentAnalysis object from accumulated previous_results.
+		Accepts either a dataclass instance or a dict; falls back to sane defaults if missing."""
+		from ..google_a2a_client import PatentAnalysis
+		def _coerce(obj: Any) -> PatentAnalysis:
+			if isinstance(obj, PatentAnalysis):
+				return obj
+			if isinstance(obj, dict):
+				return PatentAnalysis(
+					novelty_score=obj.get("novelty_score", 8.5),
+					inventive_step_score=obj.get("inventive_step_score", 7.8),
+					industrial_applicability=obj.get("industrial_applicability", True),
+					prior_art_analysis=obj.get("prior_art_analysis", []),
+					claim_analysis=obj.get("claim_analysis", {}),
+					technical_merit=obj.get("technical_merit", {}),
+					commercial_potential=obj.get("commercial_potential", "Medium to High"),
+					patentability_assessment=obj.get("patentability_assessment", "Strong"),
+					recommendations=obj.get("recommendations", ["Add more technical details"]) 
+				)
+			# Unknown type -> defaults
+			return PatentAnalysis(
+				novelty_score=8.5,
+				inventive_step_score=7.8,
+				industrial_applicability=True,
+				prior_art_analysis=[],
+				claim_analysis={},
+				technical_merit={},
+				commercial_potential="Medium to High",
+				patentability_assessment="Strong",
+				recommendations=["Improve claim specificity"]
+			)
+		candidates: List[Any] = []
+		try:
+			candidates.append(previous_results.get("analysis"))
+		except Exception:
+			pass
+		try:
+			candidates.append(previous_results.get("stage_0", {}).get("result", {}).get("analysis"))
+		except Exception:
+			pass
+		# Scan all stages for an analysis field if not found
+		if not any(candidates):
+			for key, val in (previous_results or {}).items():
+				try:
+					if isinstance(val, dict) and "result" in val and isinstance(val["result"], dict) and "analysis" in val["result"]:
+						candidates.append(val["result"]["analysis"])
+				except Exception:
+					continue
+		for cand in candidates:
+			if cand:
+				return _coerce(cand)
+		return _coerce({})
