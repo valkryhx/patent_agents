@@ -9842,3 +9842,53 @@ Text Generation
 Semantic Graph  
 Citation  
 Trustworthiness
+2025-08-15 13:36:53 INFO telemetry: API_CALL agent=searcher_agent method=_generate_response calls=2 out_tokens=1404 prompt_chars=536
+2025-08-15 13:36:53 INFO telemetry: AGENT_API_OUTPUT agent=searcher_agent method=_generate_response preview=
+Based on the topic "Evidence Graph Enhanced Retrieval-Augmented Generation (RAG) System" and the placeholder nature of the abstracts (which indicate patents covering similar concepts but lack specific technical details), here are the **5-7 key technology areas** these patents likely cover:
+
+1.  **Knowledge Graph Construction & Management:**
+    *   **Focus:** Techniques for building, structuring, updating, and maintaining the "Evidence Graph." This includes entity extraction/relation identification from diverse sources, ontology design, graph storage solutions (e.g., graph databases), and mechanisms for handling dynamic or evolving knowledge.
+    *   *Why relevant:* The core of "Evidence Graph Enhanced" systems is the graph itself. Patents would cover novel ways to create and manage this structured knowledge base.
+
+2.  **Graph-Based Retrieval & Ranking:**
+    *   **Focus:** Algorithms and methods for querying the Evidence Graph to find relevant evidence (entities, relations, subgraphs,
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Message sent: status from searcher_agent to coordinator_agent
+2025-08-15 13:36:53 INFO agent.searcher_agent: COMPLETE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_1 success=True time=162.83s
+2025-08-15 13:36:53 INFO agent.coordinator_agent: RECV id=completion_5b27ff42-520e-4a10-8225-061101e81c7e type=status from=searcher_agent pri=5
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.base_agent: Agent coordinator_agent processing message: status
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Agent coordinator_agent status updated: busy
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: STATUS RECV from=searcher_agent status=completed task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_1
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: STAGE COMPLETE parsed workflow=71912a7e-9427-4e3a-b66a-ca5d084b4e83 stage=1
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: Stage 1 completed for workflow 71912a7e-9427-4e3a-b66a-ca5d084b4e83
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: ADVANCE from_stage=Prior Art Search index=1
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: EXECUTE_NEXT index=2 stage=Innovation Discussion agent=discusser_agent
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: Executing stage 2: Innovation Discussion using discusser_agent
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Message sent: coordination from coordinator_agent to discusser_agent
+2025-08-15 13:36:53 INFO agent.discusser_agent: RECV id=b9f54bc2-7a68-49c2-83fb-441938440e72 type=coordination from=coordinator_agent pri=5
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.base_agent: Agent discusser_agent processing message: coordination
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Agent discusser_agent status updated: busy
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.base_agent: Agent discusser_agent executing task: 71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_2
+2025-08-15 13:36:53 INFO agent.discusser_agent: EXECUTE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_2 type=innovation_discussion meta={'topic': task_data.get('topic')}
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.discusser_agent: Facilitating innovation discussion for: 证据图增强的检索增强RAG系统
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Message sent: status from discusser_agent to coordinator_agent
+2025-08-15 13:36:53 INFO agent.discusser_agent: COMPLETE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_2 success=True time=0.00s
+2025-08-15 13:36:53 INFO agent.coordinator_agent: RECV id=completion_19aceb18-cc82-43a3-8a44-6b68bbe0f68e type=status from=discusser_agent pri=5
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.base_agent: Agent coordinator_agent processing message: status
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Agent coordinator_agent status updated: busy
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: STATUS RECV from=discusser_agent status=completed task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_2
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: STAGE COMPLETE parsed workflow=71912a7e-9427-4e3a-b66a-ca5d084b4e83 stage=2
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: Stage 2 completed for workflow 71912a7e-9427-4e3a-b66a-ca5d084b4e83
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: ADVANCE from_stage=Innovation Discussion index=2
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: EXECUTE_NEXT index=3 stage=Patent Drafting agent=writer_agent
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.coordinator_agent: Executing stage 3: Patent Drafting using writer_agent
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Message sent: coordination from coordinator_agent to writer_agent
+2025-08-15 13:36:53 INFO agent.writer_agent: RECV id=86e146e9-6632-47d6-9230-e01dac1f4222 type=coordination from=coordinator_agent pri=5
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.base_agent: Agent writer_agent processing message: coordination
+2025-08-15 13:36:53 INFO patent_agent_demo.message_bus: Agent writer_agent status updated: busy
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.base_agent: Agent writer_agent executing task: 71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_3
+2025-08-15 13:36:53 INFO agent.writer_agent: EXECUTE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_3 type=patent_drafting meta={'topic': task_data.get('topic')}
+2025-08-15 13:36:53 INFO patent_agent_demo.agents.writer_agent: Drafting patent application for: 证据图增强的检索增强RAG系统
+2025-08-15 13:38:58 INFO telemetry: API_CALL agent=writer_agent method=generate_patent_draft calls=1 out_tokens=93 prompt_chars=0
+2025-08-15 13:38:58 INFO telemetry: AGENT_API_OUTPUT agent=writer_agent method=generate_patent_draft preview=
+PatentDraft(title='Generated Patent Title', abstract='This is a generated abstract...', background='Background section...', summary='Summary of invention...', detailed_description='Detailed description...', claims=['Claim 1...', 'Claim 2...', 'Claim 3...'], drawings_description='Drawings description...', technical_diagrams=['Figure 1 description', 'Figure 2 description'])
+2025-08-15 13:38:58 INFO agent.writer_agent: WROTE_PROGRESS dir=/workspace/output/progress/证据图增强的检索增强RAG系统_71912a7e file=00_title_abstract.md len=58
