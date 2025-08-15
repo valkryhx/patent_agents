@@ -93,6 +93,11 @@ class MessageBusBroker:
             logger.info(f"PUT: 放入消息前队列大小: {queue.qsize()}")
             await queue.put(message)
             logger.info(f"PUT: 放入消息后队列大小: {queue.qsize()}")
+            
+            # 立即检查队列大小，看看是否有其他代码在消费
+            await asyncio.sleep(0.01)  # 等待一小段时间
+            logger.info(f"PUT: 等待后队列大小: {queue.qsize()}")
+            
             logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
             logger.debug(f"Message content: {message.content}")
         else:
