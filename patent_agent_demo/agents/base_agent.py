@@ -117,6 +117,10 @@ class BaseAgent:
                 # Add heartbeat to show the loop is running
                 if int(time.time()) % 5 == 0:  # Log every 5 seconds
                     logger.info(f"Agent {self.name} message loop heartbeat - status: {self.status.value} - loop count: {loop_count}")
+                
+                # Force log every 10 loops to ensure we see activity
+                if loop_count % 10 == 0:
+                    logger.info(f"Agent {self.name} message loop active - loop count: {loop_count}")
                     
                 # Small delay to prevent busy waiting
                 await asyncio.sleep(0.1)

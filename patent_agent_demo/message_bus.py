@@ -117,9 +117,10 @@ class MessageBusBroker:
         
         queue = self.message_queues[agent_name]
         queue_size = queue.qsize()
-        logger.debug(f"Agent {agent_name} queue size: {queue_size}")
+        logger.info(f"Agent {agent_name} queue size: {queue_size}")  # Changed from debug to info
         
         if queue_size == 0:
+            logger.info(f"Agent {agent_name} queue is empty")
             return None
             
         try:
