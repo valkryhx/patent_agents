@@ -85,11 +85,14 @@ class MessageBusBroker:
         recipient = message.recipient
         logger.info(f"Attempting to send message to {recipient}")
         logger.info(f"Available recipients: {list(self.message_queues.keys())}")
+        logger.info(f"MessageBusBroker instance ID: {id(self)}")
         
         if recipient in self.message_queues:
-            await self.message_queues[recipient].put(message)
+            queue = self.message_queues[recipient]
+            logger.info(f"Queue instance ID for {recipient}: {id(queue)}")
+            await queue.put(message)
             logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
-            logger.info(f"Queue size for {recipient}: {self.message_queues[recipient].qsize()}")
+            logger.info(f"Queue size for {recipient}: {queue.qsize()}")
             logger.debug(f"Message content: {message.content}")
         else:
             logger.warning(f"Recipient {recipient} not found, message dropped")
@@ -118,6 +121,8 @@ class MessageBusBroker:
         queue = self.message_queues[agent_name]
         queue_size = queue.qsize()
         logger.info(f"Agent {agent_name} queue size: {queue_size}")  # Changed from debug to info
+        logger.info(f"MessageBusBroker instance ID: {id(self)}")
+        logger.info(f"Queue instance ID for {agent_name}: {id(queue)}")
         
         if queue_size == 0:
             logger.info(f"Agent {agent_name} queue is empty")
