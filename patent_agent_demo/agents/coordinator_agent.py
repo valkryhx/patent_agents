@@ -261,17 +261,43 @@ class CoordinatorAgent(BaseAgent):
         try:
             content = message.content or {}
             task_id = content.get("task_id")
-            logger.info(f"STATUS RECV from={message.sender} status={content.get('status')} task_id={task_id}")
-            if task_id and "_stage_" in task_id and (content.get("status") == "completed" or content.get("success") is not None):
-                result = content.get("result", {})
-                workflow_id, stage_index_str = task_id.split("_stage_")
-                logger.info(f"STAGE COMPLETE parsed workflow={workflow_id} stage={stage_index_str}")
-                await self._handle_stage_completion(workflow_id, int(stage_index_str), result)
+            status = content.get("status")
+            success = content.get("success")
+            
+            logger.info(f"STATUS RECV from={message.sender} status={status} success={success} task_id={task_id}")
+            
+            # Check if this is a stage completion message
+            if (task_id and "_stage_" in task_id and 
+                (status == "completed" or success is True)):
+                
+                try:
+                    # Parse workflow_id and stage_index from task_id
+                    if "_stage_" in task_id:
+                        workflow_id, stage_index_str = task_id.split("_stage_")
+                        stage_index = int(stage_index_str)
+                        
+                        logger.info(f"STAGE COMPLETE parsed workflow={workflow_id} stage={stage_index}")
+                        
+                        # Get result from message content
+                        result = content.get("result", {})
+                        
+                        # Handle stage completion
+                        await self._handle_stage_completion(workflow_id, stage_index, result)
+                    else:
+                        logger.warning(f"Invalid task_id format: {task_id}")
+                        await super()._handle_status_message(message)
+                        
+                except (ValueError, IndexError) as e:
+                    logger.error(f"Error parsing task_id {task_id}: {e}")
+                    await super()._handle_status_message(message)
             else:
-                # fallback to base for agent status updates
+                # Fallback to base for agent status updates
                 await super()._handle_status_message(message)
+                
         except Exception as e:
             logger.error(f"Coordinator status handling error: {e}")
+            # Fallback to base handler
+            await super()._handle_status_message(message)
  
     def _get_current_draft(self, workflow: PatentWorkflow):
         """Return the most recent draft object from writer or rewriter stage results"""
