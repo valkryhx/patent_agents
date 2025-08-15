@@ -111,9 +111,13 @@ class MessageBusBroker:
     async def get_message(self, agent_name: str) -> Optional[Message]:
         """Get a message from a specific agent's queue"""
         if agent_name not in self.message_queues:
+            logger.warning(f"Agent {agent_name} not found in message queues")
             return None
         try:
-            return await asyncio.wait_for(self.message_queues[agent_name].get(), timeout=1.0)
+            message = await asyncio.wait_for(self.message_queues[agent_name].get(), timeout=1.0)
+            if message:
+                logger.info(f"Retrieved message for {agent_name}: {message.type.value} from {message.sender}")
+            return message
         except asyncio.TimeoutError:
             return None
             

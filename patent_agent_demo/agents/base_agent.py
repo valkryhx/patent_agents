@@ -100,6 +100,10 @@ class BaseAgent:
                     if int(time.time()) % 10 == 0:  # Log every 10 seconds
                         logger.debug(f"Agent {self.name} waiting for messages...")
                     
+                # Add heartbeat to show the loop is running
+                if int(time.time()) % 5 == 0:  # Log every 5 seconds
+                    logger.info(f"Agent {self.name} message loop heartbeat - status: {self.status.value}")
+                    
                 # Small delay to prevent busy waiting
                 await asyncio.sleep(0.1)
                 
