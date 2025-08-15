@@ -47,7 +47,8 @@ class RewriterAgent(BaseAgent):
     async def start(self):
         """Start the rewriter agent"""
         await super().start()
-        self.google_a2a_client = await get_google_a2a_client()
+        from ..telemetry import A2ALoggingProxy
+        self.google_a2a_client = A2ALoggingProxy(self.name, await get_google_a2a_client(), self)
         logger.info("Rewriter Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
