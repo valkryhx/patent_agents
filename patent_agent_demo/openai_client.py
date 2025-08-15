@@ -48,7 +48,12 @@ class OpenAIClient:
         """Call OpenAI function with GLM fallback"""
         if not self.openai_available:
             logger.warning("OpenAI not available, using GLM fallback directly")
-            return await glm_func(*args, **kwargs)
+            if self.glm_client:
+                logger.info("Using GLM-4.5 fallback directly")
+                return await glm_func(*args, **kwargs)
+            else:
+                logger.error("GLM fallback not available")
+                raise RuntimeError("Neither OpenAI nor GLM fallback is available")
         
         try:
             # Try OpenAI first
@@ -58,22 +63,13 @@ class OpenAIClient:
             return result
         except Exception as e:
             error_msg = str(e)
-            if "429" in error_msg or "quota" in error_msg.lower() or "insufficient_quota" in error_msg:
-                logger.warning(f"OpenAI quota exceeded, falling back to GLM: {error_msg}")
-                if self.glm_client:
-                    logger.info("Switching to GLM-4.5 fallback...")
-                    return await glm_func(*args, **kwargs)
-                else:
-                    logger.error("GLM fallback not available")
-                    raise
+            logger.warning(f"OpenAI API error, falling back to GLM: {error_msg}")
+            if self.glm_client:
+                logger.info("Switching to GLM-4.5 fallback...")
+                return await glm_func(*args, **kwargs)
             else:
-                logger.warning(f"OpenAI API error (non-quota), falling back to GLM: {error_msg}")
-                if self.glm_client:
-                    logger.info("Switching to GLM-4.5 fallback...")
-                    return await glm_func(*args, **kwargs)
-                else:
-                    logger.error("GLM fallback not available")
-                    raise
+                logger.error("GLM fallback not available")
+                raise RuntimeError("OpenAI failed and GLM fallback not available")
     
     async def analyze_patent_topic(self, topic: str, description: str) -> PatentAnalysis:
         """Analyze patent topic for patentability"""
