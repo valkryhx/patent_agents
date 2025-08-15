@@ -63,7 +63,7 @@ class GLMA2AClient:
                 method="POST",
             )
             # Some environments need an unverified context; keep default for safety
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=240) as resp:
                 body = resp.read().decode("utf-8")
                 data = json.loads(body)
                 # OpenAI-style response
