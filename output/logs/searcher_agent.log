@@ -1,2 +1,4 @@
 2025-08-15 09:52:34 INFO agent.searcher_agent: searcher_agent initialized with capabilities: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
 2025-08-15 09:57:52 INFO agent.searcher_agent: searcher_agent initialized with capabilities: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-15 09:59:46 INFO agent.searcher_agent: RECV id=3c4aacca-9048-49e9-89bf-881d25d28836 type=coordination from=coordinator_agent pri=5
+2025-08-15 09:59:46 INFO agent.searcher_agent: EXECUTE task_id=4fa570d6-ce51-4d0d-96dc-28ce058a2c2a_stage_1 type=prior_art_search meta={'topic': task_data.get('topic')}
