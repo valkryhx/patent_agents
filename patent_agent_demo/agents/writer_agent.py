@@ -164,42 +164,78 @@ class WriterAgent(BaseAgent):
             
     async def _write_detailed_sections(self, writing_task: WritingTask, 
                                      patent_draft: PatentDraft) -> Dict[str, str]:
-        """Write detailed sections of the patent application"""
+        """Write detailed sections of the patent application with diagrams and pseudo-code"""
         try:
             detailed_sections = {}
-            
-            # Write background section
-            background = await self._write_background_section(
-                writing_task.topic, writing_task.description, writing_task.previous_results
-            )
+            # Outline first
+            outline_prompt = f"""
+创建专利撰写大纲（中文），主题：{writing_task.topic}
+- 章节：技术领域、背景技术、现有技术缺点与技术问题、发明内容/技术方案（方法+系统）、有益效果、附图说明、具体实施方式、权利要求书要点、摘要。
+- 每章给出小节要点与所需的：
+  * mermaid流程/架构图（flowchart/sequence/class/graph任选），
+  * 关键算法公式（Markdown公式），
+  * 伪代码（Python风格），
+  * 预计字数要求：每章≥2000字。
+仅输出分章要点清单。
+"""
+            _ = await self.google_a2a_client._generate_response(outline_prompt)
+            # Background
+            background_prompt = f"""
+撰写“背景技术”（中文，≥2000字），主题：{writing_task.topic}
+- 需包含：
+  1) 技术领域；2) 最近似现有技术方案（至少2个）、实现方式与不足；3) 本领域存在的技术性痛点；
+  4) 对比分析结论。
+- 插入1个mermaid流程或架构图，描述传统RAG数据流。
+- 插入至少2段算法公式（Markdown）；
+- 插入伪代码（Python风格）展示传统RAG检索与融合流程。
+- 风格：正式、技术性、可验证。
+"""
+            background = await self.google_a2a_client._generate_response(background_prompt)
             detailed_sections["background"] = background
-            
-            # Write summary section
-            summary = await self._write_summary_section(
-                writing_task.topic, patent_draft.abstract, writing_task.previous_results
-            )
+            # Summary
+            summary_prompt = f"""
+撰写“发明内容/技术方案-总述”（中文，≥2000字），主题：{writing_task.topic}
+- 概述证据图增强RAG：证据单元抽取、关系判定（支持/矛盾/细化）、证据图构建、子图选择与验证、图感知引用约束解码、事后验证反馈闭环。
+- 插入1个mermaid架构图（graph TD/classDiagram）描述系统模块与连接关系。
+- 至少3段关键公式（子图打分函数、冲突代价、引用一致性度量）。
+- 伪代码展示整体流程主程序与数据结构。
+"""
+            summary = await self.google_a2a_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
-            
-            # Write detailed description
-            detailed_description = await self._write_detailed_description(
-                writing_task.topic, writing_task.description, patent_draft.claims, writing_task.previous_results
-            )
+            # Detailed description
+            desc_prompt = f"""
+撰写“具体实施方式”（中文，≥2000字），主题：{writing_task.topic}
+- 方法（步骤化，含Who/What/When/Where/How）：检索→证据单元抽取→关系分类→证据图构建→子图选择→图感知解码→事后验证→反馈。
+- 系统模块：检索器、抽取器、关系分类器、图构建器、子图选择与验证器、图感知生成器、事后验证器、索引/存储、日志与可视化；描述接口与参数。
+- 插入2个以上mermaid图（sequence/flowchart）展示关键流程；
+- 提供公式（不少于5个）：关系置信度融合、打分目标、约束解码损失、验证一致性、反馈权重更新；
+- 提供伪代码：
+  * 子图选择（启发式或ILP近似），
+  * 约束解码（带引用偏置/指针），
+  * 事后验证指标计算。
+"""
+            detailed_description = await self.google_a2a_client._generate_response(desc_prompt)
             detailed_sections["detailed_description"] = detailed_description
-            
-            # Write claims
-            claims = await self._write_patent_claims_section(
-                writing_task.topic, writing_task.description, writing_task.previous_results
-            )
-            detailed_sections["claims"] = claims
-            
-            # Write drawings description
-            drawings_description = await self._write_drawings_description(
-                writing_task.topic, writing_task.description
-            )
+            # Claims
+            claims_prompt = f"""
+撰写“权利要求书”（中文，CN风格）：
+- 1项独立权利要求+9项从属权利要求；
+- 独立项覆盖：证据图构建、子图选择、图感知解码、事后验证与反馈闭环；
+- 从属项细化：节点/边属性、评分函数、约束解码策略、验证指标、反馈更新规则；
+- 术语统一、避免结果性限定，每项以句号结束。
+"""
+            claims_text = await self.google_a2a_client._generate_response(claims_prompt)
+            detailed_sections["claims"] = claims_text.splitlines()
+            # Drawings
+            drawings_prompt = f"""
+撰写“附图说明”（中文，≥2000字）：
+- 至少5幅图（系统架构、证据抽取与关系分类、子图选择与验证、图感知解码、反馈闭环）；
+- 每幅图提供对应的mermaid示意；
+- 指出每幅图与步骤/模块的对应关系。
+"""
+            drawings_description = await self.google_a2a_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
-            
             return detailed_sections
-            
         except Exception as e:
             logger.error(f"Error writing detailed sections: {e}")
             raise

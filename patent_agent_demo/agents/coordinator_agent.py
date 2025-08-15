@@ -192,18 +192,14 @@ class CoordinatorAgent(BaseAgent):
             if not workflow:
                 logger.error(f"Workflow {workflow_id} not found")
                 return
-            
             if stage_index >= len(workflow.stages):
                 logger.info(f"Workflow {workflow_id} completed all stages")
                 await self._complete_workflow(workflow_id)
                 return
-            
             stage = workflow.stages[stage_index]
             stage.status = "running"
             stage.start_time = time.time()
-            
             logger.info(f"Executing stage {stage_index}: {stage.stage_name} using {stage.agent_name}")
-            
             # Build task content with latest artifacts
             task_type = self._get_task_type_for_stage(stage.stage_name)
             task_content = {
@@ -217,9 +213,11 @@ class CoordinatorAgent(BaseAgent):
                     "previous_results": workflow.results
                 }
             }
-            
-            # Inject latest draft/review feedback for dependent stages
-            if task_type == "patent_review":
+            # Inject artifacts
+            if task_type == "patent_drafting":
+                # Hint writer to split large content into chapters in its internal prompts
+                task_content["task"]["generation_mode"] = "chapter_split"
+            elif task_type == "patent_review":
                 current_draft = self._get_current_draft(workflow)
                 if current_draft:
                     task_content["task"]["patent_draft"] = current_draft
@@ -231,23 +229,17 @@ class CoordinatorAgent(BaseAgent):
                 if last_feedback:
                     task_content["task"]["review_feedback"] = last_feedback
             elif task_type == "innovation_discussion":
-                # Provide latest analysis and review outcomes for more focused discussion
                 last_feedback = self._get_latest_review_feedback(workflow)
                 if last_feedback:
                     task_content["task"]["review_feedback"] = last_feedback
-            
-            # Send task to appropriate agent
             await self.send_message(
                 recipient=stage.agent_name,
                 message_type=MessageType.COORDINATION,
                 content=task_content,
                 priority=5
             )
-            
-            # Update workflow status
             workflow.current_stage = stage_index
             workflow.overall_status = "running"
-            
         except Exception as e:
             logger.error(f"Error executing workflow stage: {e}")
             await self._handle_stage_error(workflow_id, stage_index, str(e))

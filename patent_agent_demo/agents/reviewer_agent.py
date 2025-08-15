@@ -423,11 +423,10 @@ class ReviewerAgent(BaseAgent):
             return {"score": 0, "issues": [{"type": "error", "description": str(e)}]}
             
     async def _review_detailed_description(self, description: str) -> Dict[str, Any]:
-        """Review the detailed description section"""
+        """Review the detailed description section with checks for diagrams and pseudo-code"""
         try:
             score = 10.0
             issues = []
-            
             if not description:
                 score -= 10.0
                 issues.append({
@@ -437,43 +436,55 @@ class ReviewerAgent(BaseAgent):
                     "recommendation": "Add comprehensive detailed description"
                 })
                 return {"score": 0, "issues": issues}
-                
-            # Check length
+            # Word count threshold higher
             word_count = len(description.split())
-            if word_count < 500:
+            if word_count < 2000:
                 score -= 4.0
                 issues.append({
                     "type": "length",
                     "severity": "high",
-                    "description": "Detailed description too short",
-                    "recommendation": "Expand with more technical details"
+                    "description": "Detailed description below 2000 words",
+                    "recommendation": "Expand with more technical details, formulas, diagrams, and pseudo-code"
                 })
-            elif word_count > 5000:
+            # Mermaid diagrams presence
+            if "mermaid" not in description:
                 score -= 1.0
                 issues.append({
-                    "type": "length",
-                    "severity": "low",
-                    "description": "Description very long",
-                    "recommendation": "Consider condensing to essential information"
+                    "type": "diagram",
+                    "severity": "medium",
+                    "description": "Missing mermaid diagrams",
+                    "recommendation": "Add flowchart/sequence/class diagrams in mermaid"
                 })
-                
-            # Check technical content
-            technical_elements = ["embodiment", "implementation", "method", "step", "component"]
-            technical_count = sum(1 for element in technical_elements if element in description.lower())
-            if technical_count < 3:
-                score -= 2.0
+            # Formulas presence (simple heuristic: $ or \( or \[)
+            if ("$" not in description) and ("\\(" not in description and "\\[" not in description):
+                score -= 1.0
+                issues.append({
+                    "type": "formula",
+                    "severity": "medium",
+                    "description": "Missing algorithmic formulas",
+                    "recommendation": "Add Markdown/LaTeX-style formulas for scoring and constraints"
+                })
+            # Pseudo-code presence (look for code fences or def/for patterns)
+            if "```" not in description and "def " not in description and "for " not in description:
+                score -= 1.0
+                issues.append({
+                    "type": "pseudocode",
+                    "severity": "low",
+                    "description": "Missing pseudo-code",
+                    "recommendation": "Provide Python-style pseudo-code for core procedures"
+                })
+            # Technical content check
+            technical_elements = ["抽取", "关系", "子图", "解码", "验证", "反馈"]
+            technical_count = sum(1 for t in technical_elements if t in description)
+            if technical_count < 4:
+                score -= 1.0
                 issues.append({
                     "type": "content",
                     "severity": "medium",
-                    "description": "Description lacks technical depth",
-                    "recommendation": "Add more technical implementation details"
+                    "description": "Technical pipeline insufficiently covered",
+                    "recommendation": "Detail extraction, relation classification, subgraph selection, constrained decoding, and verification"
                 })
-                
-            return {
-                "score": max(0, score),
-                "issues": issues
-            }
-            
+            return {"score": max(0, score), "issues": issues}
         except Exception as e:
             logger.error(f"Error reviewing detailed description: {e}")
             return {"score": 0, "issues": [{"type": "error", "description": str(e)}]}
