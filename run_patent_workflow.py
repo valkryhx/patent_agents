@@ -49,7 +49,7 @@ async def run_once():
 			if overall_status == "completed":
 				# Build expected export path (Coordinator writes it on completion)
 				topic_str = getattr(wf, "topic", None) or (isinstance(wf, dict) and wf.get("topic")) or "patent"
-				exported_path = f"/workspace/output/{topic_str.replace(' ', '_')}_{workflow_id[:8]}.md"
+				exported_path = f"/output/{topic_str.replace(' ', '_')}_{workflow_id[:8]}.md"
 				print(f"Completed. Exported to: {exported_path}")
 				break
 		elapsed = time.time() - start_time
