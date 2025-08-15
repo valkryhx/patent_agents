@@ -1,0 +1,40 @@
+nohup: ignoring input
+INFO:patent_agent_demo.patent_agent_system:Starting Patent Agent System...
+INFO:patent_agent_demo.message_bus:Initializing Message Bus system...
+INFO:patent_agent_demo.message_bus:Message Bus system initialized successfully
+INFO:patent_agent_demo.message_bus:Agent planner_agent registered with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+INFO:agent.planner_agent:planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+INFO:patent_agent_demo.agents.planner_agent:Planner Agent started successfully
+INFO:patent_agent_demo.patent_agent_system:Agent planner_agent started successfully
+INFO:patent_agent_demo.message_bus:Agent searcher_agent registered with capabilities: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+INFO:agent.searcher_agent:searcher_agent initialized with capabilities: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+INFO:patent_agent_demo.agents.searcher_agent:Searcher Agent started successfully
+INFO:patent_agent_demo.patent_agent_system:Agent searcher_agent started successfully
+INFO:patent_agent_demo.message_bus:Agent discusser_agent registered with capabilities: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+INFO:agent.discusser_agent:discusser_agent initialized with capabilities: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+INFO:patent_agent_demo.agents.discusser_agent:Discusser Agent started successfully
+INFO:patent_agent_demo.patent_agent_system:Agent discusser_agent started successfully
+INFO:patent_agent_demo.message_bus:Agent writer_agent registered with capabilities: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+INFO:agent.writer_agent:writer_agent initialized with capabilities: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+INFO:patent_agent_demo.agents.writer_agent:Writer Agent started successfully
+INFO:patent_agent_demo.patent_agent_system:Agent writer_agent started successfully
+INFO:patent_agent_demo.message_bus:Agent reviewer_agent registered with capabilities: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
+INFO:agent.reviewer_agent:reviewer_agent initialized with capabilities: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
+INFO:patent_agent_demo.agents.reviewer_agent:Reviewer Agent started successfully
+INFO:patent_agent_demo.patent_agent_system:Agent reviewer_agent started successfully
+INFO:patent_agent_demo.message_bus:Agent rewriter_agent registered with capabilities: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+INFO:agent.rewriter_agent:rewriter_agent initialized with capabilities: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+INFO:patent_agent_demo.agents.rewriter_agent:Rewriter Agent started successfully
+INFO:patent_agent_demo.patent_agent_system:Agent rewriter_agent started successfully
+INFO:patent_agent_demo.message_bus:Agent coordinator_agent registered with capabilities: ['workflow_orchestration', 'agent_coordination', 'progress_tracking', 'quality_assurance']
+INFO:agent.coordinator_agent:coordinator_agent initialized with capabilities: ['workflow_orchestration', 'agent_coordination', 'progress_tracking', 'quality_assurance']
+INFO:patent_agent_demo.agents.coordinator_agent:Coordinator Agent started successfully
+INFO:patent_agent_demo.patent_agent_system:Agent coordinator_agent started successfully
+INFO:patent_agent_demo.patent_agent_system:All agents started successfully
+INFO:patent_agent_demo.patent_agent_system:Patent Agent System started successfully
+INFO:patent_agent_demo.agents.coordinator_agent:Starting patent workflow 7de32635-7c6a-4d7c-a62f-902aad907c35 for: 证据图增强的检索增强RAG系统
+INFO:patent_agent_demo.agents.coordinator_agent:Executing stage 0: Planning & Strategy using planner_agent
+INFO:patent_agent_demo.message_bus:Message sent: coordination from coordinator_agent to planner_agent
+INFO:patent_agent_demo.agents.base_agent:Agent planner_agent executing task: 7de32635-7c6a-4d7c-a62f-902aad907c35_stage_0
+INFO:agent.planner_agent:EXECUTE task_id=7de32635-7c6a-4d7c-a62f-902aad907c35_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
+INFO:patent_agent_demo.agents.planner_agent:Creating patent strategy for: 证据图增强的检索增强RAG系统
