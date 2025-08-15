@@ -11,7 +11,7 @@ from .google_a2a_client import PatentAnalysis, PatentDraft, SearchResult
 
 GLM_API_BASE = "https://open.bigmodel.cn/api/paas/v4/"
 GLM_CHAT_COMPLETIONS = GLM_API_BASE + "chat/completions"
-GLM_MODEL = "glm-4.5-flash"
+GLM_MODEL = "glm-4.5-air"
 
 _PRIVATE_KEY_PATHS = [
     "/workspace/glm_api_key",              # preferred path with GLM_API_KEY=...
@@ -58,7 +58,7 @@ def _load_glm_key() -> Optional[str]:
 
 
 class GLMA2AClient:
-    """OpenAI-compatible HTTP client for GLM-4.5-flash."""
+    """OpenAI-compatible HTTP client for GLM-4.5-air."""
 
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = (api_key or _load_glm_key())
@@ -84,8 +84,8 @@ class GLMA2AClient:
                 headers=headers,
                 method="POST",
             )
-            # 优化1: 减少超时时间从480秒到120秒，提高响应速度
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            # 优化1: 增加超时时间到300秒，提高GLM-4.5-air的响应成功率
+            with urllib.request.urlopen(req, timeout=300) as resp:
                 body = resp.read().decode("utf-8")
                 data = json.loads(body)
                 # OpenAI-style response
