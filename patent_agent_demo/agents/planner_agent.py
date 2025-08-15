@@ -53,7 +53,8 @@ class PlannerAgent(BaseAgent):
     async def start(self):
         """Start the planner agent"""
         await super().start()
-        self.google_a2a_client = await get_google_a2a_client()
+        from ..telemetry import A2ALoggingProxy
+        self.google_a2a_client = A2ALoggingProxy(self.name, await get_google_a2a_client(), self)
         logger.info("Planner Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:

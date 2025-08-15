@@ -92,21 +92,19 @@ class FastMCPBroker:
         logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
         
     async def receive_message(self, agent_name: str) -> Optional[Message]:
-        """Receive a message for a specific agent"""
+        """Receive a message for a specific agent (removes it from history once delivered)"""
         try:
-            # Check if there are messages for this agent
-            messages = [msg for msg in self.message_history 
-                       if msg.recipient == agent_name or msg.recipient == "broadcast"]
-            
-            if messages:
-                # Return the highest priority message
-                messages.sort(key=lambda x: x.priority, reverse=True)
-                return messages.pop(0)
-                
+            # Find highest priority message addressed to this agent
+            candidate_indices = [i for i, msg in enumerate(self.message_history) if msg.recipient == agent_name or msg.recipient == "broadcast"]
+            if not candidate_indices:
+                return None
+            # Select highest priority among candidates
+            best_index = max(candidate_indices, key=lambda i: self.message_history[i].priority)
+            message = self.message_history.pop(best_index)
+            return message
         except Exception as e:
             logger.error(f"Error receiving message for {agent_name}: {e}")
-            
-        return None
+            return None
         
     async def broadcast_message(self, message_type: MessageType, content: Dict[str, Any], 
                               sender: str, priority: int = 1):

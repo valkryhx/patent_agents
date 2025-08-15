@@ -10,6 +10,7 @@ from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
 from ..google_a2a_client import get_google_a2a_client, PatentDraft
+from ..telemetry import A2ALoggingProxy
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,8 @@ class WriterAgent(BaseAgent):
     async def start(self):
         """Start the writer agent"""
         await super().start()
-        self.google_a2a_client = await get_google_a2a_client()
+        base_client = await get_google_a2a_client()
+        self.google_a2a_client = A2ALoggingProxy(self.name, base_client, self)
         logger.info("Writer Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
@@ -59,7 +61,7 @@ class WriterAgent(BaseAgent):
             if task_type == "patent_drafting":
                 return await self._draft_patent_application(task_data)
             elif task_type == "claim_writing":
-                return await self._write_patent_claims(task_data)
+                return await self._write_patent_claims_task(task_data)
             elif task_type == "technical_description":
                 return await self._write_technical_description(task_data)
             elif task_type == "legal_compliance_check":
@@ -119,6 +121,11 @@ class WriterAgent(BaseAgent):
             
             # Update patent draft with detailed content
             patent_draft.detailed_description = detailed_sections.get("detailed_description", "")
+            patent_draft.background = detailed_sections.get("background", getattr(patent_draft, "background", ""))
+            patent_draft.summary = detailed_sections.get("summary", getattr(patent_draft, "summary", ""))
+            # If claims were generated in detailed sections, set them
+            if isinstance(detailed_sections.get("claims"), list) and detailed_sections.get("claims"):
+                patent_draft.claims = detailed_sections.get("claims")
             patent_draft.technical_diagrams = technical_diagrams
             
             # Check legal compliance
@@ -164,42 +171,84 @@ class WriterAgent(BaseAgent):
             
     async def _write_detailed_sections(self, writing_task: WritingTask, 
                                      patent_draft: PatentDraft) -> Dict[str, str]:
-        """Write detailed sections of the patent application"""
+        """Write detailed sections of the patent application with diagrams and pseudo-code"""
         try:
             detailed_sections = {}
-            
-            # Write background section
-            background = await self._write_background_section(
-                writing_task.topic, writing_task.description, writing_task.previous_results
-            )
+            # Outline first
+            outline_prompt = f"""
+创建专利撰写大纲（中文），主题：{writing_task.topic}
+- 章节：技术领域、背景技术、现有技术缺点与技术问题、发明内容/技术方案（方法+系统）、有益效果、附图说明、具体实施方式、权利要求书要点、摘要。
+- 每章给出小节要点与所需的：
+  * mermaid流程/架构图（flowchart/sequence/class/graph任选），
+  * 关键算法公式（Markdown公式），
+  * 伪代码（Python风格），
+  * 预计字数要求：每章≥2000字。
+仅输出分章要点清单。
+"""
+            _ = await self.google_a2a_client._generate_response(outline_prompt)
+            # Background
+            background_prompt = f"""
+撰写“背景技术”（中文，≥2000字），主题：{writing_task.topic}
+- 需包含：
+  1) 技术领域；2) 最近似现有技术方案（至少2个）、实现方式与不足；3) 本领域存在的技术性痛点；
+  4) 对比分析结论。
+- 插入1个mermaid流程或架构图，描述行业通用的数据/控制流程。
+- 插入至少2段算法公式（Markdown）；
+- 插入伪代码（Python风格）展示通用的数据处理与融合流程。
+- 风格：正式、技术性、可验证。
+"""
+            background = await self.google_a2a_client._generate_response(background_prompt)
             detailed_sections["background"] = background
-            
-            # Write summary section
-            summary = await self._write_summary_section(
-                writing_task.topic, patent_draft.abstract, writing_task.previous_results
-            )
+            # Summary
+            summary_prompt = f"""
+撰写“发明内容/技术方案-总述”（中文，≥2000字），主题：{writing_task.topic}
+- 概述核心创新点与系统总体架构；给出关键模块与信息流向的抽象描述，不限定具体领域实现。
+- 插入1个mermaid架构图（graph TD/classDiagram）描述系统模块与连接关系。
+- 至少3段关键公式（子图打分函数、冲突代价、引用一致性度量）。
+- 伪代码展示整体流程主程序与数据结构。
+"""
+            summary = await self.google_a2a_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
-            
-            # Write detailed description
-            detailed_description = await self._write_detailed_description(
-                writing_task.topic, writing_task.description, patent_draft.claims, writing_task.previous_results
-            )
+            # Detailed description via subchapter generation
+            subchapters = [
+                {"id": "A", "title": "数据获取与预处理"},
+                {"id": "B", "title": "证据构建与关系建模"},
+                {"id": "C", "title": "生成与约束解码"},
+                {"id": "D", "title": "验证与反馈闭环"},
+            ]
+            desc_parts: List[str] = []
+            for sc in subchapters:
+                sprompt = f"""
+撰写“具体实施方式-子章节{sc['id']}：{sc['title']}”（中文，≥3000字），主题：{writing_task.topic}
+- 至少包含：1个mermaid图；3个算法公式（Markdown/LaTeX）；1段Python风格伪代码（≥50行）。
+- 描述Who/What/When/Where/How的实施步骤；列出输入/输出/参数与边界条件；说明与其它子章节接口。
+- 保持术语一致、避免跨章重复。严格输出该子章节正文。
+"""
+                text = await self.google_a2a_client._generate_response(sprompt)
+                desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
+            # Assemble detailed description
+            detailed_description = ("\n".join(desc_parts)).strip()
             detailed_sections["detailed_description"] = detailed_description
-            
-            # Write claims
-            claims = await self._write_patent_claims(
-                writing_task.topic, writing_task.description, writing_task.previous_results
-            )
-            detailed_sections["claims"] = claims
-            
-            # Write drawings description
-            drawings_description = await self._write_drawings_description(
-                writing_task.topic, writing_task.description
-            )
+            # Claims
+            claims_prompt = f"""
+撰写“权利要求书”（中文，CN风格）：
+- 1项独立权利要求+9项从属权利要求；
+- 独立项覆盖：系统/方法的核心处理链路与关键约束策略；
+- 从属项细化：节点/边属性、评分函数、约束解码策略、验证指标、反馈更新规则；
+- 术语统一、避免结果性限定，每项以句号结束。
+"""
+            claims_text = await self.google_a2a_client._generate_response(claims_prompt)
+            detailed_sections["claims"] = claims_text.splitlines()
+            # Drawings
+            drawings_prompt = f"""
+撰写“附图说明”（中文，≥2000字）：
+- 至少5幅图（系统架构、数据流/控制流、核心算法流程、约束与优化、验证与反馈）；
+- 每幅图提供对应的mermaid示意；
+- 指出每幅图与步骤/模块的对应关系。
+"""
+            drawings_description = await self.google_a2a_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
-            
             return detailed_sections
-            
         except Exception as e:
             logger.error(f"Error writing detailed sections: {e}")
             raise
@@ -210,20 +259,24 @@ class WriterAgent(BaseAgent):
         try:
             # Use Google A2A to write background section
             prompt = f"""
-            Write a comprehensive background section for a patent application:
+            Write a comprehensive background section for a patent application, aligning with CN disclosure template:
             
             Topic: {topic}
             Description: {description}
             
             Previous Analysis: {previous_results.get('analysis', {})}
+            Prior Art (if any): {previous_results.get('stage_1', {})}
             
-            Include:
-            1. Field of the invention
-            2. Current state of the art
-            3. Problems with existing solutions
-            4. Need for the invention
+            Include, in this order:
+            A. 技术领域 (Technical Field) — concise statement of the domain
+            B. 现有技术的技术方案 (Nearest Prior Art) — how it is implemented and workflow/components
+            C. 现有技术的缺点及待解决的技术问题 — articulate technical drawbacks (not business/admin) and the objective problems
+            D. 本申请的必要性/改进动机
             
-            Write in formal patent language, 200-300 words.
+            Style:
+            - Formal patent language
+            - 250-350 words
+            - Be specific and implementation-oriented
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -255,7 +308,7 @@ class WriterAgent(BaseAgent):
         try:
             # Use Google A2A to write summary section
             prompt = f"""
-            Write a summary section for a patent application:
+            Write a summary section (Summary of Invention) aligned with CN disclosure handbook:
             
             Topic: {topic}
             Abstract: {abstract}
@@ -263,11 +316,14 @@ class WriterAgent(BaseAgent):
             Analysis Results: {previous_results.get('analysis', {})}
             
             Include:
-            1. Brief summary of the invention
-            2. Key advantages
-            3. Technical benefits
+            - 技术方案要点（Who/What/When/Where/How）
+            - 与最近似现有技术的区别特征
+            - 技术效果/有益效果（技术性、可量化）
             
-            Write in formal patent language, 150-200 words.
+            Constraints:
+            - Formal patent language
+            - 180-250 words
+            - Avoid marketing claims; stay technical
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -293,21 +349,24 @@ class WriterAgent(BaseAgent):
         try:
             # Use Google A2A to write detailed description
             prompt = f"""
-            Write a detailed description section for a patent application:
+            Write a detailed description aligned with CN disclosure template Section 5:
             
             Topic: {topic}
             Description: {description}
             Claims: {claims}
-            
             Previous Results: {previous_results}
             
-            Include:
-            1. Detailed technical implementation
-            2. Step-by-step methodology
-            3. Alternative embodiments
-            4. Technical advantages
+            Structure and include:
+            1. 方法/业务流程类：提供流程图/信令交互图文字版；按步骤顺序描述，每步给出Who/What/When/Where/How；
+            2. 系统/设备类：提供结构图文字版；逐一说明各组成部分功能、信号处理方式、相互连接关系；
+            3. 改进点：逐项展开技术方案一/二/三的不同实现；
+            4. 可选实施例与变体；
+            5. 技术效果与实现条件；
             
-            Write in formal patent language, 500-800 words.
+            Constraints:
+            - 700-1200 words
+            - 以实施方式描述为主，避免泛化描述
+            - 保持术语一致
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -327,26 +386,25 @@ class WriterAgent(BaseAgent):
             logger.error(f"Error writing detailed description: {e}")
             return f"Detailed description for {topic} - [Error occurred during generation]"
             
-    async def _write_patent_claims(self, topic: str, description: str, 
+    async def _write_patent_claims_section(self, topic: str, description: str, 
                                  previous_results: Dict[str, Any]) -> List[str]:
         """Write patent claims"""
         try:
             # Use Google A2A to write claims
             prompt = f"""
-            Write 3-5 patent claims for this invention:
+            Draft 1 independent claim and 3-6 dependent claims in CN style:
             
             Topic: {topic}
             Description: {description}
-            
             Analysis: {previous_results.get('analysis', {})}
             
-            Include:
-            1. One independent claim covering the core invention
-            2. 2-4 dependent claims with specific limitations
-            3. Clear, precise language
-            4. Proper patent claim structure
+            Requirements:
+            - 独立权利要求：限定核心技术特征，包含前序部分+特征部分（采用“其特征在于/包括”结构），避免结果性限定；
+            - 从属权利要求：逐项增加技术特征、参数范围、具体部件关系；
+            - 术语统一、避免功能性泛化；
+            - 每项以句号结束。
             
-            Format each claim as a numbered list.
+            Output numbered list.
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -635,10 +693,17 @@ class WriterAgent(BaseAgent):
             logger.error(f"Error calculating writing quality: {e}")
             return 7.0  # Default fallback score
             
-    async def _write_patent_claims(self, task_data: Dict[str, Any]) -> TaskResult:
+    async def _write_patent_claims_task(self, task_data: Dict[str, Any]) -> TaskResult:
         """Write patent claims specifically"""
-        # Implementation for claim writing
-        pass
+        try:
+            topic = task_data.get("topic")
+            description = task_data.get("description")
+            previous_results = task_data.get("previous_results", {})
+            claims = await self._write_patent_claims_section(topic, description, previous_results)
+            return TaskResult(success=True, data={"claims": claims})
+        except Exception as e:
+            logger.error(f"Error in claim writing task: {e}")
+            return TaskResult(success=False, data={}, error_message=str(e))
         
     async def _write_technical_description(self, task_data: Dict[str, Any]) -> TaskResult:
         """Write technical description"""

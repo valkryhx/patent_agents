@@ -51,7 +51,8 @@ class DiscusserAgent(BaseAgent):
     async def start(self):
         """Start the discusser agent"""
         await super().start()
-        self.google_a2a_client = await get_google_a2a_client()
+        from ..telemetry import A2ALoggingProxy
+        self.google_a2a_client = A2ALoggingProxy(self.name, await get_google_a2a_client(), self)
         logger.info("Discusser Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
@@ -186,50 +187,36 @@ class DiscusserAgent(BaseAgent):
                                         previous_results: Dict[str, Any]) -> List[str]:
         """Generate discussion agenda based on topic and previous results"""
         try:
-            # Use Google A2A to generate discussion agenda
+            # Use Google/GLM A2A to generate discussion agenda
             prompt = f"""
-            Generate a discussion agenda for an innovation brainstorming session:
-            
-            Topic: {topic}
-            Description: {description}
-            
-            Previous Results: {previous_results}
-            
-            Create 5-7 agenda items that will help explore:
-            1. Technical challenges and solutions
-            2. Alternative approaches
-            3. Innovation opportunities
-            4. Risk mitigation strategies
-            5. Implementation considerations
-            
-            Return only the agenda items, one per line.
-            """
-            
+针对主题：{topic}
+制定一次撰写专利交底书的深度讨论议程（中文），强调：
+- 每章目标字数≥2000；
+- 每章需包含：mermaid图、关键公式、伪代码；
+- 重点覆盖：章节小节、图示与公式规划、伪代码层级与接口约定；不限定具体领域实现；
+- 生成并细化“章节-小节-要点-产出物（图/公式/伪代码）”。
+仅输出议程要点清单（6-8条）。
+"""
             response = await self.google_a2a_client._generate_response(prompt)
-            
-            # Parse response to extract agenda items
-            # This is a simplified approach
+            # Simplified agenda stub
             agenda_items = [
-                "Technical feasibility assessment and challenges",
-                "Alternative implementation approaches",
-                "Innovation differentiation opportunities",
-                "Risk identification and mitigation strategies",
-                "Implementation roadmap and timeline",
-                "Resource requirements and constraints",
-                "Success criteria and evaluation metrics"
+                "确定章节结构与每章的mermaid图/公式/伪代码清单",
+                "背景技术与最近似方案梳理（传统RAG流程图/公式/伪代码）",
+                "发明内容/系统架构（证据图增强RAG架构图与公式）",
+                "方法流程细化（Who/What/When/Where/How + 伪代码）",
+                "子图选择与验证算法（公式+伪代码）",
+                "图感知解码与引用约束（公式+伪代码）",
+                "事后验证与反馈闭环（指标与更新公式）",
+                "权利要求覆盖点与从属细化"
             ]
-            
             return agenda_items
-            
         except Exception as e:
             logger.error(f"Error generating discussion agenda: {e}")
-            # Return default agenda if AI generation fails
             return [
-                "Review current understanding",
-                "Identify challenges",
-                "Brainstorm solutions",
-                "Evaluate alternatives",
-                "Define next steps"
+                "章节结构与要点",
+                "发明内容/系统架构",
+                "方法流程与算法",
+                "权利要求要点"
             ]
             
     async def _conduct_discussion(self, session: DiscussionSession, 
@@ -243,34 +230,33 @@ class DiscusserAgent(BaseAgent):
                 "disagreements": [],
                 "next_steps": []
             }
-            
-            # Simulate discussion for each agenda item
+            # Enforce Chapter 5 planning
+            planning_prompt = """
+请给出“具体实施方式（第五章）”的章节规划：
+- 至少4个子章节（A/B/C/D…），每个子章节≥3000字；
+- 每个子章节的产出物清单：mermaid图>=1、公式>=3段、伪代码>=1段（≥50行）；
+- 以清单形式输出：子章节标题、功能点视角、图/公式/伪代码要点。
+仅输出规划清单。
+"""
+            _ = await self.google_a2a_client._generate_response(planning_prompt)
+            # Simulate discussion
             for agenda_item in session.agenda:
                 logger.info(f"Discussing agenda item: {agenda_item}")
-                
-                # Generate insights for this agenda item
                 insights = await self._generate_insights_for_agenda_item(
                     agenda_item, session.topic, previous_results
                 )
                 discussion_outcome["key_insights"].extend(insights)
-                
-                # Generate alternative approaches
                 alternatives = await self._generate_alternative_approaches(
                     agenda_item, session.topic
                 )
                 discussion_outcome["alternative_approaches"].extend(alternatives)
-                
-                # Simulate consensus building
                 consensus = await self._build_consensus_for_item(agenda_item, insights)
                 if consensus:
                     discussion_outcome["consensus_points"].append(consensus)
-                    
-            # Generate next steps
+            # Next steps
             next_steps = await self._generate_next_steps(discussion_outcome)
             discussion_outcome["next_steps"] = next_steps
-            
             return discussion_outcome
-            
         except Exception as e:
             logger.error(f"Error conducting discussion: {e}")
             raise
