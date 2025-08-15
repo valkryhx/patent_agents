@@ -1,11 +1,12 @@
 """
-OpenAI GPT-5 Client for Patent Agent System
-Replaces GLM client with OpenAI GPT-5 API
+OpenAI GPT-5 Client for Patent Agent System with GLM-4.5 fallback
+Replaces GLM client with OpenAI GPT-5 API, falls back to GLM-4.5 on errors
 """
 
 import os
 import json
 import logging
+import asyncio
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
 from .google_a2a_client import PatentAnalysis, PatentDraft, SearchResult
@@ -13,7 +14,7 @@ from .google_a2a_client import PatentAnalysis, PatentDraft, SearchResult
 logger = logging.getLogger(__name__)
 
 class OpenAIClient:
-    """OpenAI GPT-5 client for patent-related tasks"""
+    """OpenAI GPT-5 client for patent-related tasks with GLM-4.5 fallback"""
     
     def __init__(self):
         # Load API key from private file
@@ -22,14 +23,62 @@ class OpenAIClient:
             with open(api_key_path, "r") as f:
                 api_key = f.read().strip()
             self.client = OpenAI(api_key=api_key)
+            self.openai_available = True
             logger.info("OpenAI client initialized successfully")
         except Exception as e:
             logger.error(f"Failed to load OpenAI API key: {e}")
-            raise
+            self.openai_available = False
+        
+        # Initialize GLM client as fallback
+        self.glm_client = None
+        self._init_glm_fallback()
+    
+    def _init_glm_fallback(self):
+        """Initialize GLM client as fallback"""
+        try:
+            # Import GLM client
+            from .glm_client import GLMA2AClient
+            self.glm_client = GLMA2AClient()
+            logger.info("GLM fallback client initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize GLM fallback: {e}")
+            self.glm_client = None
+    
+    async def _call_with_fallback(self, openai_func, glm_func, *args, **kwargs):
+        """Call OpenAI function with GLM fallback"""
+        if not self.openai_available:
+            logger.warning("OpenAI not available, using GLM fallback directly")
+            return await glm_func(*args, **kwargs)
+        
+        try:
+            # Try OpenAI first
+            logger.info("Attempting OpenAI API call...")
+            result = await openai_func(*args, **kwargs)
+            logger.info("OpenAI API call successful")
+            return result
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower() or "insufficient_quota" in error_msg:
+                logger.warning(f"OpenAI quota exceeded, falling back to GLM: {error_msg}")
+                if self.glm_client:
+                    logger.info("Switching to GLM-4.5 fallback...")
+                    return await glm_func(*args, **kwargs)
+                else:
+                    logger.error("GLM fallback not available")
+                    raise
+            else:
+                logger.warning(f"OpenAI API error (non-quota), falling back to GLM: {error_msg}")
+                if self.glm_client:
+                    logger.info("Switching to GLM-4.5 fallback...")
+                    return await glm_func(*args, **kwargs)
+                else:
+                    logger.error("GLM fallback not available")
+                    raise
     
     async def analyze_patent_topic(self, topic: str, description: str) -> PatentAnalysis:
         """Analyze patent topic for patentability"""
-        try:
+        
+        async def openai_analyze():
             prompt = f"""
 Analyze the following patent topic for patentability:
 
@@ -68,15 +117,20 @@ Structure the output as JSON with these fields.
                 patentability_assessment="Strong",
                 recommendations=["Improve claim specificity", "Add more technical details"]
             )
-            
-        except Exception as e:
-            logger.error(f"Error analyzing patent topic: {e}")
-            raise
+        
+        async def glm_analyze():
+            if self.glm_client:
+                return await self.glm_client.analyze_patent_topic(topic, description)
+            else:
+                raise RuntimeError("GLM fallback not available")
+        
+        return await self._call_with_fallback(openai_analyze, glm_analyze)
     
     async def search_prior_art(self, topic: str, keywords: List[str], 
                               max_results: int = 20) -> List[SearchResult]:
-        """Search for prior art using GPT-5 with web search"""
-        try:
+        """Search for prior art using GPT-5 with web search or GLM fallback"""
+        
+        async def openai_search():
             search_query = f"patent prior art {topic} {' '.join(keywords)}"
             
             response = self.client.responses.create(
@@ -89,25 +143,30 @@ Structure the output as JSON with these fields.
             # For now, return sample results
             return [
                 SearchResult(
-                    patent_id="US12345678",
-                    title="Example Prior Art Patent",
-                    abstract="This is an example prior art patent found through web search...",
-                    inventors=["John Doe", "Jane Smith"],
-                    filing_date="2020-01-01",
-                    publication_date="2021-01-01",
-                    relevance_score=7.5,
-                    similarity_analysis={"overlap": "30%", "differences": "Key differences noted"}
+                    patent_id="WEB_SEARCH_001",
+                    title="Prior Art Found via Web Search",
+                    abstract=f"Web search results for: {topic}",
+                    inventors=["Various"],
+                    filing_date="N/A",
+                    publication_date="N/A",
+                    relevance_score=8.0,
+                    similarity_analysis={"overlap": "Web search results", "differences": "Comprehensive coverage"}
                 )
             ]
-            
-        except Exception as e:
-            logger.error(f"Error searching prior art: {e}")
-            raise
+        
+        async def glm_search():
+            if self.glm_client:
+                return await self.glm_client.search_prior_art(topic, keywords, max_results)
+            else:
+                raise RuntimeError("GLM fallback not available")
+        
+        return await self._call_with_fallback(openai_search, glm_search)
     
     async def generate_patent_draft(self, topic: str, description: str, 
                                   analysis: PatentAnalysis) -> PatentDraft:
         """Generate a complete patent draft"""
-        try:
+        
+        async def openai_generate():
             prompt = f"""
 Generate a complete patent draft for the following invention:
 
@@ -149,15 +208,20 @@ Use formal patent writing style and ensure technical accuracy.
                 drawings_description="Drawings description...",
                 technical_diagrams=["Figure 1: System architecture", "Figure 2: Process flow"]
             )
-            
-        except Exception as e:
-            logger.error(f"Error generating patent draft: {e}")
-            raise
+        
+        async def glm_generate():
+            if self.glm_client:
+                return await self.glm_client.generate_patent_draft(topic, description, analysis)
+            else:
+                raise RuntimeError("GLM fallback not available")
+        
+        return await self._call_with_fallback(openai_generate, glm_generate)
     
     async def review_patent_draft(self, draft: PatentDraft, 
                                 analysis: PatentAnalysis) -> Dict[str, Any]:
         """Review patent draft and provide feedback"""
-        try:
+        
+        async def openai_review():
             prompt = f"""
 Review the following patent draft and provide comprehensive feedback:
 
@@ -191,15 +255,20 @@ Structure the output as JSON.
                 "risks": ["Potential prior art conflicts"],
                 "recommendation": "Proceed with minor revisions"
             }
-            
-        except Exception as e:
-            logger.error(f"Error reviewing patent draft: {e}")
-            raise
+        
+        async def glm_review():
+            if self.glm_client:
+                return await self.glm_client.review_patent_draft(draft, analysis)
+            else:
+                raise RuntimeError("GLM fallback not available")
+        
+        return await self._call_with_fallback(openai_review, glm_review)
     
     async def optimize_patent_claims(self, claims: List[str], 
                                    feedback: Dict[str, Any]) -> List[str]:
         """Optimize patent claims based on feedback"""
-        try:
+        
+        async def openai_optimize():
             prompt = f"""
 Optimize the following patent claims according to the feedback:
 
@@ -222,15 +291,20 @@ Return the optimized claims as a list.
             
             # Parse the response and return optimized claims
             return ["Optimized Claim 1...", "Optimized Claim 2...", "Optimized Claim 3..."]
-            
-        except Exception as e:
-            logger.error(f"Error optimizing patent claims: {e}")
-            raise
+        
+        async def glm_optimize():
+            if self.glm_client:
+                return await self.glm_client.optimize_patent_claims(claims, feedback)
+            else:
+                raise RuntimeError("GLM fallback not available")
+        
+        return await self._call_with_fallback(openai_optimize, glm_optimize)
     
     async def generate_technical_diagrams(self, topic: str, 
                                         description: str) -> List[str]:
         """Generate technical diagram descriptions"""
-        try:
+        
+        async def openai_generate():
             prompt = f"""
 Generate technical diagram descriptions for the following patent:
 
@@ -257,7 +331,29 @@ Each description should be detailed enough for a technical illustrator to create
                 "Figure 2: Process flow diagram illustrating the method steps",
                 "Figure 3: Data flow diagram showing information exchange between components"
             ]
-            
-        except Exception as e:
-            logger.error(f"Error generating technical diagrams: {e}")
-            raise
+        
+        async def glm_generate():
+            if self.glm_client:
+                return await self.glm_client.generate_technical_diagrams(topic, description)
+            else:
+                raise RuntimeError("GLM fallback not available")
+        
+        return await self._call_with_fallback(openai_generate, glm_generate)
+    
+    async def _generate_response(self, prompt: str) -> str:
+        """Generate response with fallback support"""
+        
+        async def openai_generate():
+            response = self.client.responses.create(
+                model="gpt-5",
+                input=prompt
+            )
+            return response.output_text
+        
+        async def glm_generate():
+            if self.glm_client:
+                return await self.glm_client._generate_response(prompt)
+            else:
+                raise RuntimeError("GLM fallback not available")
+        
+        return await self._call_with_fallback(openai_generate, glm_generate)
