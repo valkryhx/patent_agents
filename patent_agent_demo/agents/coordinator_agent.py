@@ -260,10 +260,12 @@ class CoordinatorAgent(BaseAgent):
         """Override status handler to catch completion events and advance workflow"""
         try:
             content = message.content or {}
-            if content.get("status") == "completed" and content.get("task_id") and "_stage_" in content.get("task_id"):
-                task_id = content.get("task_id")
+            task_id = content.get("task_id")
+            logger.info(f"STATUS RECV from={message.sender} status={content.get('status')} task_id={task_id}")
+            if task_id and "_stage_" in task_id and (content.get("status") == "completed" or content.get("success") is not None):
                 result = content.get("result", {})
                 workflow_id, stage_index_str = task_id.split("_stage_")
+                logger.info(f"STAGE COMPLETE parsed workflow={workflow_id} stage={stage_index_str}")
                 await self._handle_stage_completion(workflow_id, int(stage_index_str), result)
             else:
                 # fallback to base for agent status updates
@@ -316,7 +318,7 @@ class CoordinatorAgent(BaseAgent):
             stage.result = result
             workflow.results[f"stage_{stage_index}"] = {"result": result}
             logger.info(f"Stage {stage_index} completed for workflow {workflow_id}")
-            
+            logger.info(f"ADVANCE from_stage={stage.stage_name} index={stage_index}")
             # If writer stage completed, start review/rewriter iterative loop
             stage_name = stage.stage_name
             if stage_name == "Patent Drafting":
@@ -346,6 +348,8 @@ class CoordinatorAgent(BaseAgent):
             if stage_index == len(workflow.stages) - 1:
                 await self._complete_workflow(workflow_id)
             else:
+                next_stage = workflow.stages[stage_index + 1]
+                logger.info(f"EXECUTE_NEXT index={stage_index+1} stage={next_stage.stage_name} agent={next_stage.agent_name}")
                 await self._execute_workflow_stage(workflow_id, stage_index + 1)
          
         except Exception as e:

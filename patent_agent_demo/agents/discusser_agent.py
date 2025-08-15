@@ -42,7 +42,7 @@ class DiscusserAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             name="discusser_agent",
-            capabilities=["discussion_facilitation", "brainstorming", "consensus_building", "idea_refinement"]
+            capabilities=["innovation_discussion", "discussion_facilitation", "brainstorming", "consensus_building", "idea_refinement"]
         )
         self.google_a2a_client = None
         self.active_sessions: Dict[str, DiscussionSession] = {}
