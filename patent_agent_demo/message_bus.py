@@ -83,11 +83,16 @@ class MessageBusBroker:
     async def send_message(self, message: Message):
         """Send a message to the specific agent's queue"""
         recipient = message.recipient
+        logger.info(f"Attempting to send message to {recipient}")
+        logger.info(f"Available recipients: {list(self.message_queues.keys())}")
+        
         if recipient in self.message_queues:
             await self.message_queues[recipient].put(message)
             logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
+            logger.info(f"Queue size for {recipient}: {self.message_queues[recipient].qsize()}")
         else:
             logger.warning(f"Recipient {recipient} not found, message dropped")
+            logger.warning(f"Available recipients: {list(self.message_queues.keys())}")
             
     async def broadcast_message(self, message: Message):
         """Broadcast a message to all agents"""
