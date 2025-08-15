@@ -6,6 +6,7 @@ Drafts patent applications and technical documentation
 import asyncio
 import logging
 from typing import Dict, Any, List
+import os
 from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
@@ -107,15 +108,31 @@ class WriterAgent(BaseAgent):
                 target_audience="patent_examiners",
                 writing_style="technical_legal"
             )
+
+            # Prepare progress output directory for incremental saving
+            workflow_id = task_data.get("workflow_id", "") or ""
+            wid8 = (workflow_id[:8] if isinstance(workflow_id, str) and workflow_id else "noid")
+            topic_str = (topic or "patent").replace(" ", "_")
+            progress_dir = f"/workspace/output/progress/{topic_str}_{wid8}"
+            try:
+                os.makedirs(progress_dir, exist_ok=True)
+            except Exception:
+                pass
             
             # Generate patent draft using Google A2A
             analysis_input = self._extract_analysis(previous_results)
             patent_draft = await self.google_a2a_client.generate_patent_draft(
                 topic, description, analysis_input
             )
-            
+
+            # Save initial skeleton
+            try:
+                self._write_progress(progress_dir, "00_title_abstract.md", "标题与摘要", f"# {getattr(patent_draft, 'title', '')}\n\n{getattr(patent_draft, 'abstract', '')}\n")
+            except Exception:
+                pass
+
             # Write detailed sections
-            detailed_sections = await self._write_detailed_sections(writing_task, patent_draft)
+            detailed_sections = await self._write_detailed_sections(writing_task, patent_draft, progress_dir)
             
             # Generate technical diagrams
             technical_diagrams = await self.google_a2a_client.generate_technical_diagrams(description)
@@ -171,7 +188,8 @@ class WriterAgent(BaseAgent):
             )
             
     async def _write_detailed_sections(self, writing_task: WritingTask, 
-                                     patent_draft: PatentDraft) -> Dict[str, str]:
+                                     patent_draft: PatentDraft,
+                                     progress_dir: str) -> Dict[str, str]:
         """Write detailed sections of the patent application with diagrams and pseudo-code"""
         try:
             detailed_sections = {}
@@ -186,7 +204,11 @@ class WriterAgent(BaseAgent):
   * 预计字数要求：每章≥2000字。
 仅输出分章要点清单。
 """
-            _ = await self.google_a2a_client._generate_response(outline_prompt)
+            outline_text = await self.google_a2a_client._generate_response(outline_prompt)
+            try:
+                self._write_progress(progress_dir, "01_outline.md", "撰写大纲", outline_text)
+            except Exception:
+                pass
             # Background
             background_prompt = f"""
 撰写“背景技术”（中文，≥2000字），主题：{writing_task.topic}
@@ -200,6 +222,10 @@ class WriterAgent(BaseAgent):
 """
             background = await self.google_a2a_client._generate_response(background_prompt)
             detailed_sections["background"] = background
+            try:
+                self._write_progress(progress_dir, "02_background.md", "背景技术", background)
+            except Exception:
+                pass
             # Summary
             summary_prompt = f"""
 撰写“发明内容/技术方案-总述”（中文，≥2000字），主题：{writing_task.topic}
@@ -210,6 +236,10 @@ class WriterAgent(BaseAgent):
 """
             summary = await self.google_a2a_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
+            try:
+                self._write_progress(progress_dir, "03_summary.md", "发明内容/技术方案-总述", summary)
+            except Exception:
+                pass
             self.agent_logger.info("DETAIL_SECTION start outline/background/summary")
             # Detailed description via subchapter generation
             subchapters = [
@@ -230,10 +260,19 @@ class WriterAgent(BaseAgent):
                 text = await self.google_a2a_client._generate_response(sprompt)
                 self.agent_logger.info(f"SUBCHAPTER {sc['id']} end: chars={len(text)}")
                 desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
+                try:
+                    filename = f"05_desc_{sc['id']}_{sc['title']}.md".replace(" ", "_")
+                    self._write_progress(progress_dir, filename, f"具体实施方式-子章节{sc['id']}：{sc['title']}", text)
+                except Exception:
+                    pass
             # Assemble detailed description
             detailed_description = ("\n".join(desc_parts)).strip()
             self.agent_logger.info(f"DETAIL_SECTION assembled length={len(detailed_description)}")
             detailed_sections["detailed_description"] = detailed_description
+            try:
+                self._write_progress(progress_dir, "05_desc_all.md", "具体实施方式（合并）", detailed_description)
+            except Exception:
+                pass
             # Claims
             claims_prompt = f"""
 撰写“权利要求书”（中文，CN风格）：
@@ -244,6 +283,10 @@ class WriterAgent(BaseAgent):
 """
             claims_text = await self.google_a2a_client._generate_response(claims_prompt)
             detailed_sections["claims"] = claims_text.splitlines()
+            try:
+                self._write_progress(progress_dir, "06_claims.md", "权利要求书", claims_text)
+            except Exception:
+                pass
             # Drawings
             drawings_prompt = f"""
 撰写“附图说明”（中文，≥2000字）：
@@ -253,6 +296,10 @@ class WriterAgent(BaseAgent):
 """
             drawings_description = await self.google_a2a_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
+            try:
+                self._write_progress(progress_dir, "07_drawings.md", "附图说明", drawings_description)
+            except Exception:
+                pass
             return detailed_sections
         except Exception as e:
             logger.error(f"Error writing detailed sections: {e}")
@@ -812,3 +859,19 @@ class WriterAgent(BaseAgent):
             if cand:
                 return _coerce(cand)
         return _coerce({})
+
+    def _write_progress(self, progress_dir: str, filename: str, section_title: str, body: str) -> None:
+        """Append incremental content to a progress file and write a section file."""
+        try:
+            os.makedirs(progress_dir, exist_ok=True)
+        except Exception:
+            pass
+        # Write individual section file
+        path = os.path.join(progress_dir, filename)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(f"# {section_title}\n\n{body.strip()}\n")
+        # Append to combined progress.md
+        progress_md = os.path.join(progress_dir, "progress.md")
+        with open(progress_md, "a", encoding="utf-8") as f:
+            f.write(f"\n\n## {section_title}\n\n{body.strip()}\n")
+        self.agent_logger.info(f"WROTE_PROGRESS dir={progress_dir} file={filename} len={len(body or '')}")
