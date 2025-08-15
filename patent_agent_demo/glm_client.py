@@ -84,8 +84,8 @@ class GLMA2AClient:
                 headers=headers,
                 method="POST",
             )
-            # Some environments need an unverified context; keep default for safety
-            with urllib.request.urlopen(req, timeout=480) as resp:
+            # 优化1: 减少超时时间从480秒到120秒，提高响应速度
+            with urllib.request.urlopen(req, timeout=120) as resp:
                 body = resp.read().decode("utf-8")
                 data = json.loads(body)
                 # OpenAI-style response
