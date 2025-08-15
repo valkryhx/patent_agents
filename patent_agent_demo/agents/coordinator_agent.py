@@ -477,6 +477,43 @@ class CoordinatorAgent(BaseAgent):
                 md_path = f"/output/{workflow.topic.replace(' ', '_')}_{workflow_id[:8]}.md"
                 with open(md_path, "w", encoding="utf-8") as f:
                     f.write(f"# {workflow.topic}\n\n")
+                    # Try to compile final patent draft into a readable document
+                    try:
+                        draft = self._get_current_draft(workflow)
+                    except Exception:
+                        draft = None
+                    if draft:
+                        f.write("## 专利交底书\n\n")
+                        title = getattr(draft, "title", "") or "Generated Patent Title"
+                        f.write(f"### 标题\n\n{title}\n\n")
+                        abstract = getattr(draft, "abstract", "")
+                        if abstract:
+                            f.write(f"### 摘要\n\n{abstract}\n\n")
+                        background = getattr(draft, "background", "")
+                        if background:
+                            f.write(f"### 背景技术\n\n{background}\n\n")
+                        summary = getattr(draft, "summary", "")
+                        if summary:
+                            f.write(f"### 发明内容/技术方案\n\n{summary}\n\n")
+                        detail = getattr(draft, "detailed_description", "")
+                        if detail:
+                            f.write(f"### 具体实施方式\n\n{detail}\n\n")
+                        claims = getattr(draft, "claims", []) or []
+                        if claims:
+                            f.write("### 权利要求书\n\n")
+                            for idx, cl in enumerate(claims, 1):
+                                f.write(f"{idx}. {cl}\n")
+                            f.write("\n")
+                        drawings = getattr(draft, "drawings_description", "")
+                        if drawings:
+                            f.write(f"### 附图说明\n\n{drawings}\n\n")
+                        diagrams = getattr(draft, "technical_diagrams", []) or []
+                        if diagrams:
+                            f.write("### 技术示意图说明\n\n")
+                            for d in diagrams:
+                                f.write(f"- {d}\n")
+                            f.write("\n")
+                    # Append stage-wise raw results for traceability
                     for i, stage in enumerate(workflow.stages):
                         f.write(f"## Stage {i+1}: {stage.stage_name}\n\n")
                         if stage.result:

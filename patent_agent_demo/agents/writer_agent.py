@@ -210,25 +210,25 @@ class WriterAgent(BaseAgent):
             summary = await self.google_a2a_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
             # Detailed description via subchapter generation
-			subchapters = [
-				{"id": "A", "title": "数据获取与预处理"},
-				{"id": "B", "title": "证据构建与关系建模"},
-				{"id": "C", "title": "生成与约束解码"},
-				{"id": "D", "title": "验证与反馈闭环"},
-			]
-			desc_parts: List[str] = []
-			for sc in subchapters:
-				sprompt = f"""
+            subchapters = [
+                {"id": "A", "title": "数据获取与预处理"},
+                {"id": "B", "title": "证据构建与关系建模"},
+                {"id": "C", "title": "生成与约束解码"},
+                {"id": "D", "title": "验证与反馈闭环"},
+            ]
+            desc_parts: List[str] = []
+            for sc in subchapters:
+                sprompt = f"""
 撰写“具体实施方式-子章节{sc['id']}：{sc['title']}”（中文，≥3000字），主题：{writing_task.topic}
 - 至少包含：1个mermaid图；3个算法公式（Markdown/LaTeX）；1段Python风格伪代码（≥50行）。
 - 描述Who/What/When/Where/How的实施步骤；列出输入/输出/参数与边界条件；说明与其它子章节接口。
 - 保持术语一致、避免跨章重复。严格输出该子章节正文。
 """
-				text = await self.google_a2a_client._generate_response(sprompt)
-				desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
-			# Assemble detailed description
-			detailed_description = ("\n".join(desc_parts)).strip()
-			detailed_sections["detailed_description"] = detailed_description
+                text = await self.google_a2a_client._generate_response(sprompt)
+                desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
+            # Assemble detailed description
+            detailed_description = ("\n".join(desc_parts)).strip()
+            detailed_sections["detailed_description"] = detailed_description
             # Claims
             claims_prompt = f"""
 撰写“权利要求书”（中文，CN风格）：
