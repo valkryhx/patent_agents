@@ -60,7 +60,7 @@ $env:OPENAI_API_KEY="your_openai_api_key_here"
 set OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-#### Option 2: GLM-4.5 (Fallback)
+#### Option 2: GLM-4.5-flash (Fallback)
 ```bash
 # Linux/macOS
 export ZHIPUAI_API_KEY="your_glm_api_key_here"

@@ -1,6 +1,6 @@
 """
-OpenAI GPT-5 Client for Patent Agent System with GLM-4.5 fallback
-Replaces GLM client with OpenAI GPT-5 API, falls back to GLM-4.5 on errors
+OpenAI GPT-5 Client for Patent Agent System with GLM-4.5-flash fallback
+Replaces GLM client with OpenAI GPT-5 API, falls back to GLM-4.5-flash on errors
 """
 
 import os
@@ -14,7 +14,7 @@ from .google_a2a_client import PatentAnalysis, PatentDraft, SearchResult
 logger = logging.getLogger(__name__)
 
 class OpenAIClient:
-    """OpenAI GPT-5 client for patent-related tasks with GLM-4.5 fallback"""
+    """OpenAI GPT-5 client for patent-related tasks with GLM-4.5-flash fallback"""
     
     def __init__(self):
         # Load API key from private file
@@ -29,7 +29,7 @@ class OpenAIClient:
             logger.error(f"Failed to load OpenAI API key: {e}")
             self.openai_available = False
         
-        # Initialize GLM client as fallback
+        # Initialize GLM-4.5-flash client as fallback
         self.glm_client = None
         self._init_glm_fallback()
     
@@ -49,7 +49,7 @@ class OpenAIClient:
         if not self.openai_available:
             logger.warning("OpenAI not available, using GLM fallback directly")
             if self.glm_client:
-                logger.info("Using GLM-4.5 fallback directly")
+                logger.info("Using GLM-4.5-flash fallback directly")
                 return await glm_func(*args, **kwargs)
             else:
                 logger.error("GLM fallback not available")
@@ -65,7 +65,7 @@ class OpenAIClient:
             error_msg = str(e)
             logger.warning(f"OpenAI API error, falling back to GLM: {error_msg}")
             if self.glm_client:
-                logger.info("Switching to GLM-4.5 fallback...")
+                logger.info("Switching to GLM-4.5-flash fallback...")
                 return await glm_func(*args, **kwargs)
             else:
                 logger.error("GLM fallback not available")

@@ -11,7 +11,7 @@ from .google_a2a_client import PatentAnalysis, PatentDraft, SearchResult
 
 GLM_API_BASE = "https://open.bigmodel.cn/api/paas/v4/"
 GLM_CHAT_COMPLETIONS = GLM_API_BASE + "chat/completions"
-GLM_MODEL = "glm-4.5"
+GLM_MODEL = "glm-4.5-flash"
 
 _PRIVATE_KEY_PATHS = [
     "/workspace/glm_api_key",              # preferred path with GLM_API_KEY=...
@@ -58,7 +58,7 @@ def _load_glm_key() -> Optional[str]:
 
 
 class GLMA2AClient:
-    """OpenAI-compatible HTTP client for GLM-4.5."""
+    """OpenAI-compatible HTTP client for GLM-4.5-flash."""
 
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = (api_key or _load_glm_key())
@@ -66,7 +66,7 @@ class GLMA2AClient:
             raise ValueError("ZHIPUAI_API_KEY is required and fallback is disabled")
 
     async def _generate_response(self, prompt: str) -> str:
-        """Generate response using GLM-4.5 API with OpenAI-compatible format"""
+        """Generate response using GLM-4.5-flash API with OpenAI-compatible format"""
         payload = {
             "model": GLM_MODEL,
             "messages": [
@@ -89,7 +89,7 @@ class GLMA2AClient:
                 headers=headers,
                 method="POST",
             )
-            # 优化1: 增加超时时间到300秒，提高GLM-4.5的响应成功率
+            # 优化1: 增加超时时间到300秒，提高GLM-4.5-flash的响应成功率
             with urllib.request.urlopen(req, timeout=300) as resp:
                 body = resp.read().decode("utf-8")
                 data = json.loads(body)
@@ -129,7 +129,7 @@ technical merit, commercial potential, overall assessment, recommendations. Stru
 
     async def search_prior_art(self, topic: str, keywords: List[str],
                               max_results: int = 20) -> List[SearchResult]:
-        """Search for prior art using GLM-4.5"""
+        """Search for prior art using GLM-4.5-flash"""
         prompt = f"""
 Search for prior art related to the following patent topic:
 
