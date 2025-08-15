@@ -14,22 +14,44 @@ GLM_CHAT_COMPLETIONS = GLM_API_BASE + "chat/completions"
 GLM_MODEL = "glm-4.5-flash"
 
 _PRIVATE_KEY_PATHS = [
-    "/workspace/.private/GLM_API_KEY",
+    "/workspace/glm_api_key",              # preferred path with GLM_API_KEY=...
+    "/workspace/.private/GLM_API_KEY",     # legacy path with raw key or KV
     os.path.expanduser("~/.private/GLM_API_KEY"),
 ]
 
 
+def _parse_key_text(text: str) -> Optional[str]:
+    if not text:
+        return None
+    for line in text.splitlines():
+        s = line.strip()
+        if not s:
+            continue
+        # Accept formats: GLM_API_KEY=..., ZHIPUAI_API_KEY=..., or raw key
+        if "=" in s:
+            k, v = s.split("=", 1)
+            k = k.strip().upper()
+            v = v.strip()
+            if k in ("GLM_API_KEY", "ZHIPUAI_API_KEY", "API_KEY") and v:
+                return v
+        else:
+            # raw key fallback
+            return s
+    return None
+
+
 def _load_glm_key() -> Optional[str]:
-    key = os.getenv("ZHIPUAI_API_KEY")
-    if key:
-        return key.strip()
+    # Env has priority
+    env_key = os.getenv("ZHIPUAI_API_KEY") or os.getenv("GLM_API_KEY")
+    if env_key:
+        return env_key.strip()
     for p in _PRIVATE_KEY_PATHS:
         try:
             if os.path.exists(p):
                 with open(p, "r", encoding="utf-8") as f:
-                    content = f.read().strip()
-                    if content:
-                        return content
+                    parsed = _parse_key_text(f.read())
+                    if parsed:
+                        return parsed
         except Exception:
             pass
     return None
