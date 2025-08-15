@@ -182,7 +182,7 @@ class MessageBusBroker:
         return {
             "total_agents": len(self.agents),
             "active_agents": len([a for a in self.agents.values() if a.status != AgentStatus.IDLE]),
-            "message_queue_size": self.message_queue.qsize(),
+            "message_queue_size": sum(q.qsize() for q in self.message_queues.values()),
             "agents": {name: asdict(info) for name, info in self.agents.items()}
         }
 
