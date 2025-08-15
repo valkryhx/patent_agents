@@ -9892,3 +9892,37 @@ Based on the topic "Evidence Graph Enhanced Retrieval-Augmented Generation (RAG)
 2025-08-15 13:38:58 INFO telemetry: AGENT_API_OUTPUT agent=writer_agent method=generate_patent_draft preview=
 PatentDraft(title='Generated Patent Title', abstract='This is a generated abstract...', background='Background section...', summary='Summary of invention...', detailed_description='Detailed description...', claims=['Claim 1...', 'Claim 2...', 'Claim 3...'], drawings_description='Drawings description...', technical_diagrams=['Figure 1 description', 'Figure 2 description'])
 2025-08-15 13:38:58 INFO agent.writer_agent: WROTE_PROGRESS dir=/workspace/output/progress/证据图增强的检索增强RAG系统_71912a7e file=00_title_abstract.md len=58
+2025-08-15 13:46:59 ERROR patent_agent_demo.agents.writer_agent: Error writing detailed sections: The read operation timed out
+2025-08-15 13:46:59 ERROR patent_agent_demo.agents.writer_agent: Error drafting patent application: The read operation timed out
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Message sent: status from writer_agent to coordinator_agent
+2025-08-15 13:46:59 INFO agent.writer_agent: COMPLETE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_3 success=False time=605.36s
+2025-08-15 13:46:59 INFO agent.coordinator_agent: RECV id=completion_1e2fc29a-f4a7-4a3a-b465-b13a58dd64a5 type=status from=writer_agent pri=5
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.base_agent: Agent coordinator_agent processing message: status
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Agent coordinator_agent status updated: busy
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: STATUS RECV from=writer_agent status=completed task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_3
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: STAGE COMPLETE parsed workflow=71912a7e-9427-4e3a-b66a-ca5d084b4e83 stage=3
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: Stage 3 completed for workflow 71912a7e-9427-4e3a-b66a-ca5d084b4e83
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: ADVANCE from_stage=Patent Drafting index=3
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: Executing stage 4: Quality Review using reviewer_agent
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Message sent: coordination from coordinator_agent to reviewer_agent
+2025-08-15 13:46:59 INFO agent.reviewer_agent: RECV id=5e74cf82-a8b0-471a-b7ca-f72f95cf8285 type=coordination from=coordinator_agent pri=5
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.base_agent: Agent reviewer_agent processing message: coordination
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Agent reviewer_agent status updated: busy
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.base_agent: Agent reviewer_agent executing task: 71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_4
+2025-08-15 13:46:59 INFO agent.reviewer_agent: EXECUTE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_4 type=patent_review meta={'topic': task_data.get('topic')}
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Message sent: status from reviewer_agent to coordinator_agent
+2025-08-15 13:46:59 INFO agent.reviewer_agent: COMPLETE task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_4 success=False time=0.00s
+2025-08-15 13:46:59 INFO agent.coordinator_agent: RECV id=completion_e451fe5a-3cd7-4d1c-94d6-ad89e2adf076 type=status from=reviewer_agent pri=5
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.base_agent: Agent coordinator_agent processing message: status
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Agent coordinator_agent status updated: busy
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: STATUS RECV from=reviewer_agent status=completed task_id=71912a7e-9427-4e3a-b66a-ca5d084b4e83_stage_4
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: STAGE COMPLETE parsed workflow=71912a7e-9427-4e3a-b66a-ca5d084b4e83 stage=4
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: Stage 4 completed for workflow 71912a7e-9427-4e3a-b66a-ca5d084b4e83
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: ADVANCE from_stage=Quality Review index=4
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: EXECUTE_NEXT index=5 stage=Final Rewrite agent=rewriter_agent
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.coordinator_agent: Executing stage 5: Final Rewrite using rewriter_agent
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Message sent: coordination from coordinator_agent to rewriter_agent
+2025-08-15 13:46:59 INFO agent.rewriter_agent: RECV id=ee43eb5e-5d81-4201-ba60-8b6a2668328b type=coordination from=coordinator_agent pri=5
+2025-08-15 13:46:59 INFO patent_agent_demo.agents.base_agent: Agent rewriter_agent processing message: coordination
+2025-08-15 13:46:59 INFO patent_agent_demo.message_bus: Agent rewriter_agent status updated: busy
+2025-08-15 13:46:59 WARNING patent_agent_demo.agents.base_agent: Agent rewriter_agent cannot handle task type: patent_rewrite

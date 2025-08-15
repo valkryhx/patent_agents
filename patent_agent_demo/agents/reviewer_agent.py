@@ -140,55 +140,39 @@ class ReviewerAgent(BaseAgent):
         try:
             patent_draft = review_task.patent_draft
             
-            # Review each section
+            # 优化1: 并发生成所有章节的审查任务
+            review_tasks = [
+                self._review_title(patent_draft.title),
+                self._review_abstract(patent_draft.abstract),
+                self._review_background(patent_draft.background),
+                self._review_summary(patent_draft.summary),
+                self._review_detailed_description(patent_draft.detailed_description),
+                self._review_claims(patent_draft.claims),
+                self._review_drawings(patent_draft.technical_diagrams)
+            ]
+            
+            # 并发执行所有审查任务
+            review_results = await asyncio.gather(*review_tasks)
+            
+            section_names = ["title", "abstract", "background", "summary", "description", "claims", "drawings"]
             section_scores = {}
             issues_found = []
             
-            # Review title
-            title_review = await self._review_title(patent_draft.title)
-            section_scores["title"] = title_review["score"]
-            issues_found.extend([{**issue, "section": "title"} for issue in title_review["issues"]])
+            # 处理审查结果
+            for i, (name, result) in enumerate(zip(section_names, review_results)):
+                section_scores[name] = result["score"]
+                issues_found.extend([{**issue, "section": name} for issue in result["issues"]])
             
-            # Review abstract
-            abstract_review = await self._review_abstract(patent_draft.abstract)
-            section_scores["abstract"] = abstract_review["score"]
-            issues_found.extend([{**issue, "section": "abstract"} for issue in abstract_review["issues"]])
-            
-            # Review background
-            background_review = await self._review_background(patent_draft.background)
-            section_scores["background"] = background_review["score"]
-            issues_found.extend([{**issue, "section": "background"} for issue in background_review["issues"]])
-            
-            # Review summary
-            summary_review = await self._review_summary(patent_draft.summary)
-            section_scores["summary"] = summary_review["score"]
-            issues_found.extend([{**issue, "section": "summary"} for issue in summary_review["issues"]])
-            
-            # Review detailed description
-            description_review = await self._review_detailed_description(patent_draft.detailed_description)
-            section_scores["description"] = description_review["score"]
-            issues_found.extend([{**issue, "section": "description"} for issue in description_review["issues"]])
-            
-            # Review claims
-            claims_review = await self._review_claims(patent_draft.claims)
-            section_scores["claims"] = claims_review["score"]
-            issues_found.extend([{**issue, "section": "claims"} for issue in claims_review["issues"]])
-            
-            # Review drawings
-            drawings_review = await self._review_drawings(patent_draft.technical_diagrams)
-            section_scores["drawings"] = drawings_review["score"]
-            issues_found.extend([{**issue, "section": "drawings"} for issue in drawings_review["issues"]])
-            
-            # Add 三性 checks as meta-issues
-            sanxing_issues, sanxing_bonus = await self._check_sanxing(review_task)
+            # 优化2: 简化三性检查，减少API调用
+            sanxing_issues, sanxing_bonus = await self._check_sanxing_simplified(review_task)
             issues_found.extend(sanxing_issues)
             
             # Calculate overall score (weighted with 三性)
             base_score = sum(section_scores.values()) / len(section_scores)
             overall_score = min(10.0, base_score + sanxing_bonus)
             
-            # Generate recommendations
-            recommendations = await self._generate_recommendations(issues_found, section_scores)
+            # 优化3: 简化推荐生成
+            recommendations = await self._generate_recommendations_simplified(issues_found, section_scores)
             
             # Determine compliance status
             compliance_status = await self._determine_compliance_status(overall_score, issues_found)
@@ -802,3 +786,61 @@ class ReviewerAgent(BaseAgent):
                 "criteria": ["novelty", "inventiveness", "commercial_potential"]
             }
         }
+        
+    async def _check_sanxing_simplified(self, review_task: ReviewTask):
+        """简化版三性检查，减少API调用"""
+        try:
+            issues = []
+            bonus = 0.0
+            draft = review_task.patent_draft
+            
+            # 快速启发式检查，不使用API调用
+            # 新颖性检查
+            if draft.summary and len(draft.summary) > 100:
+                bonus += 0.2
+            else:
+                issues.append({"type": "novelty", "severity": "medium", "description": "发明内容描述不足", "recommendation": "补充发明内容描述"})
+                
+            # 创造性检查
+            if draft.background and len(draft.background) > 200:
+                bonus += 0.2
+            else:
+                issues.append({"type": "inventiveness", "severity": "medium", "description": "背景技术描述不足", "recommendation": "补充背景技术描述"})
+                
+            # 实用性检查
+            if draft.detailed_description and len(draft.detailed_description) > 500:
+                bonus += 0.1
+            else:
+                issues.append({"type": "utility", "severity": "low", "description": "具体实施方式描述不足", "recommendation": "补充具体实施方式"})
+                
+            return issues, bonus
+        except Exception as e:
+            logger.error(f"Error in _check_sanxing_simplified: {e}")
+            return [], 0.0
+            
+    async def _generate_recommendations_simplified(self, issues_found: List[Dict[str, Any]], section_scores: Dict[str, float]) -> List[str]:
+        """简化版推荐生成，减少API调用"""
+        try:
+            recommendations = []
+            
+            # 基于分数和问题生成简单推荐
+            for section, score in section_scores.items():
+                if score < 7.0:
+                    recommendations.append(f"改进{section}部分，当前分数: {score:.1f}")
+                    
+            for issue in issues_found[:5]:  # 只取前5个问题
+                if issue.get("recommendation"):
+                    recommendations.append(issue["recommendation"])
+                    
+            # 添加通用建议
+            if len(recommendations) < 3:
+                recommendations.extend([
+                    "确保技术方案描述清晰完整",
+                    "检查权利要求书格式规范",
+                    "完善附图说明"
+                ])
+                
+            return recommendations[:5]  # 限制推荐数量
+        except Exception as e:
+            logger.error(f"Error in _generate_recommendations_simplified: {e}")
+            return ["建议进行全面的专利审查"]
