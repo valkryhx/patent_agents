@@ -30,7 +30,7 @@ async def monitor_workflow_execution():
         # 启动工作流
         print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 📋 启动专利工作流...")
         workflow_result = await system.execute_workflow(
-            topic="证据图增强的RAG系统",
+            topic="使用证据图来增强RAG的系统",
             description="一种通过构建跨文档证据关系图并进行子图选择驱动生成与验证的RAG系统",
             workflow_type="standard"
         )
