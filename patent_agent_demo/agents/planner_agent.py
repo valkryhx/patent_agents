@@ -99,27 +99,41 @@ class PlannerAgent(BaseAgent):
                 )
                 
             logger.info(f"Creating patent strategy for: {topic}")
+            logger.info(f"Starting patent analysis...")
             
-            # Analyze patent topic using Google A2A
+            # Analyze patent topic using GLM
+            logger.info(f"Calling GLM API for patent analysis...")
             analysis = await self.openai_client.analyze_patent_topic(topic, description)
+            logger.info(f"GLM API call completed successfully")
             
             # Create development strategy
+            logger.info(f"Creating development strategy...")
             strategy = await self._develop_strategy(topic, description, analysis)
+            logger.info(f"Development strategy created")
             
             # Create development phases
+            logger.info(f"Creating development phases...")
             phases = await self._create_development_phases(strategy)
+            logger.info(f"Development phases created")
             
             # Assess risks and competitive landscape
+            logger.info(f"Assessing risks and competitive landscape...")
             risk_assessment = await self._assess_competitive_risks(strategy, analysis)
+            logger.info(f"Risk assessment completed")
             
             # Estimate timeline and resources
+            logger.info(f"Estimating timeline and resources...")
             timeline_estimate = await self._estimate_timeline(phases)
             resource_requirements = await self._estimate_resources(phases)
+            logger.info(f"Timeline and resource estimation completed")
             
             # Calculate success probability
+            logger.info(f"Calculating success probability...")
             success_probability = await self._calculate_success_probability(strategy, risk_assessment)
+            logger.info(f"Success probability calculated: {success_probability}")
             
             # Compile final strategy
+            logger.info(f"Compiling final strategy...")
             final_strategy = PatentStrategy(
                 topic=topic,
                 description=description,
@@ -134,6 +148,8 @@ class PlannerAgent(BaseAgent):
                 resource_requirements=resource_requirements,
                 success_probability=success_probability
             )
+            
+            logger.info(f"Patent strategy creation completed successfully")
             
             return TaskResult(
                 success=True,
@@ -150,6 +166,8 @@ class PlannerAgent(BaseAgent):
             
         except Exception as e:
             logger.error(f"Error creating patent strategy: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return TaskResult(
                 success=False,
                 data={},
