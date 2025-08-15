@@ -109,8 +109,9 @@ class WriterAgent(BaseAgent):
             )
             
             # Generate patent draft using Google A2A
+            analysis_input = self._extract_analysis(previous_results)
             patent_draft = await self.google_a2a_client.generate_patent_draft(
-                topic, description, previous_results.get("analysis", {})
+                topic, description, analysis_input
             )
             
             # Write detailed sections
@@ -209,6 +210,7 @@ class WriterAgent(BaseAgent):
 """
             summary = await self.google_a2a_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
+            self.agent_logger.info("DETAIL_SECTION start outline/background/summary")
             # Detailed description via subchapter generation
             subchapters = [
                 {"id": "A", "title": "数据获取与预处理"},
@@ -218,6 +220,7 @@ class WriterAgent(BaseAgent):
             ]
             desc_parts: List[str] = []
             for sc in subchapters:
+                self.agent_logger.info(f"SUBCHAPTER {sc['id']} begin: {sc['title']}")
                 sprompt = f"""
 撰写“具体实施方式-子章节{sc['id']}：{sc['title']}”（中文，≥3000字），主题：{writing_task.topic}
 - 至少包含：1个mermaid图；3个算法公式（Markdown/LaTeX）；1段Python风格伪代码（≥50行）。
@@ -225,9 +228,11 @@ class WriterAgent(BaseAgent):
 - 保持术语一致、避免跨章重复。严格输出该子章节正文。
 """
                 text = await self.google_a2a_client._generate_response(sprompt)
+                self.agent_logger.info(f"SUBCHAPTER {sc['id']} end: chars={len(text)}")
                 desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
             # Assemble detailed description
             detailed_description = ("\n".join(desc_parts)).strip()
+            self.agent_logger.info(f"DETAIL_SECTION assembled length={len(detailed_description)}")
             detailed_sections["detailed_description"] = detailed_description
             # Claims
             claims_prompt = f"""
@@ -754,3 +759,56 @@ class WriterAgent(BaseAgent):
                 "drawings_required": True
             }
         }
+
+    def _extract_analysis(self, previous_results: Dict[str, Any]):
+        """Best-effort extraction of a PatentAnalysis object from accumulated previous_results.
+        Accepts either a dataclass instance or a dict; falls back to sane defaults if missing."""
+        from ..google_a2a_client import PatentAnalysis
+        def _coerce(obj: Any) -> PatentAnalysis:
+            if isinstance(obj, PatentAnalysis):
+                return obj
+            if isinstance(obj, dict):
+                return PatentAnalysis(
+                    novelty_score=obj.get("novelty_score", 8.5),
+                    inventive_step_score=obj.get("inventive_step_score", 7.8),
+                    industrial_applicability=obj.get("industrial_applicability", True),
+                    prior_art_analysis=obj.get("prior_art_analysis", []),
+                    claim_analysis=obj.get("claim_analysis", {}),
+                    technical_merit=obj.get("technical_merit", {}),
+                    commercial_potential=obj.get("commercial_potential", "Medium to High"),
+                    patentability_assessment=obj.get("patentability_assessment", "Strong"),
+                    recommendations=obj.get("recommendations", ["Add more technical details"]) 
+                )
+            # Unknown type -> defaults
+            return PatentAnalysis(
+                novelty_score=8.5,
+                inventive_step_score=7.8,
+                industrial_applicability=True,
+                prior_art_analysis=[],
+                claim_analysis={},
+                technical_merit={},
+                commercial_potential="Medium to High",
+                patentability_assessment="Strong",
+                recommendations=["Improve claim specificity"]
+            )
+        candidates: List[Any] = []
+        try:
+            candidates.append(previous_results.get("analysis"))
+        except Exception:
+            pass
+        try:
+            candidates.append(previous_results.get("stage_0", {}).get("result", {}).get("analysis"))
+        except Exception:
+            pass
+        # Scan all stages for an analysis field if not found
+        if not any(candidates):
+            for key, val in (previous_results or {}).items():
+                try:
+                    if isinstance(val, dict) and "result" in val and isinstance(val["result"], dict) and "analysis" in val["result"]:
+                        candidates.append(val["result"]["analysis"])
+                except Exception:
+                    continue
+        for cand in candidates:
+            if cand:
+                return _coerce(cand)
+        return _coerce({})

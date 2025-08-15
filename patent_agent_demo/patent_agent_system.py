@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import time
 import uuid
 
-from .fastmcp_config import fastmcp_config, MessageType
+from .message_bus import fastmcp_config, MessageType
 from .agents import (
     PlannerAgent, SearcherAgent, DiscusserAgent, 
     WriterAgent, ReviewerAgent, RewriterAgent, CoordinatorAgent
@@ -50,6 +50,10 @@ class PatentAgentSystem:
             # Initialize FastMCP
             await self.fastmcp_config.initialize()
             
+            # Initialize logging to files
+            from .logging_utils import setup_root_file_logging
+            setup_root_file_logging()
+
             # Create and start all agents
             await self._create_agents()
             await self._start_agents()
