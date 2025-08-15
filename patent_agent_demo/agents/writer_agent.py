@@ -10,6 +10,7 @@ from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
 from ..google_a2a_client import get_google_a2a_client, PatentDraft
+from ..telemetry import A2ALoggingProxy
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,8 @@ class WriterAgent(BaseAgent):
     async def start(self):
         """Start the writer agent"""
         await super().start()
-        self.google_a2a_client = await get_google_a2a_client()
+        base_client = await get_google_a2a_client()
+        self.google_a2a_client = A2ALoggingProxy(self.name, base_client, self)
         logger.info("Writer Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
