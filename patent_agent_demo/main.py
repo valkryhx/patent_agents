@@ -84,10 +84,11 @@ async def run_patent_workflow(topic: Optional[str], description: Optional[str]):
             result = await system.execute_workflow(topic, description)
             
             if result["success"]:
-                progress.update(task, description="Workflow completed successfully!")
+                progress.update(task, description="Workflow started successfully!")
                 console.print(f"[green]✅ Workflow started: {result['workflow_id']}[/green]")
+                console.print(f"[yellow]⚠️  Workflow is running asynchronously. Check logs for progress.[/yellow]")
             else:
-                progress.update(task, description="Workflow failed!")
+                progress.update(task, description="Workflow failed to start!")
                 console.print(f"[red]❌ Workflow failed: {result.get('error', 'Unknown error')}[/red]")
                 
         except Exception as e:
