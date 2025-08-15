@@ -209,28 +209,26 @@ class WriterAgent(BaseAgent):
 """
             summary = await self.google_a2a_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
-            # Detailed description
-            desc_prompt = f"""
-撰写“具体实施方式”（中文，总字数≥15000字），主题：{writing_task.topic}
-- 章节结构与要求：
-  * 至少4个子章节（子章节A/B/C/D…），每个子章节不少于3000字；
-  * 每个子章节需从不同功能点/模块视角进行详尽撰写（如：数据获取与预处理；特征/知识构建；核心算法与优化；结果生成与呈现；验证与反馈闭环；存储与可视化等）；
-  * 每个子章节包含：
-    - 至少1个mermaid图（sequence/flowchart/class/graph方案任选）
-    - 至少3段算法公式（Markdown/LaTeX）
-    - 至少1段Python风格伪代码（不少于50行，包含函数签名、关键流程与注释）
-- 方法（步骤化，含Who/What/When/Where/How）：整体流程自上而下拆解为感知/处理/决策/生成/验证等阶段；
-- 系统模块：按主题抽象为数据获取/预处理、特征/知识构建、决策与优化、结果生成、验证与反馈、存储与可视化等模块；描述模块接口、关键参数与边界条件；
-- 插入≥5幅mermaid图覆盖不同子章节关键流程；
-- 提供≥10个核心公式（评分、约束、损失、融合、收敛/复杂度分析）；
-- 提供多段伪代码：
-  * 子章节A：核心数据/知识构建管线伪代码（≥50行）；
-  * 子章节B：核心算法/优化伪代码（≥50行）；
-  * 子章节C：生成/约束/解码伪代码（≥50行）；
-  * 子章节D：验证/反馈/指标伪代码（≥50行）。
+            # Detailed description via subchapter generation
+			subchapters = [
+				{"id": "A", "title": "数据获取与预处理"},
+				{"id": "B", "title": "证据构建与关系建模"},
+				{"id": "C", "title": "生成与约束解码"},
+				{"id": "D", "title": "验证与反馈闭环"},
+			]
+			desc_parts: List[str] = []
+			for sc in subchapters:
+				sprompt = f"""
+撰写“具体实施方式-子章节{sc['id']}：{sc['title']}”（中文，≥3000字），主题：{writing_task.topic}
+- 至少包含：1个mermaid图；3个算法公式（Markdown/LaTeX）；1段Python风格伪代码（≥50行）。
+- 描述Who/What/When/Where/How的实施步骤；列出输入/输出/参数与边界条件；说明与其它子章节接口。
+- 保持术语一致、避免跨章重复。严格输出该子章节正文。
 """
-            detailed_description = await self.google_a2a_client._generate_response(desc_prompt)
-            detailed_sections["detailed_description"] = detailed_description
+				text = await self.google_a2a_client._generate_response(sprompt)
+				desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
+			# Assemble detailed description
+			detailed_description = ("\n".join(desc_parts)).strip()
+			detailed_sections["detailed_description"] = detailed_description
             # Claims
             claims_prompt = f"""
 撰写“权利要求书”（中文，CN风格）：
