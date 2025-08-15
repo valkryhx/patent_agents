@@ -185,9 +185,9 @@ class WriterAgent(BaseAgent):
 - 需包含：
   1) 技术领域；2) 最近似现有技术方案（至少2个）、实现方式与不足；3) 本领域存在的技术性痛点；
   4) 对比分析结论。
-- 插入1个mermaid流程或架构图，描述传统RAG数据流。
+- 插入1个mermaid流程或架构图，描述行业通用的数据/控制流程。
 - 插入至少2段算法公式（Markdown）；
-- 插入伪代码（Python风格）展示传统RAG检索与融合流程。
+- 插入伪代码（Python风格）展示通用的数据处理与融合流程。
 - 风格：正式、技术性、可验证。
 """
             background = await self.google_a2a_client._generate_response(background_prompt)
@@ -204,15 +204,23 @@ class WriterAgent(BaseAgent):
             detailed_sections["summary"] = summary
             # Detailed description
             desc_prompt = f"""
-撰写“具体实施方式”（中文，≥2000字），主题：{writing_task.topic}
-- 方法（步骤化，含Who/What/When/Where/How）：整体流程自上而下拆解为感知/处理/决策/生成/验证等阶段，可替换为符合主题的通用步骤。
-- 系统模块：按主题抽象为数据获取/预处理、特征/知识构建、决策与优化、结果生成、验证与反馈、存储与可视化等模块；描述模块接口与参数。
-- 插入2个以上mermaid图（sequence/flowchart）展示关键流程；
-- 提供公式（不少于5个）：关系置信度融合、打分目标、约束解码损失、验证一致性、反馈权重更新；
-- 提供伪代码：
-  * 子图选择（启发式或ILP近似），
-  * 约束解码（带引用偏置/指针），
-  * 事后验证指标计算。
+撰写“具体实施方式”（中文，总字数≥15000字），主题：{writing_task.topic}
+- 章节结构与要求：
+  * 至少4个子章节（子章节A/B/C/D…），每个子章节不少于3000字；
+  * 每个子章节需从不同功能点/模块视角进行详尽撰写（如：数据获取与预处理；特征/知识构建；核心算法与优化；结果生成与呈现；验证与反馈闭环；存储与可视化等）；
+  * 每个子章节包含：
+    - 至少1个mermaid图（sequence/flowchart/class/graph方案任选）
+    - 至少3段算法公式（Markdown/LaTeX）
+    - 至少1段Python风格伪代码（不少于50行，包含函数签名、关键流程与注释）
+- 方法（步骤化，含Who/What/When/Where/How）：整体流程自上而下拆解为感知/处理/决策/生成/验证等阶段；
+- 系统模块：按主题抽象为数据获取/预处理、特征/知识构建、决策与优化、结果生成、验证与反馈、存储与可视化等模块；描述模块接口、关键参数与边界条件；
+- 插入≥5幅mermaid图覆盖不同子章节关键流程；
+- 提供≥10个核心公式（评分、约束、损失、融合、收敛/复杂度分析）；
+- 提供多段伪代码：
+  * 子章节A：核心数据/知识构建管线伪代码（≥50行）；
+  * 子章节B：核心算法/优化伪代码（≥50行）；
+  * 子章节C：生成/约束/解码伪代码（≥50行）；
+  * 子章节D：验证/反馈/指标伪代码（≥50行）。
 """
             detailed_description = await self.google_a2a_client._generate_response(desc_prompt)
             detailed_sections["detailed_description"] = detailed_description
