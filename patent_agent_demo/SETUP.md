@@ -1,431 +1,314 @@
-# Patent Agent Demo - Setup & Usage Guide
+# Patent Agent Demo Setup Guide
 
-This guide will help you set up and run the Patent Agent Demo system, a multi-agent platform for automated patent development using FastMCP and Google A2A.
+This guide will help you set up and run the Patent Agent Demo system, a multi-agent platform for automated patent development using Message Bus and Google A2A.
 
-## 🚀 Quick Start
-
-### 1. Prerequisites
+## Prerequisites
 
 - Python 3.8 or higher
-- Google AI API key (required)
 - Git
+- Access to Google A2A API
+- Basic understanding of patent development process
 
-### 2. Installation
+## Installation
+
+### 1. Clone the Repository
 
 ```bash
-# Clone the repository
 git clone <repository-url>
 cd patent_agent_demo
+```
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+### 2. Install Dependencies
 
-# Install dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configuration
+### 3. Set Up Environment Variables
+
+Create a `.env` file in the project root:
 
 ```bash
-# Copy environment template
-cp .env.example .env
+# API Configuration
+ZHIPUAI_API_KEY=your_zhipuai_api_key_here
 
-# Edit .env file with your API keys
-nano .env  # or use your preferred editor
+# Message Bus Configuration
+MESSAGE_BUS_HOST=localhost
+MESSAGE_BUS_PORT=8000
+
+# Patent Configuration
+PATENT_TOPIC="Your Patent Topic"
+PATENT_DESC="Your Patent Description"
 ```
 
-**Required Configuration:**
-- `GOOGLE_API_KEY`: Your Google AI API key from [MakerSuite](https://makersuite.google.com/app/apikey)
+### 4. Verify Installation
 
-### 4. Run the Demo
+Run the health check to verify everything is set up correctly:
 
 ```bash
-# Simple demo
-python demo_simple.py
-
-# Interactive mode
-python main.py --interactive
-
-# Single workflow
-python main.py --topic "Your Patent Topic"
+python -m patent_agent_demo.main --health
 ```
 
-## 🔧 Detailed Setup
+## Configuration
 
 ### Environment Variables
 
-Create a `.env` file with the following variables:
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `ZHIPUAI_API_KEY` | Your ZhipuAI API key | Yes | - |
+| `MESSAGE_BUS_HOST` | Message Bus host | No | localhost |
+| `MESSAGE_BUS_PORT` | Message Bus port | No | 8000 |
+| `PATENT_TOPIC` | Default patent topic | No | - |
+| `PATENT_DESC` | Default patent description | No | - |
 
-```env
-# Required
-GOOGLE_API_KEY=your_actual_api_key_here
+### System Configuration
 
-# Optional
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
+The system can be configured through the main configuration file:
 
-# FastMCP Configuration
-FASTMCP_HOST=localhost
-FASTMCP_PORT=8000
-
-# Logging
-LOG_LEVEL=INFO
+```python
+# patent_agent_system.py
+system = PatentAgentSystem()
+await system.start()
 ```
 
-### Google AI API Setup
-
-1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Create a new API key
-4. Copy the key to your `.env` file
-
-### Dependencies
-
-The system requires several Python packages:
-
-- **FastMCP**: Message passing and coordination framework
-- **Google Generative AI**: AI-powered content generation
-- **Rich**: Beautiful terminal output
-- **Pydantic**: Data validation and settings management
-- **AsyncIO**: Asynchronous programming support
-
-## 🎯 Usage Examples
+## Usage
 
 ### Basic Usage
 
-```python
-from patent_agent_system import PatentAgentSystem
+Run a patent development workflow:
 
-async def main():
-    # Initialize system
-    system = PatentAgentSystem()
-    await system.start()
-    
-    # Develop a patent
-    result = await system.develop_patent(
-        topic="AI-powered medical diagnosis",
-        description="Machine learning system for automated medical diagnosis"
-    )
-    
-    print(f"Patent development complete: {result}")
-    
-    # Cleanup
-    await system.stop()
-
-# Run
-asyncio.run(main())
+```bash
+python run_patent_workflow.py
 ```
 
 ### Interactive Mode
 
-```bash
-python main.py --interactive
-```
-
-Available commands:
-- `help` - Show available commands
-- `status` - Display system status
-- `workflow` - Run patent development workflow
-- `health` - Perform system health check
-- `agents` - Show agent details
-- `workflows` - Show active workflows
-- `quit` - Exit the system
-
-### Command Line Interface
+Run in interactive mode for step-by-step guidance:
 
 ```bash
-# Run with specific topic
-python main.py --topic "Quantum Computing Algorithm"
-
-# Verbose logging
-python main.py --verbose
-
-# Run and wait
-python main.py
+python -m patent_agent_demo.main --interactive
 ```
 
-## 🏗️ System Architecture
+### Command Line Options
+
+```bash
+# Run with specific topic and description
+python -m patent_agent_demo.main --topic "AI Patent" --description "AI system description"
+
+# Perform health check
+python -m patent_agent_demo.main --health
+
+# Show system status
+python -m patent_agent_demo.main --status
+```
+
+## System Architecture
+
+The Patent Agent Demo system consists of:
+
+- **Message Bus**: Message passing and coordination framework
+- **Google A2A**: AI-powered content generation
+- **Multi-Agent System**: Specialized agents for different tasks
+- **Workflow Engine**: Orchestration and progress tracking
 
 ### Agent Roles
 
-1. **Planner Agent**: Creates patent strategy and roadmap
-2. **Searcher Agent**: Conducts prior art research
-3. **Discusser Agent**: Facilitates innovation discussions
-4. **Writer Agent**: Drafts patent applications
-5. **Reviewer Agent**: Reviews quality and compliance
-6. **Rewriter Agent**: Implements feedback and improvements
-7. **Coordinator Agent**: Orchestrates the entire workflow
+1. **Planner Agent**: Strategic planning and patent strategy
+2. **Searcher Agent**: Prior art research and analysis
+3. **Discusser Agent**: Innovation discussion and refinement
+4. **Writer Agent**: Patent drafting and technical writing
+5. **Reviewer Agent**: Quality review and compliance checking
+6. **Rewriter Agent**: Feedback implementation and improvement
+7. **Coordinator Agent**: Workflow orchestration
 
-### Workflow Stages
+## Workflow Stages
 
-```
-Planning → Research → Discussion → Writing → Review → Rewrite → Complete
-```
+The patent development workflow consists of 6 main stages:
 
-### FastMCP Integration
+1. **Planning & Strategy**: Define patent strategy and approach
+2. **Prior Art Search**: Research existing patents and technologies
+3. **Innovation Discussion**: Refine ideas and identify unique aspects
+4. **Patent Drafting**: Create comprehensive patent application
+5. **Quality Review**: Review for quality and compliance
+6. **Final Rewrite**: Implement feedback and improvements
 
-- **Message Broker**: Handles inter-agent communication
-- **Task Coordination**: Manages workflow execution
-- **Status Tracking**: Monitors agent and workflow states
-- **Error Handling**: Provides fault tolerance and recovery
+## Output
 
-### Google A2A Integration
+The system generates several types of output:
 
-- **Content Generation**: Creates patent drafts and descriptions
-- **Analysis**: Evaluates patent topics and prior art
-- **Optimization**: Improves content quality and compliance
-- **Technical Writing**: Generates technical documentation
+### Progress Files
 
-## 🔍 Troubleshooting
+Incremental content is saved in `/workspace/output/progress/`:
+
+- `00_title_abstract.md`: Patent title and abstract
+- `01_outline.md`: Patent structure outline
+- `02_background.md`: Background technology
+- `03_summary.md`: Invention summary
+- `04_claims.md`: Patent claims
+- `05_desc_all.md`: Detailed description
+- `06_drawings.md`: Technical diagrams
+- `progress.md`: Combined progress file
+
+### Final Patent
+
+The complete patent application is exported as a Markdown file in the output directory.
+
+### Logs
+
+Detailed execution logs are saved in `/workspace/output/logs/`:
+
+- `system.log`: Main system logs
+- `*_agent.log`: Individual agent logs
+
+## Troubleshooting
 
 ### Common Issues
 
-#### 1. API Key Errors
-```
-Error: Google API key is required
-```
-**Solution**: Ensure your `GOOGLE_API_KEY` is set in the `.env` file
+1. **API Key Issues**
+   - Ensure `ZHIPUAI_API_KEY` is set correctly
+   - Verify API key has sufficient credits
+   - Check API key permissions
 
-#### 2. Import Errors
-```
-ModuleNotFoundError: No module named 'patent_agent_system'
-```
-**Solution**: Ensure you're in the correct directory and have installed dependencies
+2. **Network Issues**
+   - Verify internet connectivity
+   - Check firewall settings
+   - Ensure API endpoints are accessible
 
-#### 3. Permission Errors
-```
-PermissionError: [Errno 13] Permission denied
-```
-**Solution**: Check file permissions and ensure you have write access
+3. **Memory Issues**
+   - Monitor system resources during execution
+   - Consider reducing concurrent operations
+   - Check for memory leaks
 
-#### 4. Network Errors
-```
-ConnectionError: Failed to connect to Google AI API
-```
-**Solution**: Check your internet connection and API key validity
+4. **Timeout Issues**
+   - Adjust timeout settings in configuration
+   - Check network latency
+   - Consider using faster API endpoints
+
+### Error Messages
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `API key not found` | Missing or invalid API key | Set `ZHIPUAI_API_KEY` environment variable |
+| `Connection timeout` | Network connectivity issues | Check internet connection and firewall |
+| `Memory error` | Insufficient system memory | Close other applications or increase memory |
+| `Agent not found` | Agent registration failed | Restart the system |
 
 ### Debug Mode
 
-Enable verbose logging for troubleshooting:
+Enable debug logging for detailed troubleshooting:
 
-```bash
-python main.py --verbose
-```
-
-Or set environment variable:
 ```bash
 export LOG_LEVEL=DEBUG
-python main.py
+python run_patent_workflow.py
 ```
 
-### Health Checks
+## Performance Optimization
 
-Use the built-in health check system:
+### System Requirements
 
-```bash
-# In interactive mode
-patent_demo> health
+- **CPU**: 4+ cores recommended
+- **Memory**: 8GB+ RAM recommended
+- **Storage**: 1GB+ free space
+- **Network**: Stable internet connection
 
-# Or programmatically
-health_status = await system.health_check()
-print(health_status)
+### Optimization Tips
+
+1. **Concurrent Processing**: The system uses concurrent processing for better performance
+2. **API Rate Limiting**: Respect API rate limits to avoid throttling
+3. **Resource Management**: Monitor system resources during execution
+4. **Caching**: Enable caching for repeated operations
+
+## Development
+
+### Project Structure
+
+```
+patent_agent_demo/
+├── agents/                 # Agent implementations
+│   ├── base_agent.py      # Base agent class
+│   ├── planner_agent.py   # Planning agent
+│   ├── searcher_agent.py  # Search agent
+│   ├── discusser_agent.py # Discussion agent
+│   ├── writer_agent.py    # Writing agent
+│   ├── reviewer_agent.py  # Review agent
+│   ├── rewriter_agent.py  # Rewrite agent
+│   └── coordinator_agent.py # Coordination agent
+├── message_bus.py         # Message passing infrastructure
+├── patent_agent_system.py # Main system class
+├── glm_client.py          # Google A2A client
+├── main.py               # CLI interface
+└── run_patent_workflow.py # Workflow runner
 ```
 
-## 📊 Monitoring & Metrics
+### Adding New Features
 
-### System Status
+1. **New Agents**: Inherit from `BaseAgent` and implement required methods
+2. **New Workflow Stages**: Add stages to the coordinator agent
+3. **New Output Formats**: Extend the writer agent
+4. **New APIs**: Add new clients in the appropriate module
 
-```python
-status = await system.get_system_status()
-print(f"System Health: {status.system_health}")
-print(f"Active Agents: {status.active_agents}")
-print(f"Uptime: {status.uptime:.1f} seconds")
-```
+### Testing
 
-### Agent Performance
-
-```python
-agent_status = await system.get_agent_status("planner_agent")
-metrics = agent_status.get("performance_metrics", {})
-print(f"Tasks Completed: {metrics.get('tasks_completed', 0)}")
-print(f"Average Execution Time: {metrics.get('average_execution_time', 0):.2f}s")
-```
-
-### Workflow Monitoring
-
-```python
-workflows = await system.monitor_workflows()
-for workflow in workflows:
-    print(f"Workflow {workflow['workflow_id']}: {workflow['status']}")
-```
-
-## 🚀 Advanced Usage
-
-### Custom Agent Configuration
-
-```python
-from agents import PlannerAgent
-
-# Create custom planner agent
-planner = PlannerAgent()
-await planner.start()
-
-# Execute custom task
-result = await planner.execute_task({
-    "type": "patent_planning",
-    "topic": "Custom Topic",
-    "description": "Custom Description"
-})
-```
-
-### Workflow Customization
-
-```python
-# Custom workflow parameters
-result = await system.develop_patent(
-    topic="Custom Topic",
-    description="Custom Description",
-    workflow_type="fast_track"  # or "comprehensive"
-)
-```
-
-### Integration with External Systems
-
-```python
-# Send messages to specific agents
-await system.send_agent_message(
-    "writer_agent",
-    MessageType.COORDINATION,
-    {"custom_task": "data"}
-)
-
-# Broadcast system messages
-await system.broadcast_system_message(
-    MessageType.STATUS,
-    {"system_update": "information"}
-)
-```
-
-## 🔒 Security Considerations
-
-### API Key Management
-
-- Never commit API keys to version control
-- Use environment variables for sensitive data
-- Rotate API keys regularly
-- Monitor API usage and costs
-
-### Data Privacy
-
-- Patent data is processed locally
-- No data is sent to external services except Google AI API
-- Consider data retention policies
-- Implement access controls for sensitive information
-
-### Network Security
-
-- Use HTTPS for external API calls
-- Implement rate limiting
-- Monitor for suspicious activity
-- Keep dependencies updated
-
-## 📈 Performance Optimization
-
-### System Tuning
-
-```python
-# Adjust workflow timeout
-system.workflow_timeout = 600  # 10 minutes
-
-# Set maximum concurrent workflows
-system.max_workflows = 5
-
-# Configure agent pool size
-system.agent_pool_size = 10
-```
-
-### Resource Management
-
-- Monitor memory usage during large workflows
-- Implement connection pooling for external APIs
-- Use async operations for I/O-bound tasks
-- Implement caching for repeated operations
-
-## 🧪 Testing
-
-### Unit Tests
+Run the test suite:
 
 ```bash
 # Run all tests
-pytest tests/
-
-# Run specific test file
-pytest tests/test_planner_agent.py
+pytest
 
 # Run with coverage
-pytest --cov=patent_agents tests/
+pytest --cov=patent_agent_demo
+
+# Run specific tests
+pytest tests/test_planner_agent.py
 ```
 
-### Integration Tests
+## API Reference
 
-```bash
-# Test complete workflow
-python -m pytest tests/test_integration.py
+### Main Classes
 
-# Test agent communication
-python -m pytest tests/test_agent_communication.py
-```
+- `PatentAgentSystem`: Main system class
+- `BaseAgent`: Base class for all agents
+- `MessageBusConfig`: Message bus configuration
+- `GLMA2AClient`: Google A2A client
 
-### Load Testing
+### Key Methods
 
-```bash
-# Test multiple concurrent workflows
-python tests/load_test.py --workflows 10 --duration 300
-```
+- `execute_workflow()`: Start a patent development workflow
+- `get_workflow_status()`: Get workflow progress
+- `health_check()`: Perform system health check
+- `get_system_status()`: Get system status
 
-## 📚 Additional Resources
+## Contributing
 
-### Documentation
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-- [FastMCP Documentation](https://fastmcp.dev/)
-- [Google AI Documentation](https://ai.google.dev/)
-- [Python AsyncIO Guide](https://docs.python.org/3/library/asyncio.html)
+## License
 
-### Community
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-- GitHub Issues: Report bugs and request features
-- Discussions: Ask questions and share ideas
-- Contributing: Guidelines for contributing to the project
+## Support
 
-### Support
+For questions and support:
 
-For technical support:
-1. Check the troubleshooting section
-2. Review GitHub issues
-3. Create a new issue with detailed information
-4. Include logs and error messages
+- **Documentation**: Check the README and this setup guide
+- **Issues**: Open an issue on GitHub
+- **Discussions**: Use GitHub Discussions for questions
 
-## 🎉 Getting Help
+## Acknowledgments
 
-If you need assistance:
+- Google A2A team for the AI capabilities
+- Message Bus team for the messaging framework
+- Open source community for various dependencies
 
-1. **Check the documentation** - This guide covers most common scenarios
-2. **Review examples** - Look at the demo scripts and test files
-3. **Search issues** - Check if your problem has been reported
-4. **Create an issue** - Provide detailed information about your problem
+## Changelog
 
-### Issue Template
-
-When creating an issue, include:
-
-- **Description**: What you're trying to do
-- **Expected behavior**: What should happen
-- **Actual behavior**: What actually happens
-- **Environment**: OS, Python version, dependencies
-- **Steps to reproduce**: Detailed steps to recreate the issue
-- **Logs**: Relevant error messages and logs
-
----
-
-**Happy Patent Development! 🚀📚**
+### Version 1.0.0
+- Initial release
+- Multi-agent patent development system
+- Message Bus integration
+- Google A2A integration
+- Comprehensive workflow management

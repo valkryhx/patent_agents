@@ -1,20 +1,19 @@
 """
-Base Agent Class for Patent Agent System
-Provides common functionality and interface for all agents
+Base Agent Class
+Provides common functionality for all patent development agents
 """
 
 import asyncio
 import logging
-from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass
 import time
 import uuid
+from typing import Dict, Any, Optional, List
+from dataclasses import dataclass
+from enum import Enum
 
 from ..message_bus import (
-    FastMCPBroker, Message, MessageType, AgentStatus, fastmcp_config
+    MessageBusBroker, Message, MessageType, AgentStatus, message_bus_config
 )
-from ..logging_utils import attach_agent_file_logger
 
 logger = logging.getLogger(__name__)
 
@@ -25,17 +24,16 @@ class TaskResult:
     data: Dict[str, Any]
     error_message: Optional[str] = None
     execution_time: float = 0.0
-    metadata: Dict[str, Any] = None
+    metadata: Optional[Dict[str, Any]] = None
 
-class BaseAgent(ABC):
-    """Base class for all patent agents"""
+class BaseAgent:
+    """Base class for all patent development agents"""
     
     def __init__(self, name: str, capabilities: List[str]):
         self.name = name
         self.capabilities = capabilities
-        self.broker = fastmcp_config.broker
         self.status = AgentStatus.IDLE
-        self.current_task = None
+        self.broker = message_bus_config.broker
         self.task_history: List[TaskResult] = []
         self.performance_metrics = {
             "tasks_completed": 0,
@@ -43,84 +41,70 @@ class BaseAgent(ABC):
             "average_execution_time": 0.0,
             "total_execution_time": 0.0
         }
-        self.is_running = False
-        
-        self.agent_logger = attach_agent_file_logger(self.name)
-        self.agent_logger.info(f"{self.name} initialized with capabilities: {self.capabilities}")
+        self.agent_logger = logging.getLogger(f"agent.{name}")
         
     async def start(self):
         """Start the agent"""
         try:
+            # Register with message bus
             await self.broker.register_agent(self.name, self.capabilities)
-            self.is_running = True
-            logger.info(f"Agent {self.name} started successfully")
             
-            # Start the main agent loop
-            asyncio.create_task(self._agent_loop())
+            # Start message processing loop
+            asyncio.create_task(self._message_processing_loop())
+            
+            self.agent_logger.info(f"{self.name} initialized with capabilities: {self.capabilities}")
             
         except Exception as e:
-            logger.error(f"Failed to start agent {self.name}: {e}")
+            logger.error(f"Error starting agent {self.name}: {e}")
             raise
             
     async def stop(self):
         """Stop the agent"""
         try:
-            self.is_running = False
+            # Unregister from message bus
             await self.broker.unregister_agent(self.name)
+            
+            # Update status
+            self.status = AgentStatus.OFFLINE
+            
             logger.info(f"Agent {self.name} stopped successfully")
             
         except Exception as e:
             logger.error(f"Error stopping agent {self.name}: {e}")
             
-    async def _agent_loop(self):
-        """Main agent loop for processing messages and tasks"""
-        while self.is_running:
-            try:
-                # Check for incoming messages
-                message = await self.broker.receive_message(self.name)
+    async def _message_processing_loop(self):
+        """Main message processing loop"""
+        try:
+            while self.status != AgentStatus.OFFLINE:
+                # Get message from broker
+                message = await self.broker.get_message()
                 
-                if message:
-                    self.agent_logger.info(f"RECV id={message.id} type={message.type.value} from={message.sender} pri={message.priority}")
+                if message and message.recipient == self.name:
+                    # Process message
                     await self._process_message(message)
                     
-                # Update status
-                await self.broker.update_agent_status(
-                    self.name, self.status, self.current_task
-                )
-                
                 # Small delay to prevent busy waiting
                 await asyncio.sleep(0.1)
                 
-            except Exception as e:
-                logger.error(f"Error in agent loop for {self.name}: {e}")
-                await asyncio.sleep(1.0)  # Longer delay on error
-                
+        except Exception as e:
+            logger.error(f"Error in message processing loop for {self.name}: {e}")
+            
     async def _process_message(self, message: Message):
         """Process an incoming message"""
         try:
-            logger.info(f"Agent {self.name} processing message: {message.type.value}")
+            message_type = message.type
             
-            # Update status to busy
-            self.status = AgentStatus.BUSY
-            await self.broker.update_agent_status(self.name, self.status)
-            
-            # Process based on message type
-            if message.type == MessageType.COORDINATION:
+            if message_type == MessageType.COORDINATION:
                 await self._handle_coordination_message(message)
-            elif message.type == MessageType.STATUS:
+            elif message_type == MessageType.STATUS:
                 await self._handle_status_message(message)
+            elif message_type == MessageType.ERROR:
+                await self._handle_error_message(message)
             else:
-                # Delegate to specific message handler
                 await self._handle_specific_message(message)
                 
-            # Update status back to idle
-            self.status = AgentStatus.IDLE
-            await self.broker.update_agent_status(self.name, self.status)
-            
         except Exception as e:
             logger.error(f"Error processing message in {self.name}: {e}")
-            self.status = AgentStatus.ERROR
-            await self.broker.update_agent_status(self.name, self.status)
             
             # Send error response
             error_message = Message(
@@ -231,50 +215,49 @@ class BaseAgent(ABC):
             )
             await self.broker.send_message(error_message)
             
+    async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a task - to be implemented by subclasses"""
+        raise NotImplementedError("Subclasses must implement execute_task")
+        
     def _update_performance_metrics(self, success: bool, execution_time: float):
-        """Update agent performance metrics"""
+        """Update performance metrics"""
         if success:
             self.performance_metrics["tasks_completed"] += 1
         else:
             self.performance_metrics["tasks_failed"] += 1
             
         self.performance_metrics["total_execution_time"] += execution_time
-        self.performance_metrics["average_execution_time"] = (
-            self.performance_metrics["total_execution_time"] / 
-            (self.performance_metrics["tasks_completed"] + self.performance_metrics["tasks_failed"])
-        )
         
-    @abstractmethod
-    async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
-        """Execute a specific task - must be implemented by subclasses"""
-        pass
-        
+        total_tasks = self.performance_metrics["tasks_completed"] + self.performance_metrics["tasks_failed"]
+        if total_tasks > 0:
+            self.performance_metrics["average_execution_time"] = (
+                self.performance_metrics["total_execution_time"] / total_tasks
+            )
+            
     async def get_status(self) -> Dict[str, Any]:
-        """Get current agent status"""
+        """Get agent status"""
         return {
             "name": self.name,
             "status": self.status.value,
-            "current_task": self.current_task,
             "capabilities": self.capabilities,
             "performance_metrics": self.performance_metrics,
-            "task_history_count": len(self.task_history)
+            "task_history_length": len(self.task_history)
         }
         
     async def send_message(self, recipient: str, message_type: MessageType, 
-                          content: Dict[str, Any], priority: int = 1):
+                          content: Dict[str, Any], priority: int = 5):
         """Send a message to another agent"""
-        message = Message(
-            id=str(uuid.uuid4()),
-            type=message_type,
-            sender=self.name,
-            recipient=recipient,
-            content=content,
-            timestamp=time.time(),
-            priority=priority
-        )
-        await self.broker.send_message(message)
-        
-    async def broadcast_message(self, message_type: MessageType, 
-                              content: Dict[str, Any], priority: int = 1):
-        """Broadcast a message to all agents"""
-        await self.broker.broadcast_message(message_type, content, self.name, priority)
+        try:
+            message = Message(
+                id=str(uuid.uuid4()),
+                type=message_type,
+                sender=self.name,
+                recipient=recipient,
+                content=content,
+                timestamp=time.time(),
+                priority=priority
+            )
+            await self.broker.send_message(message)
+            
+        except Exception as e:
+            logger.error(f"Error sending message from {self.name}: {e}")
