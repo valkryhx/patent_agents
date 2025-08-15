@@ -5,3 +5,6 @@
 2025-08-15 09:57:53 INFO agent.planner_agent: RECV id=1b2e3248-5bc7-469f-8c44-87f7c5a25684 type=coordination from=coordinator_agent pri=5
 2025-08-15 09:57:53 INFO agent.planner_agent: EXECUTE task_id=4fa570d6-ce51-4d0d-96dc-28ce058a2c2a_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
 2025-08-15 09:59:45 INFO agent.planner_agent: COMPLETE task_id=4fa570d6-ce51-4d0d-96dc-28ce058a2c2a_stage_0 success=False time=112.78s
+2025-08-15 10:06:15 INFO agent.planner_agent: planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 10:06:15 INFO agent.planner_agent: RECV id=629a7995-e18b-42a0-aa98-0240847bc567 type=coordination from=coordinator_agent pri=5
+2025-08-15 10:06:15 INFO agent.planner_agent: EXECUTE task_id=76464c9c-03da-4841-8e42-a78052a83b6a_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}

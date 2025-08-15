@@ -237,87 +237,47 @@ class PlannerAgent(BaseAgent):
         """Create development phases for the patent strategy"""
         try:
             phases = [
-                DevelopmentPhase(
-                    phase_name="Research & Analysis",
-                    duration_estimate="2-3 weeks",
-                    key_deliverables=[
-                        "Prior art search report",
-                        "Novelty analysis",
-                        "Competitive landscape assessment"
-                    ],
-                    dependencies=[],
-                    resource_requirements={
-                        "researchers": 2,
-                        "patent_attorneys": 1,
-                        "technical_experts": 1
-                    },
-                    success_criteria=[
-                        "Complete prior art coverage",
-                        "Clear novelty identification",
-                        "Competitive positioning defined"
-                    ]
-                ),
-                DevelopmentPhase(
-                    phase_name="Strategy Development",
-                    duration_estimate="1-2 weeks",
-                    key_deliverables=[
-                        "Patent strategy document",
-                        "Claim structure outline",
-                        "Filing strategy plan"
-                    ],
-                    dependencies=["Research & Analysis"],
-                    resource_requirements={
-                        "patent_attorneys": 2,
-                        "strategists": 1
-                    },
-                    success_criteria=[
-                        "Strategy approved by stakeholders",
-                        "Clear claim structure defined",
-                        "Filing timeline established"
-                    ]
-                ),
-                DevelopmentPhase(
-                    phase_name="Drafting & Review",
-                    duration_estimate="3-4 weeks",
-                    key_deliverables=[
+                {
+                    "phase_name": "Drafting & Review",
+                    "duration_estimate": "3-4 weeks",
+                    "key_deliverables": [
                         "Patent application draft",
                         "Technical diagrams",
                         "Review feedback incorporated"
                     ],
-                    dependencies=["Strategy Development"],
-                    resource_requirements={
+                    "dependencies": ["Strategy Development"],
+                    "resource_requirements": {
                         "patent_attorneys": 2,
                         "technical_writers": 1,
                         "illustrators": 1
                     },
-                    success_criteria=[
+                    "success_criteria": [
                         "Draft meets legal requirements",
                         "Technical accuracy verified",
                         "Stakeholder approval obtained"
                     ]
-                ),
-                DevelopmentPhase(
-                    phase_name="Filing & Prosecution",
-                    duration_estimate="Ongoing",
-                    key_deliverables=[
+                },
+                {
+                    "phase_name": "Filing & Prosecution",
+                    "duration_estimate": "Ongoing",
+                    "key_deliverables": [
                         "Patent application filed",
                         "Office action responses",
                         "Patent granted"
                     ],
-                    dependencies=["Drafting & Review"],
-                    resource_requirements={
+                    "dependencies": ["Drafting & Review"],
+                    "resource_requirements": {
                         "patent_attorneys": 1,
                         "paralegals": 1
                     },
-                    success_criteria=[
+                    "success_criteria": [
                         "Application successfully filed",
                         "Office actions responded to",
                         "Patent granted or allowed"
                     ]
-                )
+                }
             ]
-            
-            return [asdict(phase) for phase in phases]
+            return phases
             
         except Exception as e:
             logger.error(f"Error creating development phases: {e}")
