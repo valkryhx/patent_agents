@@ -130,7 +130,9 @@ class FastMCPBroker:
         if agent_name in self.agents:
             self.agents[agent_name].status = status
             self.agents[agent_name].current_task = current_task
-            logger.info(f"Agent {agent_name} status updated: {status.value}")
+            # Only log non-idle status updates to reduce log noise
+            if status != AgentStatus.IDLE:
+                logger.info(f"Agent {agent_name} status updated: {status.value}")
             
     async def get_system_status(self) -> Dict[str, Any]:
         """Get overall system status"""
