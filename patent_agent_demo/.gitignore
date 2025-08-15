@@ -11,14 +11,19 @@ glm_api_key
 .env.local
 .env.production
 
-# Logs
+# Logs and output
 *.log
 logs/
+log/
 output/
+*.log.*
 
 # Python
 __pycache__/
 *.py[cod]
+*.pyc
+*.pyo
+*.pyd
 *$py.class
 *.so
 .Python
