@@ -49,8 +49,11 @@ class BaseAgent:
             # Register with message bus
             await self.broker.register_agent(self.name, self.capabilities)
             
-            # Start message processing loop
-            asyncio.create_task(self._message_processing_loop())
+            # Start message processing loop and wait for it to initialize
+            self.message_task = asyncio.create_task(self._message_processing_loop())
+            
+            # Give the message loop a moment to start
+            await asyncio.sleep(0.1)
             
             self.agent_logger.info(f"{self.name} initialized with capabilities: {self.capabilities}")
             
@@ -61,11 +64,19 @@ class BaseAgent:
     async def stop(self):
         """Stop the agent"""
         try:
+            # Update status to stop message processing loop
+            self.status = AgentStatus.OFFLINE
+            
+            # Cancel message processing task if it exists
+            if hasattr(self, 'message_task') and self.message_task:
+                self.message_task.cancel()
+                try:
+                    await self.message_task
+                except asyncio.CancelledError:
+                    pass
+            
             # Unregister from message bus
             await self.broker.unregister_agent(self.name)
-            
-            # Update status
-            self.status = AgentStatus.OFFLINE
             
             logger.info(f"Agent {self.name} stopped successfully")
             

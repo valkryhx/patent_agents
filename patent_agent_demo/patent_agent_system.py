@@ -68,6 +68,10 @@ class PatentAgentSystem:
             # Set coordinator reference
             self.coordinator = self.agents["coordinator_agent"]
             
+            # Wait for all agents to fully initialize their message processing loops
+            logger.info("Waiting for all agents to initialize message processing loops...")
+            await asyncio.sleep(2)  # Give agents time to start their message loops
+            
             logger.info("All agents started successfully")
             logger.info("Patent Agent System started successfully")
             
