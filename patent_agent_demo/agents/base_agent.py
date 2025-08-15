@@ -229,14 +229,14 @@ class BaseAgent:
             )
             self.task_history.append(task_result)
             
-            # Send completion message
+            # Send completion message with correct task_id format
             completion_message = Message(
                 id=f"completion_{uuid.uuid4()}",
                 type=MessageType.STATUS,
                 sender=self.name,
                 recipient="coordinator_agent",
                 content={
-                    "task_id": task_id,
+                    "task_id": task_id,  # Use the original task_id from task_data
                     "status": "completed",
                     "result": result.data,
                     "execution_time": execution_time,
@@ -251,12 +251,12 @@ class BaseAgent:
         except Exception as e:
             logger.error(f"Error executing task in {self.name}: {e}")
             
-            # Send error message
+            # Send error message with correct task_id
             error_message = Message(
                 id=f"error_{uuid.uuid4()}",
                 type=MessageType.ERROR,
                 sender=self.name,
-                recipient="coordinator",
+                recipient="coordinator_agent",  # Fix recipient name
                 content={"error": str(e), "task_id": task_data.get("id")},
                 timestamp=time.time(),
                 priority=10
