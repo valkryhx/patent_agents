@@ -121,6 +121,11 @@ class WriterAgent(BaseAgent):
             
             # Update patent draft with detailed content
             patent_draft.detailed_description = detailed_sections.get("detailed_description", "")
+            patent_draft.background = detailed_sections.get("background", getattr(patent_draft, "background", ""))
+            patent_draft.summary = detailed_sections.get("summary", getattr(patent_draft, "summary", ""))
+            # If claims were generated in detailed sections, set them
+            if isinstance(detailed_sections.get("claims"), list) and detailed_sections.get("claims"):
+                patent_draft.claims = detailed_sections.get("claims")
             patent_draft.technical_diagrams = technical_diagrams
             
             # Check legal compliance

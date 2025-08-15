@@ -454,15 +454,11 @@ class CoordinatorAgent(BaseAgent):
             workflow = self.active_workflows.get(workflow_id)
             if not workflow:
                 return
-                
             workflow.overall_status = "completed"
             workflow.estimated_completion = time.time()
-            
             # Compile final results
             final_results = await self._compile_final_results(workflow)
-            
             logger.info(f"Workflow {workflow_id} completed successfully")
-            
             # Send completion notification
             await self.broadcast_message(
                 MessageType.STATUS,
@@ -474,12 +470,26 @@ class CoordinatorAgent(BaseAgent):
                 },
                 priority=3
             )
-            
-            # Persist final results for retrieval, then clean up workflow
+            # Export to markdown
+            try:
+                import os
+                os.makedirs("/workspace/output", exist_ok=True)
+                md_path = f"/workspace/output/{workflow.topic.replace(' ', '_')}_{workflow_id[:8]}.md"
+                with open(md_path, "w", encoding="utf-8") as f:
+                    f.write(f"# {workflow.topic}\n\n")
+                    for i, stage in enumerate(workflow.stages):
+                        f.write(f"## Stage {i+1}: {stage.stage_name}\n\n")
+                        if stage.result:
+                            f.write(str(stage.result))
+                            f.write("\n\n")
+                    f.write("\n")
+                logger.info(f"Exported workflow document to {md_path}")
+            except Exception as e:
+                logger.error(f"Export error: {e}")
+            # Persist final results, cleanup
             self.completed_workflows[workflow_id] = final_results
             if workflow_id in self.active_workflows:
                 del self.active_workflows[workflow_id]
-            
         except Exception as e:
             logger.error(f"Error completing workflow: {e}")
             
