@@ -98,8 +98,8 @@ async def monitor_workflow_execution():
                 print(f"\n⏰ [{datetime.now().strftime('%H:%M:%S')}] 超时等待完成 ({max_wait}s)")
                 break
                 
-            # 每5秒检查一次
-            await asyncio.sleep(5)
+            # 每10秒检查一次
+            await asyncio.sleep(10)
             
         # 获取最终状态
         print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 📋 获取最终状态...")
