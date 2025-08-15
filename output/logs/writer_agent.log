@@ -20,3 +20,5 @@
 2025-08-15 12:21:12 INFO agent.writer_agent: EXECUTE task_id=cf77c2f2-bf88-441c-97fa-9eae9d40a2d2_stage_3 type=patent_drafting meta={'topic': task_data.get('topic')}
 2025-08-15 12:35:10 INFO agent.writer_agent: DETAIL_SECTION start outline/background/summary
 2025-08-15 12:35:10 INFO agent.writer_agent: SUBCHAPTER A begin: 数据获取与预处理
+2025-08-15 12:40:01 INFO agent.writer_agent: SUBCHAPTER A end: chars=18502
+2025-08-15 12:40:01 INFO agent.writer_agent: SUBCHAPTER B begin: 证据构建与关系建模
