@@ -76,10 +76,10 @@ class BaseAgent:
         """Main message processing loop"""
         try:
             while self.status != AgentStatus.OFFLINE:
-                # Get message from broker
-                message = await self.broker.get_message()
+                # Get message from broker for this specific agent
+                message = await self.broker.get_message(self.name)
                 
-                if message and message.recipient == self.name:
+                if message:
                     # Process message
                     await self._process_message(message)
                     

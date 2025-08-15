@@ -57,7 +57,7 @@ class MessageBusBroker:
     
     def __init__(self):
         self.agents: Dict[str, AgentInfo] = {}
-        self.message_queue = asyncio.Queue()
+        self.message_queues: Dict[str, asyncio.Queue] = {}  # 每个代理有自己的消息队列
         self.message_handlers: Dict[str, callable] = {}
         
     async def register_agent(self, agent_name: str, capabilities: List[str]):
@@ -68,19 +68,27 @@ class MessageBusBroker:
             capabilities=capabilities,
             last_activity=time.time()
         )
+        # 为每个代理创建独立的消息队列
+        self.message_queues[agent_name] = asyncio.Queue()
         logger.info(f"Agent {agent_name} registered with capabilities: {capabilities}")
         
     async def unregister_agent(self, agent_name: str):
         """Unregister an agent from the broker"""
         if agent_name in self.agents:
             del self.agents[agent_name]
-            logger.info(f"Agent {agent_name} unregistered")
+        if agent_name in self.message_queues:
+            del self.message_queues[agent_name]
+        logger.info(f"Agent {agent_name} unregistered")
             
     async def send_message(self, message: Message):
-        """Send a message to the message queue"""
-        await self.message_queue.put(message)
-        logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
-        
+        """Send a message to the specific agent's queue"""
+        recipient = message.recipient
+        if recipient in self.message_queues:
+            await self.message_queues[recipient].put(message)
+            logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
+        else:
+            logger.warning(f"Recipient {recipient} not found, message dropped")
+            
     async def broadcast_message(self, message: Message):
         """Broadcast a message to all agents"""
         for agent_name in self.agents.keys():
@@ -95,10 +103,12 @@ class MessageBusBroker:
             )
             await self.send_message(broadcast_msg)
             
-    async def get_message(self) -> Optional[Message]:
-        """Get a message from the queue"""
+    async def get_message(self, agent_name: str) -> Optional[Message]:
+        """Get a message from a specific agent's queue"""
+        if agent_name not in self.message_queues:
+            return None
         try:
-            return await asyncio.wait_for(self.message_queue.get(), timeout=1.0)
+            return await asyncio.wait_for(self.message_queues[agent_name].get(), timeout=1.0)
         except asyncio.TimeoutError:
             return None
             
