@@ -90,6 +90,7 @@ class MessageBusBroker:
             await self.message_queues[recipient].put(message)
             logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
             logger.info(f"Queue size for {recipient}: {self.message_queues[recipient].qsize()}")
+            logger.debug(f"Message content: {message.content}")
         else:
             logger.warning(f"Recipient {recipient} not found, message dropped")
             logger.warning(f"Available recipients: {list(self.message_queues.keys())}")
@@ -113,12 +114,27 @@ class MessageBusBroker:
         if agent_name not in self.message_queues:
             logger.warning(f"Agent {agent_name} not found in message queues")
             return None
+        
+        queue = self.message_queues[agent_name]
+        queue_size = queue.qsize()
+        logger.debug(f"Agent {agent_name} queue size: {queue_size}")
+        
+        if queue_size == 0:
+            return None
+            
         try:
-            message = await asyncio.wait_for(self.message_queues[agent_name].get(), timeout=1.0)
+            message = await asyncio.wait_for(queue.get(), timeout=1.0)
             if message:
                 logger.info(f"Retrieved message for {agent_name}: {message.type.value} from {message.sender}")
+                logger.debug(f"Message content: {message.content}")
             return message
         except asyncio.TimeoutError:
+            logger.debug(f"Timeout getting message for {agent_name}")
+            return None
+        except Exception as e:
+            logger.error(f"Error getting message for {agent_name}: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
             
     async def send_message_direct(self, sender: str, recipient: str, 
