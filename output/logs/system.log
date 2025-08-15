@@ -1,0 +1,178 @@
+2025-08-15 09:52:34 INFO agent.planner_agent: planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 09:52:34 INFO agent.searcher_agent: searcher_agent initialized with capabilities: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-15 09:52:34 INFO agent.discusser_agent: discusser_agent initialized with capabilities: ['discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+2025-08-15 09:52:34 INFO agent.writer_agent: writer_agent initialized with capabilities: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-15 09:52:34 INFO agent.reviewer_agent: reviewer_agent initialized with capabilities: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
+2025-08-15 09:52:34 INFO agent.rewriter_agent: rewriter_agent initialized with capabilities: ['patent_rewriting', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+2025-08-15 09:52:34 INFO agent.coordinator_agent: coordinator_agent initialized with capabilities: ['workflow_orchestration', 'agent_coordination', 'progress_tracking', 'quality_assurance']
+2025-08-15 09:52:34 INFO patent_agent_demo.patent_agent_system: Created 7 agents
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent planner_agent registered with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent planner_agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.planner_agent: Planner Agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent registered with capabilities: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent searcher_agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.searcher_agent: Searcher Agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent registered with capabilities: ['discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent discusser_agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.discusser_agent: Discusser Agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent writer_agent registered with capabilities: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent writer_agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.writer_agent: Writer Agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent registered with capabilities: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent reviewer_agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.reviewer_agent: Reviewer Agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent registered with capabilities: ['patent_rewriting', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent rewriter_agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.rewriter_agent: Rewriter Agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent registered with capabilities: ['workflow_orchestration', 'agent_coordination', 'progress_tracking', 'quality_assurance']
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent coordinator_agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.coordinator_agent: Coordinator Agent started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent planner_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.patent_agent_system: All agents started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.patent_agent_system: Patent Agent System started successfully
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.coordinator_agent: Starting patent workflow db7c7f86-a8cf-4bb5-8834-6fc06ae6cce4 for: 证据图增强的检索增强RAG系统
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.coordinator_agent: Executing stage 0: Planning & Strategy using planner_agent
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Message sent: coordination from coordinator_agent to planner_agent
+2025-08-15 09:52:34 INFO agent.planner_agent: RECV id=9b2d2646-ffdd-404b-9dc3-46eb40fce67d type=coordination from=coordinator_agent pri=5
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent planner_agent processing message: coordination
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent planner_agent status updated: busy
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.base_agent: Agent planner_agent executing task: db7c7f86-a8cf-4bb5-8834-6fc06ae6cce4_stage_0
+2025-08-15 09:52:34 INFO agent.planner_agent: EXECUTE task_id=db7c7f86-a8cf-4bb5-8834-6fc06ae6cce4_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
+2025-08-15 09:52:34 INFO patent_agent_demo.agents.planner_agent: Creating patent strategy for: 证据图增强的检索增强RAG系统
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:34 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:35 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent status updated: idle
+2025-08-15 09:52:36 INFO patent_agent_demo.patent_agent_system: Stopping Patent Agent System...
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent planner_agent unregistered
+2025-08-15 09:52:36 INFO patent_agent_demo.agents.base_agent: Agent planner_agent stopped successfully
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent searcher_agent unregistered
+2025-08-15 09:52:36 INFO patent_agent_demo.agents.base_agent: Agent searcher_agent stopped successfully
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent discusser_agent unregistered
+2025-08-15 09:52:36 INFO patent_agent_demo.agents.base_agent: Agent discusser_agent stopped successfully
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent writer_agent unregistered
+2025-08-15 09:52:36 INFO patent_agent_demo.agents.base_agent: Agent writer_agent stopped successfully
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent reviewer_agent unregistered
+2025-08-15 09:52:36 INFO patent_agent_demo.agents.base_agent: Agent reviewer_agent stopped successfully
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent rewriter_agent unregistered
+2025-08-15 09:52:36 INFO patent_agent_demo.agents.base_agent: Agent rewriter_agent stopped successfully
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Agent coordinator_agent unregistered
+2025-08-15 09:52:36 INFO patent_agent_demo.agents.base_agent: Agent coordinator_agent stopped successfully
+2025-08-15 09:52:36 INFO patent_agent_demo.fastmcp_config: Shutting down FastMCP system...
+2025-08-15 09:52:36 INFO patent_agent_demo.patent_agent_system: Patent Agent System stopped successfully

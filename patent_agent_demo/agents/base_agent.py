@@ -14,6 +14,7 @@ import uuid
 from ..fastmcp_config import (
     FastMCPBroker, Message, MessageType, AgentStatus, fastmcp_config
 )
+from ..logging_utils import attach_agent_file_logger
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,8 @@ class BaseAgent(ABC):
         }
         self.is_running = False
         
-        logger.info(f"Initialized agent: {name} with capabilities: {capabilities}")
+        self.agent_logger = attach_agent_file_logger(self.name)
+        self.agent_logger.info(f"{self.name} initialized with capabilities: {self.capabilities}")
         
     async def start(self):
         """Start the agent"""
@@ -78,6 +80,7 @@ class BaseAgent(ABC):
                 message = await self.broker.receive_message(self.name)
                 
                 if message:
+                    self.agent_logger.info(f"RECV id={message.id} type={message.type.value} from={message.sender} pri={message.priority}")
                     await self._process_message(message)
                     
                 # Update status
@@ -173,6 +176,7 @@ class BaseAgent(ABC):
             task_id = task_data.get("id", str(uuid.uuid4()))
             
             logger.info(f"Agent {self.name} executing task: {task_id}")
+            self.agent_logger.info(f"EXECUTE task_id={task_id} type={task_data.get('type')} meta={{'topic': task_data.get('topic')}}")
             
             # Execute the task using the abstract method
             result = await self.execute_task(task_data)
@@ -210,8 +214,7 @@ class BaseAgent(ABC):
                 priority=5
             )
             await self.broker.send_message(completion_message)
-            
-            logger.info(f"Agent {self.name} completed task {task_id} in {execution_time:.2f}s")
+            self.agent_logger.info(f"COMPLETE task_id={task_id} success={result.success} time={execution_time:.2f}s")
             
         except Exception as e:
             logger.error(f"Error executing task in {self.name}: {e}")

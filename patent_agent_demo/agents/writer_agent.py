@@ -209,6 +209,7 @@ class WriterAgent(BaseAgent):
 """
             summary = await self.google_a2a_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
+            self.agent_logger.info("DETAIL_SECTION start outline/background/summary")
             # Detailed description via subchapter generation
             subchapters = [
                 {"id": "A", "title": "数据获取与预处理"},
@@ -218,6 +219,7 @@ class WriterAgent(BaseAgent):
             ]
             desc_parts: List[str] = []
             for sc in subchapters:
+                self.agent_logger.info(f"SUBCHAPTER {sc['id']} begin: {sc['title']}")
                 sprompt = f"""
 撰写“具体实施方式-子章节{sc['id']}：{sc['title']}”（中文，≥3000字），主题：{writing_task.topic}
 - 至少包含：1个mermaid图；3个算法公式（Markdown/LaTeX）；1段Python风格伪代码（≥50行）。
@@ -225,9 +227,11 @@ class WriterAgent(BaseAgent):
 - 保持术语一致、避免跨章重复。严格输出该子章节正文。
 """
                 text = await self.google_a2a_client._generate_response(sprompt)
+                self.agent_logger.info(f"SUBCHAPTER {sc['id']} end: chars={len(text)}")
                 desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
             # Assemble detailed description
             detailed_description = ("\n".join(desc_parts)).strip()
+            self.agent_logger.info(f"DETAIL_SECTION assembled length={len(detailed_description)}")
             detailed_sections["detailed_description"] = detailed_description
             # Claims
             claims_prompt = f"""
