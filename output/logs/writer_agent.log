@@ -22,3 +22,5 @@
 2025-08-15 12:35:10 INFO agent.writer_agent: SUBCHAPTER A begin: 数据获取与预处理
 2025-08-15 12:40:01 INFO agent.writer_agent: SUBCHAPTER A end: chars=18502
 2025-08-15 12:40:01 INFO agent.writer_agent: SUBCHAPTER B begin: 证据构建与关系建模
+2025-08-15 12:45:16 INFO agent.writer_agent: SUBCHAPTER B end: chars=18480
+2025-08-15 12:45:16 INFO agent.writer_agent: SUBCHAPTER C begin: 生成与约束解码
