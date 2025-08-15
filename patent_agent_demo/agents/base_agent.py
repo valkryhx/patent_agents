@@ -87,14 +87,28 @@ class BaseAgent:
         """Main message processing loop"""
         try:
             logger.info(f"Message processing loop started for {self.name}")
+            loop_count = 0
             while self.status != AgentStatus.OFFLINE:
+                loop_count += 1
+                
                 # Get message from broker for this specific agent
-                message = await self.broker.get_message(self.name)
+                try:
+                    message = await self.broker.get_message(self.name)
+                except Exception as e:
+                    logger.error(f"Error getting message for {self.name}: {e}")
+                    import traceback
+                    logger.error(f"Traceback: {traceback.format_exc()}")
+                    message = None
                 
                 if message:
                     logger.info(f"Agent {self.name} received message: {message.type.value} from {message.sender}")
                     # Process message
-                    await self._process_message(message)
+                    try:
+                        await self._process_message(message)
+                    except Exception as e:
+                        logger.error(f"Error processing message in {self.name}: {e}")
+                        import traceback
+                        logger.error(f"Traceback: {traceback.format_exc()}")
                 else:
                     # Log occasionally to show the loop is running
                     if int(time.time()) % 10 == 0:  # Log every 10 seconds
@@ -102,7 +116,7 @@ class BaseAgent:
                     
                 # Add heartbeat to show the loop is running
                 if int(time.time()) % 5 == 0:  # Log every 5 seconds
-                    logger.info(f"Agent {self.name} message loop heartbeat - status: {self.status.value}")
+                    logger.info(f"Agent {self.name} message loop heartbeat - status: {self.status.value} - loop count: {loop_count}")
                     
                 # Small delay to prevent busy waiting
                 await asyncio.sleep(0.1)
