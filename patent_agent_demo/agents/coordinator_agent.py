@@ -191,33 +191,55 @@ class CoordinatorAgent(BaseAgent):
             if not workflow:
                 logger.error(f"Workflow {workflow_id} not found")
                 return
-                
+            
             if stage_index >= len(workflow.stages):
                 logger.info(f"Workflow {workflow_id} completed all stages")
                 await self._complete_workflow(workflow_id)
                 return
-                
+            
             stage = workflow.stages[stage_index]
             stage.status = "running"
             stage.start_time = time.time()
             
             logger.info(f"Executing stage {stage_index}: {stage.stage_name} using {stage.agent_name}")
             
+            # Build task content with latest artifacts
+            task_type = self._get_task_type_for_stage(stage.stage_name)
+            task_content = {
+                "task": {
+                    "id": f"{workflow_id}_stage_{stage_index}",
+                    "type": task_type,
+                    "workflow_id": workflow_id,
+                    "stage_index": stage_index,
+                    "topic": workflow.topic,
+                    "description": workflow.description,
+                    "previous_results": workflow.results
+                }
+            }
+            
+            # Inject latest draft/review feedback for dependent stages
+            if task_type == "patent_review":
+                current_draft = self._get_current_draft(workflow)
+                if current_draft:
+                    task_content["task"]["patent_draft"] = current_draft
+            elif task_type == "patent_rewrite":
+                current_draft = self._get_current_draft(workflow)
+                last_feedback = self._get_latest_review_feedback(workflow)
+                if current_draft:
+                    task_content["task"]["patent_draft"] = current_draft
+                if last_feedback:
+                    task_content["task"]["review_feedback"] = last_feedback
+            elif task_type == "innovation_discussion":
+                # Provide latest analysis and review outcomes for more focused discussion
+                last_feedback = self._get_latest_review_feedback(workflow)
+                if last_feedback:
+                    task_content["task"]["review_feedback"] = last_feedback
+            
             # Send task to appropriate agent
-            task_message = await self.send_message(
+            await self.send_message(
                 recipient=stage.agent_name,
                 message_type=MessageType.COORDINATION,
-                content={
-                    "task": {
-                        "id": f"{workflow_id}_stage_{stage_index}",
-                        "type": self._get_task_type_for_stage(stage.stage_name),
-                        "workflow_id": workflow_id,
-                        "stage_index": stage_index,
-                        "topic": workflow.topic,
-                        "description": workflow.description,
-                        "previous_results": workflow.results
-                    }
-                },
+                content=task_content,
                 priority=5
             )
             
@@ -228,7 +250,7 @@ class CoordinatorAgent(BaseAgent):
         except Exception as e:
             logger.error(f"Error executing workflow stage: {e}")
             await self._handle_stage_error(workflow_id, stage_index, str(e))
-            
+ 
     def _get_task_type_for_stage(self, stage_name: str) -> str:
         """Get the task type for a specific stage"""
         task_mapping = {
@@ -241,33 +263,141 @@ class CoordinatorAgent(BaseAgent):
         }
         return task_mapping.get(stage_name, "unknown")
         
+    async def _handle_status_message(self, message):
+        """Override status handler to catch completion events and advance workflow"""
+        try:
+            content = message.content or {}
+            if content.get("status") == "completed" and content.get("task_id") and "_stage_" in content.get("task_id"):
+                task_id = content.get("task_id")
+                result = content.get("result", {})
+                workflow_id, stage_index_str = task_id.split("_stage_")
+                await self._handle_stage_completion(workflow_id, int(stage_index_str), result)
+            else:
+                # fallback to base for agent status updates
+                await super()._handle_status_message(message)
+        except Exception as e:
+            logger.error(f"Coordinator status handling error: {e}")
+ 
+    def _get_current_draft(self, workflow: PatentWorkflow):
+        """Return the most recent draft object from writer or rewriter stage results"""
+        try:
+            # Prefer latest rewrite
+            for i in reversed(range(len(workflow.stages))):
+                st = workflow.stages[i]
+                sr = workflow.results.get(f"stage_{i}", {})
+                data = sr.get("result", {}) if sr else {}
+                if st.stage_name == "Final Rewrite" and (data.get("improved_draft") or data.get("rewrite_result", {}).get("improved_draft")):
+                    return data.get("improved_draft") or data.get("rewrite_result", {}).get("improved_draft")
+            # Fallback to writer stage
+            for i, st in enumerate(workflow.stages):
+                if st.stage_name == "Patent Drafting":
+                    data = workflow.results.get(f"stage_{i}", {}).get("result", {})
+                    if data.get("patent_draft"):
+                        return data.get("patent_draft")
+            return None
+        except Exception:
+            return None
+ 
+    def _get_latest_review_feedback(self, workflow: PatentWorkflow):
+        """Return the latest review feedback dict"""
+        try:
+            for i in reversed(range(len(workflow.stages))):
+                st = workflow.stages[i]
+                if st.stage_name == "Quality Review":
+                    data = workflow.results.get(f"stage_{i}", {}).get("result", {})
+                    return data.get("feedback") or data.get("review_result")
+            return None
+        except Exception:
+            return None
+ 
     async def _handle_stage_completion(self, workflow_id: str, stage_index: int, result: Dict[str, Any]):
-        """Handle completion of a workflow stage"""
+        """Handle completion of a workflow stage with iterative review-rewrite loop"""
         try:
             workflow = self.active_workflows.get(workflow_id)
             if not workflow:
                 return
-                
+            
             stage = workflow.stages[stage_index]
             stage.status = "completed"
             stage.end_time = time.time()
             stage.result = result
-            
-            # Store results
-            workflow.results[f"stage_{stage_index}"] = result
-            
+            workflow.results[f"stage_{stage_index}"] = {"result": result}
             logger.info(f"Stage {stage_index} completed for workflow {workflow_id}")
             
-            # Check if workflow is complete
+            # If writer stage completed, start review/rewriter iterative loop
+            stage_name = stage.stage_name
+            if stage_name == "Patent Drafting":
+                workflow.results.setdefault("iteration", {"count": 0, "max": 3, "target_score": 8.8})
+                await self._start_review_iteration(workflow_id)
+                return
+            
+            # If review result suggests revisions OR below target quality, trigger rewrite
+            if stage_name == "Quality Review":
+                compliance = result.get("compliance_status") or result.get("review_result", {}).get("compliance_status")
+                outcome = result.get("review_outcome")
+                quality_score = result.get("quality_score") or result.get("review_result", {}).get("overall_score")
+                iteration = workflow.results.setdefault("iteration", {"count": 0, "max": 3, "target_score": 8.8})
+                if (compliance in ("needs_major_revision", "needs_minor_revision", "non_compliant")
+                    or outcome in ("needs_revision", "major_revision_required")
+                    or (quality_score is not None and quality_score < iteration.get("target_score", 8.8))):
+                    await self._trigger_rewrite_cycle(workflow_id, stage_index)
+                    return
+                # Meets target -> proceed
+            
+            # If rewrite completed, then re-discuss and re-review
+            if stage_name == "Final Rewrite":
+                await self._post_rewrite_next_steps(workflow_id, stage_index)
+                return
+            
+            # Default: proceed to next stage
             if stage_index == len(workflow.stages) - 1:
                 await self._complete_workflow(workflow_id)
             else:
-                # Move to next stage
                 await self._execute_workflow_stage(workflow_id, stage_index + 1)
-                
+         
         except Exception as e:
             logger.error(f"Error handling stage completion: {e}")
             
+    async def _start_review_iteration(self, workflow_id: str):
+        """Begin the first review after drafting, with loop metadata."""
+        workflow = self.active_workflows.get(workflow_id)
+        if not workflow:
+            return
+        workflow.results.setdefault("iteration", {"count": 0, "max": 3, "target_score": 8.8})
+        await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
+ 
+    def _find_stage_index(self, workflow: PatentWorkflow, stage_name: str) -> int:
+        for i, st in enumerate(workflow.stages):
+            if st.stage_name == stage_name:
+                return i
+        return max(0, workflow.current_stage)
+ 
+    async def _trigger_rewrite_cycle(self, workflow_id: str, review_stage_index: int):
+        """Trigger rewriter and then discussion if necessary."""
+        workflow = self.active_workflows.get(workflow_id)
+        if not workflow:
+            return
+        iteration = workflow.results.setdefault("iteration", {"count": 0, "max": 3, "target_score": 8.8})
+        if iteration["count"] >= iteration.get("max", 3):
+            logger.info(f"Iteration limit reached for workflow {workflow_id}")
+            # proceed to next stage after review (rewrite already in pipeline or stop)
+            next_idx = review_stage_index + 1 if review_stage_index + 1 < len(workflow.stages) else review_stage_index
+            await self._execute_workflow_stage(workflow_id, next_idx)
+            return
+        iteration["count"] += 1
+        # Run rewriter stage
+        await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Final Rewrite"))
+ 
+    async def _post_rewrite_next_steps(self, workflow_id: str, rewrite_stage_index: int):
+        """After rewrite, run a brief discussion and then re-review; stop when target met."""
+        workflow = self.active_workflows.get(workflow_id)
+        if not workflow:
+            return
+        # Optional: brief discussion to validate changes
+        await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Innovation Discussion"))
+        # Then re-run review
+        await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
+ 
     async def _handle_stage_error(self, workflow_id: str, stage_index: int, error: str):
         """Handle errors in workflow stages"""
         try:
@@ -359,7 +489,7 @@ class CoordinatorAgent(BaseAgent):
             logger.error(f"Error completing workflow: {e}")
             
     async def _compile_final_results(self, workflow: PatentWorkflow) -> Dict[str, Any]:
-        """Compile final results from all workflow stages"""
+        """Compile final results from all workflow stages, including last review metrics and iterations"""
         try:
             final_results = {
                 "workflow_summary": {
@@ -367,7 +497,8 @@ class CoordinatorAgent(BaseAgent):
                     "description": workflow.description,
                     "total_stages": len(workflow.stages),
                     "completion_time": workflow.estimated_completion - workflow.start_time,
-                    "overall_status": workflow.overall_status
+                    "overall_status": workflow.overall_status,
+                    "iterations": workflow.results.get("iteration", {}).get("count", 0)
                 },
                 "stage_results": {},
                 "patent_summary": {

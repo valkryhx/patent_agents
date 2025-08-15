@@ -188,21 +188,22 @@ class DiscusserAgent(BaseAgent):
         try:
             # Use Google A2A to generate discussion agenda
             prompt = f"""
-            Generate a discussion agenda for an innovation brainstorming session:
+            Generate a discussion agenda aligned with CN patent drafting needs:
             
             Topic: {topic}
             Description: {description}
-            
             Previous Results: {previous_results}
             
-            Create 5-7 agenda items that will help explore:
-            1. Technical challenges and solutions
-            2. Alternative approaches
-            3. Innovation opportunities
-            4. Risk mitigation strategies
-            5. Implementation considerations
+            Focus areas:
+            - 最近似现有技术与区别技术特征确认
+            - 实际要解决的技术问题重述（基于区别特征）
+            - 技术启示及非显而易见性论证要点
+            - 实施例的Who/What/When/Where/How
+            - 关键参数/范围/部件连接关系
+            - 可能的规避方案与覆盖范围
+            - 技术效果的可量化验证
             
-            Return only the agenda items, one per line.
+            Output 6-8 agenda items, one per line.
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
