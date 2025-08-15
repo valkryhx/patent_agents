@@ -50,6 +50,7 @@ class CoordinatorAgent(BaseAgent):
         self.active_workflows: Dict[str, PatentWorkflow] = {}
         self.workflow_templates = self._load_workflow_templates()
         self.agent_dependencies = self._load_agent_dependencies()
+        self.completed_workflows: Dict[str, Dict[str, Any]] = {}
         
     async def start(self):
         """Start the coordinator agent"""
@@ -482,8 +483,10 @@ class CoordinatorAgent(BaseAgent):
                 priority=3
             )
             
-            # Clean up workflow
-            del self.active_workflows[workflow_id]
+            # Persist final results for retrieval, then clean up workflow
+            self.completed_workflows[workflow_id] = final_results
+            if workflow_id in self.active_workflows:
+                del self.active_workflows[workflow_id]
             
         except Exception as e:
             logger.error(f"Error completing workflow: {e}")
@@ -577,6 +580,15 @@ class CoordinatorAgent(BaseAgent):
                         }
                     )
                 else:
+                    # Check if it's completed and stored
+                    if workflow_id in self.completed_workflows:
+                        return TaskResult(
+                            success=True,
+                            data={
+                                "workflow": {"workflow_id": workflow_id, "overall_status": "completed"},
+                                "final_results": self.completed_workflows.get(workflow_id)
+                            }
+                        )
                     return TaskResult(
                         success=False,
                         data={},

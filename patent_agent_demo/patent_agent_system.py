@@ -163,8 +163,13 @@ class PatentAgentSystem:
                 
                 if status_result.success:
                     workflow_data = status_result.data.get("workflow")
-                    if workflow_data and workflow_data.get("overall_status") == "completed":
-                        # Workflow completed, get final results
+                    # workflow_data may be a dataclass or dict
+                    overall_status = None
+                    if hasattr(workflow_data, "overall_status"):
+                        overall_status = getattr(workflow_data, "overall_status", None)
+                    elif isinstance(workflow_data, dict):
+                        overall_status = workflow_data.get("overall_status")
+                    if overall_status == "completed":
                         return await self._get_workflow_results(workflow_id)
                         
                 # Wait before checking again
@@ -180,20 +185,26 @@ class PatentAgentSystem:
     async def _get_workflow_results(self, workflow_id: str) -> Dict[str, Any]:
         """Get final results from a completed workflow"""
         try:
-            # This would typically involve querying the coordinator for final results
-            # For now, we'll return a mock result structure
+            status_result = await self.coordinator.execute_task({
+                "type": "monitor_workflow",
+                "workflow_id": workflow_id
+            })
+            if status_result.success:
+                data = status_result.data or {}
+                # Prefer compiled final results if present
+                final_results = data.get("final_results") or data.get("results")
+                if final_results:
+                    return {
+                        "workflow_id": workflow_id,
+                        "status": "completed",
+                        **final_results
+                    }
+            # Fallback minimal
             return {
                 "workflow_id": workflow_id,
                 "status": "completed",
-                "patent_summary": {
-                    "title": "Generated Patent Title",
-                    "status": "Ready for Filing",
-                    "confidence_score": 0.92
-                },
-                "completion_time": time.time(),
-                "message": "Patent development workflow completed successfully"
+                "message": "Workflow completed"
             }
-            
         except Exception as e:
             logger.error(f"Error getting workflow results: {e}")
             raise
