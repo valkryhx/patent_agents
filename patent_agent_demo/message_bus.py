@@ -63,6 +63,8 @@ class FastMCPBroker:
         self.subscribers: Dict[str, List[str]] = {}
         self.message_history: List[Message] = []
         self.max_history = 1000
+        # Cache last logged (status, current_task) per agent to avoid log spam
+        self._last_logged_status: Dict[str, tuple] = {}
         
     async def register_agent(self, agent_name: str, capabilities: List[str]):
         """Register a new agent"""
@@ -125,12 +127,19 @@ class FastMCPBroker:
         return self.agents.get(agent_name)
         
     async def update_agent_status(self, agent_name: str, status: AgentStatus, 
-                                current_task: Optional[str] = None):
+                                 current_task: Optional[str] = None):
         """Update agent status"""
         if agent_name in self.agents:
+            # Detect changes to reduce repetitive logging for IDLE
+            prev = self._last_logged_status.get(agent_name)
+            changed = (prev is None) or (prev[0] != status) or (prev[1] != current_task)
             self.agents[agent_name].status = status
             self.agents[agent_name].current_task = current_task
-            logger.info(f"Agent {agent_name} status updated: {status.value}")
+            if changed:
+                self._last_logged_status[agent_name] = (status, current_task)
+                # Only log when not IDLE to reduce noise
+                if status != AgentStatus.IDLE:
+                    logger.info(f"Agent {agent_name} status updated: {status.value}")
             
     async def get_system_status(self) -> Dict[str, Any]:
         """Get overall system status"""
