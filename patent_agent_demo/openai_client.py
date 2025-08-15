@@ -128,7 +128,7 @@ Structure the output as JSON with these fields.
     
     async def search_prior_art(self, topic: str, keywords: List[str], 
                               max_results: int = 20) -> List[SearchResult]:
-        """Search for prior art using GPT-5 with web search or GLM fallback"""
+        """Search for prior art using GPT-5 with web search or GLM fallback with DuckDuckGo"""
         
         async def openai_search():
             search_query = f"patent prior art {topic} {' '.join(keywords)}"
@@ -144,7 +144,7 @@ Structure the output as JSON with these fields.
             return [
                 SearchResult(
                     patent_id="WEB_SEARCH_001",
-                    title="Prior Art Found via Web Search",
+                    title="Prior Art Found via OpenAI Web Search",
                     abstract=f"Web search results for: {topic}",
                     inventors=["Various"],
                     filing_date="N/A",
@@ -156,11 +156,94 @@ Structure the output as JSON with these fields.
         
         async def glm_search():
             if self.glm_client:
-                return await self.glm_client.search_prior_art(topic, keywords, max_results)
+                # Use DuckDuckGo for free web search when falling back to GLM
+                return await self._search_with_duckduckgo(topic, keywords, max_results)
             else:
                 raise RuntimeError("GLM fallback not available")
         
         return await self._call_with_fallback(openai_search, glm_search)
+    
+    async def _search_with_duckduckgo(self, topic: str, keywords: List[str], max_results: int) -> List[SearchResult]:
+        """Search for prior art using DuckDuckGo (free alternative)"""
+        try:
+            import requests
+            from urllib.parse import quote_plus
+            
+            # Create search query
+            search_query = f"patent prior art {topic} {' '.join(keywords)}"
+            encoded_query = quote_plus(search_query)
+            
+            # DuckDuckGo search URL (using their instant answer API)
+            url = f"https://api.duckduckgo.com/?q={encoded_query}&format=json&no_html=1&skip_disambig=1"
+            
+            # Make request
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # Parse DuckDuckGo results
+            results = []
+            
+            # Add abstract if available
+            if data.get('Abstract'):
+                results.append(SearchResult(
+                    patent_id="DDG_001",
+                    title=data.get('AbstractSource', 'DuckDuckGo Result'),
+                    abstract=data.get('Abstract', f"Search result for: {topic}"),
+                    inventors=["Various"],
+                    filing_date="N/A",
+                    publication_date="N/A",
+                    relevance_score=7.5,
+                    similarity_analysis={"overlap": "DuckDuckGo search", "differences": "Free web search results"}
+                ))
+            
+            # Add related topics if available
+            if data.get('RelatedTopics'):
+                for i, topic_info in enumerate(data['RelatedTopics'][:max_results-1]):
+                    if isinstance(topic_info, dict) and topic_info.get('Text'):
+                        results.append(SearchResult(
+                            patent_id=f"DDG_{i+2:03d}",
+                            title=topic_info.get('Text', 'Related Topic'),
+                            abstract=f"Related information for: {topic}",
+                            inventors=["Various"],
+                            filing_date="N/A",
+                            publication_date="N/A",
+                            relevance_score=7.0,
+                            similarity_analysis={"overlap": "Related topic", "differences": "Additional context"}
+                        ))
+            
+            # If no results from DuckDuckGo, return a default result
+            if not results:
+                results.append(SearchResult(
+                    patent_id="DDG_DEFAULT",
+                    title="DuckDuckGo Search Result",
+                    abstract=f"Free web search completed for: {topic}",
+                    inventors=["Various"],
+                    filing_date="N/A",
+                    publication_date="N/A",
+                    relevance_score=6.5,
+                    similarity_analysis={"overlap": "Free search", "differences": "Limited results available"}
+                ))
+            
+            logger.info(f"DuckDuckGo search completed for: {topic}, found {len(results)} results")
+            return results[:max_results]
+            
+        except Exception as e:
+            logger.error(f"Error in DuckDuckGo search: {e}")
+            # Return a fallback result
+            return [
+                SearchResult(
+                    patent_id="DDG_FALLBACK",
+                    title="Search Fallback",
+                    abstract=f"Search failed for: {topic}, using fallback result",
+                    inventors=["Various"],
+                    filing_date="N/A",
+                    publication_date="N/A",
+                    relevance_score=5.0,
+                    similarity_analysis={"overlap": "Fallback", "differences": "Error occurred during search"}
+                )
+            ]
     
     async def generate_patent_draft(self, topic: str, description: str, 
                                   analysis: PatentAnalysis) -> PatentDraft:
