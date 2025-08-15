@@ -14,17 +14,19 @@ async def test_glm_recovery():
         
         print("🧪 测试GLM API恢复状态")
         
-        # 创建GLM客户端
-        client = GLMA2AClient()
-        print("✅ GLM客户端创建成功")
-        
-        # 检查API密钥
-        api_key = os.getenv('GLM_API_KEY')
-        if not api_key:
-            print("❌ GLM_API_KEY环境变量未设置")
+        # 检查API密钥文件
+        api_key_file = "/workspace/.private/GLM_API_KEY"
+        if os.path.exists(api_key_file):
+            with open(api_key_file, 'r') as f:
+                api_key = f.read().strip()
+            print(f"✅ 从文件加载API密钥: {api_key[:10]}...")
+        else:
+            print("❌ GLM API密钥文件不存在")
             return False
         
-        print(f"✅ API密钥已配置: {api_key[:10]}...")
+        # 创建GLM客户端
+        client = GLMA2AClient(api_key)
+        print("✅ GLM客户端创建成功")
         
         # 测试API调用
         print("📝 测试API调用...")
