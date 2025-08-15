@@ -59,7 +59,7 @@ class WriterAgent(BaseAgent):
             if task_type == "patent_drafting":
                 return await self._draft_patent_application(task_data)
             elif task_type == "claim_writing":
-                return await self._write_patent_claims(task_data)
+                return await self._write_patent_claims_task(task_data)
             elif task_type == "technical_description":
                 return await self._write_technical_description(task_data)
             elif task_type == "legal_compliance_check":
@@ -187,7 +187,7 @@ class WriterAgent(BaseAgent):
             detailed_sections["detailed_description"] = detailed_description
             
             # Write claims
-            claims = await self._write_patent_claims(
+            claims = await self._write_patent_claims_section(
                 writing_task.topic, writing_task.description, writing_task.previous_results
             )
             detailed_sections["claims"] = claims
@@ -210,20 +210,24 @@ class WriterAgent(BaseAgent):
         try:
             # Use Google A2A to write background section
             prompt = f"""
-            Write a comprehensive background section for a patent application:
+            Write a comprehensive background section for a patent application, aligning with CN disclosure template:
             
             Topic: {topic}
             Description: {description}
             
             Previous Analysis: {previous_results.get('analysis', {})}
+            Prior Art (if any): {previous_results.get('stage_1', {})}
             
-            Include:
-            1. Field of the invention
-            2. Current state of the art
-            3. Problems with existing solutions
-            4. Need for the invention
+            Include, in this order:
+            A. 技术领域 (Technical Field) — concise statement of the domain
+            B. 现有技术的技术方案 (Nearest Prior Art) — how it is implemented and workflow/components
+            C. 现有技术的缺点及待解决的技术问题 — articulate technical drawbacks (not business/admin) and the objective problems
+            D. 本申请的必要性/改进动机
             
-            Write in formal patent language, 200-300 words.
+            Style:
+            - Formal patent language
+            - 250-350 words
+            - Be specific and implementation-oriented
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -255,7 +259,7 @@ class WriterAgent(BaseAgent):
         try:
             # Use Google A2A to write summary section
             prompt = f"""
-            Write a summary section for a patent application:
+            Write a summary section (Summary of Invention) aligned with CN disclosure handbook:
             
             Topic: {topic}
             Abstract: {abstract}
@@ -263,11 +267,14 @@ class WriterAgent(BaseAgent):
             Analysis Results: {previous_results.get('analysis', {})}
             
             Include:
-            1. Brief summary of the invention
-            2. Key advantages
-            3. Technical benefits
+            - 技术方案要点（Who/What/When/Where/How）
+            - 与最近似现有技术的区别特征
+            - 技术效果/有益效果（技术性、可量化）
             
-            Write in formal patent language, 150-200 words.
+            Constraints:
+            - Formal patent language
+            - 180-250 words
+            - Avoid marketing claims; stay technical
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -293,21 +300,24 @@ class WriterAgent(BaseAgent):
         try:
             # Use Google A2A to write detailed description
             prompt = f"""
-            Write a detailed description section for a patent application:
+            Write a detailed description aligned with CN disclosure template Section 5:
             
             Topic: {topic}
             Description: {description}
             Claims: {claims}
-            
             Previous Results: {previous_results}
             
-            Include:
-            1. Detailed technical implementation
-            2. Step-by-step methodology
-            3. Alternative embodiments
-            4. Technical advantages
+            Structure and include:
+            1. 方法/业务流程类：提供流程图/信令交互图文字版；按步骤顺序描述，每步给出Who/What/When/Where/How；
+            2. 系统/设备类：提供结构图文字版；逐一说明各组成部分功能、信号处理方式、相互连接关系；
+            3. 改进点：逐项展开技术方案一/二/三的不同实现；
+            4. 可选实施例与变体；
+            5. 技术效果与实现条件；
             
-            Write in formal patent language, 500-800 words.
+            Constraints:
+            - 700-1200 words
+            - 以实施方式描述为主，避免泛化描述
+            - 保持术语一致
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -327,26 +337,25 @@ class WriterAgent(BaseAgent):
             logger.error(f"Error writing detailed description: {e}")
             return f"Detailed description for {topic} - [Error occurred during generation]"
             
-    async def _write_patent_claims(self, topic: str, description: str, 
+    async def _write_patent_claims_section(self, topic: str, description: str, 
                                  previous_results: Dict[str, Any]) -> List[str]:
         """Write patent claims"""
         try:
             # Use Google A2A to write claims
             prompt = f"""
-            Write 3-5 patent claims for this invention:
+            Draft 1 independent claim and 3-6 dependent claims in CN style:
             
             Topic: {topic}
             Description: {description}
-            
             Analysis: {previous_results.get('analysis', {})}
             
-            Include:
-            1. One independent claim covering the core invention
-            2. 2-4 dependent claims with specific limitations
-            3. Clear, precise language
-            4. Proper patent claim structure
+            Requirements:
+            - 独立权利要求：限定核心技术特征，包含前序部分+特征部分（采用“其特征在于/包括”结构），避免结果性限定；
+            - 从属权利要求：逐项增加技术特征、参数范围、具体部件关系；
+            - 术语统一、避免功能性泛化；
+            - 每项以句号结束。
             
-            Format each claim as a numbered list.
+            Output numbered list.
             """
             
             response = await self.google_a2a_client._generate_response(prompt)
@@ -635,10 +644,17 @@ class WriterAgent(BaseAgent):
             logger.error(f"Error calculating writing quality: {e}")
             return 7.0  # Default fallback score
             
-    async def _write_patent_claims(self, task_data: Dict[str, Any]) -> TaskResult:
+    async def _write_patent_claims_task(self, task_data: Dict[str, Any]) -> TaskResult:
         """Write patent claims specifically"""
-        # Implementation for claim writing
-        pass
+        try:
+            topic = task_data.get("topic")
+            description = task_data.get("description")
+            previous_results = task_data.get("previous_results", {})
+            claims = await self._write_patent_claims_section(topic, description, previous_results)
+            return TaskResult(success=True, data={"claims": claims})
+        except Exception as e:
+            logger.error(f"Error in claim writing task: {e}")
+            return TaskResult(success=False, data={}, error_message=str(e))
         
     async def _write_technical_description(self, task_data: Dict[str, Any]) -> TaskResult:
         """Write technical description"""

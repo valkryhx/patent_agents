@@ -136,7 +136,7 @@ class ReviewerAgent(BaseAgent):
             )
             
     async def _conduct_comprehensive_review(self, review_task: ReviewTask) -> ReviewResult:
-        """Conduct a comprehensive review of the patent draft"""
+        """Conduct a comprehensive review of the patent draft (aligned with CN audit factors)"""
         try:
             patent_draft = review_task.patent_draft
             
@@ -147,40 +147,45 @@ class ReviewerAgent(BaseAgent):
             # Review title
             title_review = await self._review_title(patent_draft.title)
             section_scores["title"] = title_review["score"]
-            issues_found.extend(title_review["issues"])
+            issues_found.extend([{**issue, "section": "title"} for issue in title_review["issues"]])
             
             # Review abstract
             abstract_review = await self._review_abstract(patent_draft.abstract)
             section_scores["abstract"] = abstract_review["score"]
-            issues_found.extend(abstract_review["issues"])
+            issues_found.extend([{**issue, "section": "abstract"} for issue in abstract_review["issues"]])
             
             # Review background
             background_review = await self._review_background(patent_draft.background)
             section_scores["background"] = background_review["score"]
-            issues_found.extend(background_review["issues"])
+            issues_found.extend([{**issue, "section": "background"} for issue in background_review["issues"]])
             
             # Review summary
             summary_review = await self._review_summary(patent_draft.summary)
             section_scores["summary"] = summary_review["score"]
-            issues_found.extend(summary_review["issues"])
+            issues_found.extend([{**issue, "section": "summary"} for issue in summary_review["issues"]])
             
             # Review detailed description
             description_review = await self._review_detailed_description(patent_draft.detailed_description)
             section_scores["description"] = description_review["score"]
-            issues_found.extend(description_review["issues"])
+            issues_found.extend([{**issue, "section": "description"} for issue in description_review["issues"]])
             
             # Review claims
             claims_review = await self._review_claims(patent_draft.claims)
             section_scores["claims"] = claims_review["score"]
-            issues_found.extend(claims_review["issues"])
+            issues_found.extend([{**issue, "section": "claims"} for issue in claims_review["issues"]])
             
             # Review drawings
             drawings_review = await self._review_drawings(patent_draft.technical_diagrams)
             section_scores["drawings"] = drawings_review["score"]
-            issues_found.extend(drawings_review["issues"])
+            issues_found.extend([{**issue, "section": "drawings"} for issue in drawings_review["issues"]])
             
-            # Calculate overall score
-            overall_score = sum(section_scores.values()) / len(section_scores)
+            # Add 三性 checks as meta-issues
+            sanxing_issues, sanxing_bonus = await self._check_sanxing(review_task)
+            issues_found.extend(sanxing_issues)
+            
+            # Calculate overall score (weighted with 三性)
+            base_score = sum(section_scores.values()) / len(section_scores)
+            overall_score = min(10.0, base_score + sanxing_bonus)
             
             # Generate recommendations
             recommendations = await self._generate_recommendations(issues_found, section_scores)
@@ -717,6 +722,45 @@ class ReviewerAgent(BaseAgent):
         except Exception as e:
             logger.error(f"Error determining review outcome: {e}")
             return "review_failed"
+            
+    async def _check_sanxing(self, review_task: ReviewTask):
+        """Check CN 三性: 新颖性、创造性、实用性 and return (issues, bonus_score)."""
+        try:
+            issues = []
+            bonus = 0.0
+            draft = review_task.patent_draft
+            # Heuristics: presence of sections and technical specificity hints
+            novelty_hint = 0.0
+            if draft.summary and any(k in draft.summary.lower() for k in ["区别", "不同", "novel", "区别特征"]):
+                novelty_hint += 0.5
+            if draft.claims and len(draft.claims) >= 3:
+                novelty_hint += 0.5
+            if novelty_hint < 0.5:
+                issues.append({"type": "novelty", "severity": "high", "description": "未充分体现区别技术特征以支撑新颖性", "recommendation": "在摘要/说明书中明确最近似现有技术与区别点，并在权利要求独立项中限定核心区别特征", "section": "summary"})
+            else:
+                bonus += 0.2
+            inventive_hint = 0.0
+            if draft.background and any(k in draft.background for k in ["技术问题", "缺点", "问题", "不足"]):
+                inventive_hint += 0.3
+            if draft.summary and any(k in draft.summary for k in ["技术效果", "有益效果", "显著进步", "意想不到"]):
+                inventive_hint += 0.4
+            if inventive_hint < 0.5:
+                issues.append({"type": "inventiveness", "severity": "medium", "description": "未基于区别特征清晰界定实际解决的技术问题及技术启示分析", "recommendation": "补充’三步法‘：确定最接近现有技术→区别特征→是否存在技术启示；并量化技术效果", "section": "background"})
+            else:
+                bonus += 0.2
+            utility_hint = 0.0
+            if draft.detailed_description and len(draft.detailed_description.split()) > 500:
+                utility_hint += 0.4
+            if draft.drawings_description or draft.technical_diagrams:
+                utility_hint += 0.2
+            if utility_hint < 0.4:
+                issues.append({"type": "utility", "severity": "low", "description": "实施可重复性与工业适用性论证不足", "recommendation": "在实施方式中补充分步实现细节、参数范围、装置连接关系与可重复再现条件", "section": "description"})
+            else:
+                bonus += 0.1
+            return issues, bonus
+        except Exception as e:
+            logger.error(f"Error in _check_sanxing: {e}")
+            return [], 0.0
             
     async def _assess_patent_quality(self, task_data: Dict[str, Any]) -> TaskResult:
         """Assess patent quality specifically"""

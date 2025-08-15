@@ -198,7 +198,7 @@ class BaseAgent(ABC):
                 id=f"completion_{uuid.uuid4()}",
                 type=MessageType.STATUS,
                 sender=self.name,
-                recipient="coordinator",
+                recipient="coordinator_agent",
                 content={
                     "task_id": task_id,
                     "status": "completed",
