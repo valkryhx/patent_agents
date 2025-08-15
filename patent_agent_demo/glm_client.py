@@ -13,6 +13,10 @@ GLM_API_BASE = "https://open.bigmodel.cn/api/paas/v4/"
 GLM_CHAT_COMPLETIONS = GLM_API_BASE + "chat/completions"
 GLM_MODEL = "glm-4.5-flash"
 
+# 添加并发控制：GLM-4.5-flash只能支持2个并发请求
+GLM_CONCURRENCY_LIMIT = 2
+_glm_semaphore = asyncio.Semaphore(GLM_CONCURRENCY_LIMIT)
+
 _PRIVATE_KEY_PATHS = [
     "/workspace/glm_api_key",              # preferred path with GLM_API_KEY=...
     "/workspace/.private/GLM_API_KEY",     # legacy path with raw key or KV
@@ -67,40 +71,42 @@ class GLMA2AClient:
 
     async def _generate_response(self, prompt: str) -> str:
         """Generate response using GLM-4.5-flash API with OpenAI-compatible format"""
-        payload = {
-            "model": GLM_MODEL,
-            "messages": [
-                {"role": "system", "content": "你是一个专业的专利分析师和专利撰写专家"},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.3,
-            "top_p": 0.7,
-            "stream": False,
-        }
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-        }
+        # 使用信号量控制并发数量
+        async with _glm_semaphore:
+            payload = {
+                "model": GLM_MODEL,
+                "messages": [
+                    {"role": "system", "content": "你是一个专业的专利分析师和专利撰写专家"},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.3,
+                "top_p": 0.7,
+                "stream": False,
+            }
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            }
 
-        def _do_request() -> str:
-            req = urllib.request.Request(
-                GLM_CHAT_COMPLETIONS,
-                data=json.dumps(payload).encode("utf-8"),
-                headers=headers,
-                method="POST",
-            )
-            # 优化1: 增加超时时间到300秒，提高GLM-4.5-flash的响应成功率
-            with urllib.request.urlopen(req, timeout=300) as resp:
-                body = resp.read().decode("utf-8")
-                data = json.loads(body)
-                # OpenAI-style response
-                choices = data.get("choices") or []
-                if choices and "message" in choices[0]:
-                    return choices[0]["message"].get("content", "").strip()
-                # Fallback parse for variations
-                return data.get("text") or ""
+            def _do_request() -> str:
+                req = urllib.request.Request(
+                    GLM_CHAT_COMPLETIONS,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers=headers,
+                    method="POST",
+                )
+                # 优化1: 增加超时时间到300秒，提高GLM-4.5-flash的响应成功率
+                with urllib.request.urlopen(req, timeout=300) as resp:
+                    body = resp.read().decode("utf-8")
+                    data = json.loads(body)
+                    # OpenAI-style response
+                    choices = data.get("choices") or []
+                    if choices and "message" in choices[0]:
+                        return choices[0]["message"].get("content", "").strip()
+                    # Fallback parse for variations
+                    return data.get("text") or ""
 
-        return await asyncio.get_event_loop().run_in_executor(None, _do_request)
+            return await asyncio.get_event_loop().run_in_executor(None, _do_request)
 
     # Below mirror the interface used by agents, with simple parsing (same as GoogleA2AClient)
     async def analyze_patent_topic(self, topic: str, description: str) -> PatentAnalysis:
