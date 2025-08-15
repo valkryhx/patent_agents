@@ -229,34 +229,33 @@ class DiscusserAgent(BaseAgent):
                 "disagreements": [],
                 "next_steps": []
             }
-            
-            # Simulate discussion for each agenda item
+            # Enforce Chapter 5 planning
+            planning_prompt = """
+请给出“具体实施方式（第五章）”的章节规划：
+- 至少4个子章节（A/B/C/D…），每个子章节≥3000字；
+- 每个子章节的产出物清单：mermaid图>=1、公式>=3段、伪代码>=1段（≥50行）；
+- 以清单形式输出：子章节标题、功能点视角、图/公式/伪代码要点。
+仅输出规划清单。
+"""
+            _ = await self.google_a2a_client._generate_response(planning_prompt)
+            # Simulate discussion
             for agenda_item in session.agenda:
                 logger.info(f"Discussing agenda item: {agenda_item}")
-                
-                # Generate insights for this agenda item
                 insights = await self._generate_insights_for_agenda_item(
                     agenda_item, session.topic, previous_results
                 )
                 discussion_outcome["key_insights"].extend(insights)
-                
-                # Generate alternative approaches
                 alternatives = await self._generate_alternative_approaches(
                     agenda_item, session.topic
                 )
                 discussion_outcome["alternative_approaches"].extend(alternatives)
-                
-                # Simulate consensus building
                 consensus = await self._build_consensus_for_item(agenda_item, insights)
                 if consensus:
                     discussion_outcome["consensus_points"].append(consensus)
-                    
-            # Generate next steps
+            # Next steps
             next_steps = await self._generate_next_steps(discussion_outcome)
             discussion_outcome["next_steps"] = next_steps
-            
             return discussion_outcome
-            
         except Exception as e:
             logger.error(f"Error conducting discussion: {e}")
             raise

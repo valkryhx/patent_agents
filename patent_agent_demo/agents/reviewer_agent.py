@@ -429,61 +429,36 @@ class ReviewerAgent(BaseAgent):
             issues = []
             if not description:
                 score -= 10.0
-                issues.append({
-                    "type": "missing",
-                    "severity": "critical",
-                    "description": "Detailed description is missing",
-                    "recommendation": "Add comprehensive detailed description"
-                })
+                issues.append({"type": "missing", "severity": "critical", "description": "Detailed description is missing", "recommendation": "Add comprehensive detailed description"})
                 return {"score": 0, "issues": issues}
-            # Word count threshold higher
+            # Global word count
             word_count = len(description.split())
-            if word_count < 2000:
-                score -= 4.0
-                issues.append({
-                    "type": "length",
-                    "severity": "high",
-                    "description": "Detailed description below 2000 words",
-                    "recommendation": "Expand with more technical details, formulas, diagrams, and pseudo-code"
-                })
+            if word_count < 15000:
+                score -= 3.0
+                issues.append({"type": "length", "severity": "high", "description": "Section 5 length below 15000 words", "recommendation": "Expand content with multiple detailed subsections"})
+            # Subsection heuristic: split by headings/markers
+            subsections = [s for s in description.split('\n\n') if len(s.strip()) > 0]
+            if len(subsections) < 4:
+                score -= 2.0
+                issues.append({"type": "structure", "severity": "high", "description": "Less than 4 subsections detected", "recommendation": "Provide at least 4 detailed subsections from different functional perspectives"})
+            else:
+                short_subs = [idx for idx, s in enumerate(subsections, 1) if len(s.split()) < 3000]
+                if short_subs:
+                    score -= 2.0
+                    issues.append({"type": "length", "severity": "medium", "description": f"Subsections below 3000 words: {short_subs}", "recommendation": "Extend each subsection with more formulas, diagrams, and pseudo-code"})
             # Mermaid diagrams presence
             if "mermaid" not in description:
                 score -= 1.0
-                issues.append({
-                    "type": "diagram",
-                    "severity": "medium",
-                    "description": "Missing mermaid diagrams",
-                    "recommendation": "Add flowchart/sequence/class diagrams in mermaid"
-                })
-            # Formulas presence (simple heuristic: $ or \( or \[)
-            if ("$" not in description) and ("\\(" not in description and "\\[" not in description):
+                issues.append({"type": "diagram", "severity": "medium", "description": "Missing mermaid diagrams", "recommendation": "Add sequence/flowchart/class/graph mermaid diagrams in each subsection"})
+            # Formula presence
+            formula_hits = (description.count("$") + description.count("\\(") + description.count("\\["))
+            if formula_hits < 10:
                 score -= 1.0
-                issues.append({
-                    "type": "formula",
-                    "severity": "medium",
-                    "description": "Missing algorithmic formulas",
-                    "recommendation": "Add Markdown/LaTeX-style formulas for scoring and constraints"
-                })
-            # Pseudo-code presence (look for code fences or def/for patterns)
-            if "```" not in description and "def " not in description and "for " not in description:
+                issues.append({"type": "formula", "severity": "medium", "description": "Insufficient algorithmic formulas (<10)", "recommendation": "Provide more scoring, constraint, loss, fusion, and complexity formulas"})
+            # Pseudo-code presence (long blocks)
+            if description.count("```") < 4:
                 score -= 1.0
-                issues.append({
-                    "type": "pseudocode",
-                    "severity": "low",
-                    "description": "Missing pseudo-code",
-                    "recommendation": "Provide Python-style pseudo-code for core procedures"
-                })
-            # Technical content check
-            technical_elements = ["抽取", "关系", "子图", "解码", "验证", "反馈"]
-            technical_count = sum(1 for t in technical_elements if t in description)
-            if technical_count < 4:
-                score -= 1.0
-                issues.append({
-                    "type": "content",
-                    "severity": "medium",
-                    "description": "Technical pipeline insufficiently covered",
-                    "recommendation": "Detail extraction, relation classification, subgraph selection, constrained decoding, and verification"
-                })
+                issues.append({"type": "pseudocode", "severity": "low", "description": "Insufficient pseudo-code blocks (<4)", "recommendation": "Provide ≥4 long pseudo-code blocks (each ≥50 lines) covering core procedures"})
             return {"score": max(0, score), "issues": issues}
         except Exception as e:
             logger.error(f"Error reviewing detailed description: {e}")
