@@ -29,9 +29,22 @@ rich>=13.7.0
 ## 配置 GLM API Key（必需）
 支持以下任一方式：
 - 环境变量：
-  ```bash
-  export ZHIPUAI_API_KEY="你的GLM_API_KEY"
-  ```
+  - Linux/macOS（Bash）
+    ```bash
+    export ZHIPUAI_API_KEY="你的GLM_API_KEY"
+    ```
+  - Windows（PowerShell）
+    ```powershell
+    $env:ZHIPUAI_API_KEY="你的GLM_API_KEY"
+    ```
+  - Windows（CMD）
+    ```cmd
+    set ZHIPUAI_API_KEY=你的GLM_API_KEY
+    ```
+  - Windows 持久化（写入用户环境变量，需重新打开终端生效）
+    ```cmd
+    setx ZHIPUAI_API_KEY "你的GLM_API_KEY"
+    ```
 - 私有文件（推荐）：将密钥写入以下任一文件（支持 `GLM_API_KEY=...` 或纯 Key 格式）：
   - `/workspace/glm_api_key`
   - `/workspace/.private/GLM_API_KEY`
