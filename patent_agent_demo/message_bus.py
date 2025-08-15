@@ -90,9 +90,10 @@ class MessageBusBroker:
         if recipient in self.message_queues:
             queue = self.message_queues[recipient]
             logger.info(f"Queue instance ID for {recipient}: {id(queue)}")
+            logger.info(f"PUT: 放入消息前队列大小: {queue.qsize()}")
             await queue.put(message)
+            logger.info(f"PUT: 放入消息后队列大小: {queue.qsize()}")
             logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
-            logger.info(f"Queue size for {recipient}: {queue.qsize()}")
             logger.debug(f"Message content: {message.content}")
         else:
             logger.warning(f"Recipient {recipient} not found, message dropped")
@@ -120,12 +121,12 @@ class MessageBusBroker:
         
         queue = self.message_queues[agent_name]
         queue_size = queue.qsize()
-        logger.info(f"Agent {agent_name} queue size: {queue_size}")  # Changed from debug to info
+        logger.info(f"GET: Agent {agent_name} 检查队列大小: {queue_size}")
         logger.info(f"MessageBusBroker instance ID: {id(self)}")
         logger.info(f"Queue instance ID for {agent_name}: {id(queue)}")
         
         if queue_size == 0:
-            logger.info(f"Agent {agent_name} queue is empty")
+            logger.info(f"GET: Agent {agent_name} 队列为空")
             return None
             
         try:
