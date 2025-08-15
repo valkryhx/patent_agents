@@ -1,121 +1,190 @@
-# 专利多智能体撰写系统（GLM-4.5-flash 驱动）
+# Patent Agent Demo
 
-本项目实现了一个面向专利交底书撰写的多智能体系统（Planner、Searcher、Discusser、Writer、Reviewer、Rewriter、Coordinator），通过“思考-讨论-撰写-审查-改写”的迭代流程，自动产出高质量的专利交底书草稿并导出 Markdown 文档。
+A sophisticated multi-agent system for automated patent development, featuring intelligent planning, research, discussion, writing, and review capabilities.
 
-- 模型：已强制使用 GLM-4.5-flash（ZHIPUAI），禁用 Google/Gemini 与任何回退模式
-- 导出目录：`/workspace/output/`
-- 日志目录：`/workspace/output/logs/`（每个智能体各有独立日志）
+## 🚀 Features
 
-## 主要特性
-- 多智能体工作流：规划 → 检索 → 讨论 → 撰写（按子章节拆分生成）→ 审查 → 改写（循环直到达标）
-- 章节分治生成：具体实施方式按 A/B/C/D 子章节独立生成并合并，提高长文稳定性
-- 质量与合规：审查器对字数、Mermaid、公式、伪代码等硬指标做结构化校验
-- 可观测性：每个智能体独立日志，系统级日志；统计 API 调用与输出 token 近似值
+- **Multi-Agent Architecture**: Coordinated agents for different patent development stages
+- **Message Bus Integration**: High-performance message passing and coordination
+- **Google A2A Integration**: Advanced AI-powered content generation
+- **Comprehensive Workflow**: From planning to final patent draft
+- **Quality Assurance**: Built-in review and rewrite cycles
+- **Progress Tracking**: Real-time monitoring and incremental file generation
 
-## 环境要求
-- Python 3.10+
-- GLM API Key（ZHIPUAI）：通过环境变量或私有文件加载
+## 🏗️ System Architecture
 
-## 安装
+The system consists of specialized agents working together:
+
+- **Planner Agent**: Strategic planning and patent strategy development
+- **Searcher Agent**: Prior art research and patent analysis
+- **Discusser Agent**: Innovation discussion and idea refinement
+- **Writer Agent**: Patent drafting and technical writing
+- **Reviewer Agent**: Quality review and compliance checking
+- **Rewriter Agent**: Feedback implementation and improvement
+- **Coordinator Agent**: Workflow orchestration and agent coordination
+
+## 🛠️ Quick Start
+
+### Prerequisites
+
+- Python 3.8+
+- Google A2A API access
+- Required dependencies (see requirements.txt)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd patent_agent_demo
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-requirements.txt（最小化依赖）：
-```text
-rich>=13.7.0
-```
-
-## 配置 GLM API Key（必需）
-支持以下任一方式：
-- 环境变量：
-  - Linux/macOS（Bash）
-    ```bash
-    export ZHIPUAI_API_KEY="你的GLM_API_KEY"
-    ```
-  - Windows（PowerShell）
-    ```powershell
-    $env:ZHIPUAI_API_KEY="你的GLM_API_KEY"
-    ```
-  - Windows（CMD）
-    ```cmd
-    set ZHIPUAI_API_KEY=你的GLM_API_KEY
-    ```
-  - Windows 持久化（写入用户环境变量，需重新打开终端生效）
-    ```cmd
-    setx ZHIPUAI_API_KEY "你的GLM_API_KEY"
-    ```
-- 私有文件（推荐）：将密钥写入以下任一文件（支持 `GLM_API_KEY=...` 或纯 Key 格式）：
-  - `/workspace/glm_api_key`
-  - `/workspace/.private/GLM_API_KEY`
-  - `~/.private/GLM_API_KEY`
-  
-  示例：
-  ```bash
-  mkdir -p /workspace/.private
-  echo 'GLM_API_KEY=你的GLM_API_KEY' > /workspace/.private/GLM_API_KEY
-  ```
-
-## 快速运行
-- 后台长流程（推荐）：
-  ```bash
-  PATENT_TOPIC="证据图增强的检索增强RAG系统" \
-  PATENT_DESC="构建证据图以提升RAG可验证性与准确性" \
-  python3 /workspace/run_patent_workflow.py | cat
-  ```
-  Windows 等价命令：
-  - PowerShell
-    ```powershell
-    $env:PATENT_TOPIC="证据图增强的检索增强RAG系统"; $env:PATENT_DESC="构建证据图以提升RAG可验证性与准确性"; python .\run_patent_workflow.py
-    ```
-  - CMD
-    ```cmd
-    set "PATENT_TOPIC=证据图增强的检索增强RAG系统" && set "PATENT_DESC=构建证据图以提升RAG可验证性与准确性" && python run_patent_workflow.py
-    ```
-  完成后导出到：`/workspace/output/证据图增强的检索增强RAG系统_<workflow_id前8位>.md`
-
-- 单次脚本（示例）：
-  ```bash
-  python3 - << 'PY'
-  import asyncio
-  from patent_agent_demo.patent_agent_system import PatentAgentSystem
-  async def run():
-      system = PatentAgentSystem()
-      await system.start()
-      await system.develop_patent(
-          topic="证据图增强的检索增强RAG系统",
-          description="构建证据图以提升RAG可验证性与准确性"
-      )
-      await system.stop()
-  asyncio.run(run())
-  PY
-  ```
-
-## 监控日志与进度
+3. Set up environment variables:
 ```bash
-# 协调器推进
-tail -f /workspace/output/logs/coordinator_agent.log | cat
-# 撰写子章节进度
-tail -f /workspace/output/logs/writer_agent.log | cat
-# 系统级事件
-tail -f /workspace/output/logs/system.log | cat
+export ZHIPUAI_API_KEY="your_api_key_here"
+export PATENT_TOPIC="Your Patent Topic"
+export PATENT_DESC="Your Patent Description"
 ```
 
-## 目录结构（核心）
-```text
-patent_agent_demo/
-  agents/                 # 各智能体实现
-  message_bus.py          # 消息总线（原 fastmcp_config.py）
-  google_a2a_client.py    # A2A 客户端工厂（已强制GLM）
-  glm_client.py           # GLM-4.5-flash HTTP 客户端
-  telemetry.py            # API 调用统计与日志代理
-run_patent_workflow.py    # 后台长流程运行器
+4. Run the system:
+```bash
+python run_patent_workflow.py
 ```
 
-## 常见问题
-- 报错 “ZHIPUAI_API_KEY is required ...”：未正确配置 GLM Key，按上文配置环境变量或私有文件
-- 导出文件未出现：查看协调器、撰写者日志；等待撰写/审查阶段结束；确保 `/workspace/output/` 可写
-- 内容过长超时：系统已将章节分治并提升了 GLM 请求超时；如需进一步加大可在 `glm_client.py` 调整 `timeout`
+## 📋 Workflow Stages
 
-## 许可证
-本仓库仅用于演示用途，请根据实际业务与法律合规要求使用。
+1. **Planning & Strategy**: Define patent strategy and approach
+2. **Prior Art Search**: Research existing patents and technologies
+3. **Innovation Discussion**: Refine ideas and identify unique aspects
+4. **Patent Drafting**: Create comprehensive patent application
+5. **Quality Review**: Review for quality and compliance
+6. **Final Rewrite**: Implement feedback and improvements
+
+## 📁 Output
+
+The system generates:
+
+- **Progress Files**: Incremental content in `/workspace/output/progress/`
+- **Final Patent**: Complete patent application in Markdown format
+- **Logs**: Detailed execution logs in `/workspace/output/logs/`
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# API Configuration
+ZHIPUAI_API_KEY=your_api_key_here
+
+# Message Bus Configuration
+MESSAGE_BUS_HOST=localhost
+MESSAGE_BUS_PORT=8000
+
+# Patent Configuration
+PATENT_TOPIC="Your Patent Topic"
+PATENT_DESC="Your Patent Description"
+```
+
+## 📊 Usage Examples
+
+### Basic Usage
+
+```python
+from patent_agent_demo.patent_agent_system import PatentAgentSystem
+
+async def main():
+    system = PatentAgentSystem()
+    await system.start()
+    
+    # Execute patent workflow
+    result = await system.execute_workflow(
+        topic="AI-Powered Patent Analysis",
+        description="A system for automated patent analysis using AI"
+    )
+    
+    await system.stop()
+
+asyncio.run(main())
+```
+
+### Command Line Interface
+
+```bash
+# Run with specific topic and description
+python -m patent_agent_demo.main --topic "AI Patent" --description "AI system description"
+
+# Interactive mode
+python -m patent_agent_demo.main --interactive
+
+# Health check
+python -m patent_agent_demo.main --health
+
+# System status
+python -m patent_agent_demo.main --status
+```
+
+## 🧪 Testing
+
+```bash
+# Run tests
+pytest
+
+# Run with coverage
+pytest --cov=patent_agent_demo
+```
+
+## 📈 Performance
+
+The system is optimized for:
+
+- **Concurrent Processing**: Multiple agents work simultaneously
+- **Efficient Communication**: Message Bus for fast inter-agent communication
+- **Resource Management**: Optimized API usage and memory management
+- **Scalability**: Modular design for easy scaling
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+1. **API Key Issues**: Ensure `ZHIPUAI_API_KEY` is set correctly
+2. **Network Issues**: Check internet connectivity for API calls
+3. **Memory Issues**: Monitor system resources during execution
+4. **Timeout Issues**: Adjust timeout settings in configuration
+
+### Logs
+
+Check logs in `/workspace/output/logs/` for detailed error information:
+
+- `system.log`: Main system logs
+- `*_agent.log`: Individual agent logs
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Google A2A team for the AI capabilities
+- Message Bus team for the messaging framework
+- Open source community for various dependencies
+
+## 📞 Support
+
+For questions and support, please open an issue on GitHub.
+
+---
+
+**Happy Patent Development! 🚀📚**

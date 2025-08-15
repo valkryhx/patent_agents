@@ -193,15 +193,16 @@ class WriterAgent(BaseAgent):
         """Write detailed sections of the patent application with diagrams and pseudo-code"""
         try:
             detailed_sections = {}
-            # Outline first
+            
+            # 优化1: 减少字数要求，从≥2000字改为≥800字
+            # 优化2: 合并多个API调用，减少网络延迟
+            
+            # Outline first - 简化大纲生成
             outline_prompt = f"""
 创建专利撰写大纲（中文），主题：{writing_task.topic}
-- 章节：技术领域、背景技术、现有技术缺点与技术问题、发明内容/技术方案（方法+系统）、有益效果、附图说明、具体实施方式、权利要求书要点、摘要。
-- 每章给出小节要点与所需的：
-  * mermaid流程/架构图（flowchart/sequence/class/graph任选），
-  * 关键算法公式（Markdown公式），
-  * 伪代码（Python风格），
-  * 预计字数要求：每章≥2000字。
+- 章节：技术领域、背景技术、发明内容、具体实施方式、权利要求书、附图说明
+- 每章给出3-5个要点
+- 预计字数：每章≥800字
 仅输出分章要点清单。
 """
             outline_text = await self.google_a2a_client._generate_response(outline_prompt)
@@ -209,55 +210,68 @@ class WriterAgent(BaseAgent):
                 self._write_progress(progress_dir, "01_outline.md", "撰写大纲", outline_text)
             except Exception:
                 pass
-            # Background
+                
+            # 优化3: 并发生成背景和摘要，减少等待时间
             background_prompt = f"""
-撰写“背景技术”（中文，≥2000字），主题：{writing_task.topic}
-- 需包含：
-  1) 技术领域；2) 最近似现有技术方案（至少2个）、实现方式与不足；3) 本领域存在的技术性痛点；
-  4) 对比分析结论。
-- 插入1个mermaid流程或架构图，描述行业通用的数据/控制流程。
-- 插入至少2段算法公式（Markdown）；
-- 插入伪代码（Python风格）展示通用的数据处理与融合流程。
-- 风格：正式、技术性、可验证。
+撰写"背景技术"（中文，≥800字），主题：{writing_task.topic}
+- 包含：技术领域、现有技术方案（1-2个）、技术痛点、对比分析
+- 插入1个mermaid流程图
+- 插入1-2段算法公式
+- 风格：正式、技术性
 """
-            background = await self.google_a2a_client._generate_response(background_prompt)
+            
+            summary_prompt = f"""
+撰写"发明内容/技术方案-总述"（中文，≥800字），主题：{writing_task.topic}
+- 概述核心创新点与系统架构
+- 插入1个mermaid架构图
+- 2-3段关键公式
+- 伪代码展示主流程
+"""
+            
+            # 并发执行背景和摘要生成
+            background_task = self.google_a2a_client._generate_response(background_prompt)
+            summary_task = self.google_a2a_client._generate_response(summary_prompt)
+            
+            background, summary = await asyncio.gather(background_task, summary_task)
+            
             detailed_sections["background"] = background
+            detailed_sections["summary"] = summary
+            
             try:
                 self._write_progress(progress_dir, "02_background.md", "背景技术", background)
-            except Exception:
-                pass
-            # Summary
-            summary_prompt = f"""
-撰写“发明内容/技术方案-总述”（中文，≥2000字），主题：{writing_task.topic}
-- 概述核心创新点与系统总体架构；给出关键模块与信息流向的抽象描述，不限定具体领域实现。
-- 插入1个mermaid架构图（graph TD/classDiagram）描述系统模块与连接关系。
-- 至少3段关键公式（子图打分函数、冲突代价、引用一致性度量）。
-- 伪代码展示整体流程主程序与数据结构。
-"""
-            summary = await self.google_a2a_client._generate_response(summary_prompt)
-            detailed_sections["summary"] = summary
-            try:
                 self._write_progress(progress_dir, "03_summary.md", "发明内容/技术方案-总述", summary)
             except Exception:
                 pass
+                
             self.agent_logger.info("DETAIL_SECTION start outline/background/summary")
-            # Detailed description via subchapter generation
+            
+            # 优化4: 减少子章节数量，从4个改为2个，减少字数要求
             subchapters = [
-                {"id": "A", "title": "数据获取与预处理"},
-                {"id": "B", "title": "证据构建与关系建模"},
-                {"id": "C", "title": "生成与约束解码"},
-                {"id": "D", "title": "验证与反馈闭环"},
+                {"id": "A", "title": "数据获取与证据构建"},
+                {"id": "B", "title": "生成与验证流程"},
             ]
+            
             desc_parts: List[str] = []
+            
+            # 优化5: 并发生成子章节
+            subchapter_tasks = []
             for sc in subchapters:
-                self.agent_logger.info(f"SUBCHAPTER {sc['id']} begin: {sc['title']}")
                 sprompt = f"""
-撰写“具体实施方式-子章节{sc['id']}：{sc['title']}”（中文，≥3000字），主题：{writing_task.topic}
-- 至少包含：1个mermaid图；3个算法公式（Markdown/LaTeX）；1段Python风格伪代码（≥50行）。
-- 描述Who/What/When/Where/How的实施步骤；列出输入/输出/参数与边界条件；说明与其它子章节接口。
-- 保持术语一致、避免跨章重复。严格输出该子章节正文。
+撰写"具体实施方式-子章节{sc['id']}：{sc['title']}"（中文，≥1200字），主题：{writing_task.topic}
+- 包含：1个mermaid图；2个算法公式；1段Python风格伪代码（≥30行）
+- 描述实施步骤、输入输出、参数条件
+- 保持术语一致
 """
-                text = await self.google_a2a_client._generate_response(sprompt)
+                subchapter_tasks.append((sc, sprompt))
+            
+            # 并发执行所有子章节
+            subchapter_results = await asyncio.gather(*[
+                self.google_a2a_client._generate_response(prompt) 
+                for sc, prompt in subchapter_tasks
+            ])
+            
+            for i, (sc, _) in enumerate(subchapter_tasks):
+                text = subchapter_results[i]
                 self.agent_logger.info(f"SUBCHAPTER {sc['id']} end: chars={len(text)}")
                 desc_parts.append(f"### 子章节{sc['id']}：{sc['title']}\n\n" + text.strip() + "\n\n")
                 try:
@@ -265,6 +279,7 @@ class WriterAgent(BaseAgent):
                     self._write_progress(progress_dir, filename, f"具体实施方式-子章节{sc['id']}：{sc['title']}", text)
                 except Exception:
                     pass
+                    
             # Assemble detailed description
             detailed_description = ("\n".join(desc_parts)).strip()
             self.agent_logger.info(f"DETAIL_SECTION assembled length={len(detailed_description)}")
@@ -273,13 +288,14 @@ class WriterAgent(BaseAgent):
                 self._write_progress(progress_dir, "05_desc_all.md", "具体实施方式（合并）", detailed_description)
             except Exception:
                 pass
-            # Claims
+                
+            # 优化6: 简化权利要求书生成
             claims_prompt = f"""
-撰写“权利要求书”（中文，CN风格）：
-- 1项独立权利要求+9项从属权利要求；
-- 独立项覆盖：系统/方法的核心处理链路与关键约束策略；
-- 从属项细化：节点/边属性、评分函数、约束解码策略、验证指标、反馈更新规则；
-- 术语统一、避免结果性限定，每项以句号结束。
+撰写"权利要求书"（中文，CN风格）：
+- 1项独立权利要求+3项从属权利要求
+- 独立项覆盖核心处理链路
+- 从属项细化关键策略
+- 术语统一、避免结果性限定
 """
             claims_text = await self.google_a2a_client._generate_response(claims_prompt)
             detailed_sections["claims"] = claims_text.splitlines()
@@ -287,12 +303,13 @@ class WriterAgent(BaseAgent):
                 self._write_progress(progress_dir, "06_claims.md", "权利要求书", claims_text)
             except Exception:
                 pass
-            # Drawings
+                
+            # 优化7: 简化附图说明生成
             drawings_prompt = f"""
-撰写“附图说明”（中文，≥2000字）：
-- 至少5幅图（系统架构、数据流/控制流、核心算法流程、约束与优化、验证与反馈）；
-- 每幅图提供对应的mermaid示意；
-- 指出每幅图与步骤/模块的对应关系。
+撰写"附图说明"（中文，≥800字）：
+- 3幅图（系统架构、数据流、核心算法）
+- 每幅图提供对应的mermaid示意
+- 指出与步骤/模块的对应关系
 """
             drawings_description = await self.google_a2a_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
