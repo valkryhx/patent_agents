@@ -75,19 +75,27 @@ class BaseAgent:
     async def _message_processing_loop(self):
         """Main message processing loop"""
         try:
+            logger.info(f"Message processing loop started for {self.name}")
             while self.status != AgentStatus.OFFLINE:
                 # Get message from broker for this specific agent
                 message = await self.broker.get_message(self.name)
                 
                 if message:
+                    logger.info(f"Agent {self.name} received message: {message.type.value} from {message.sender}")
                     # Process message
                     await self._process_message(message)
+                else:
+                    # Log occasionally to show the loop is running
+                    if int(time.time()) % 10 == 0:  # Log every 10 seconds
+                        logger.debug(f"Agent {self.name} waiting for messages...")
                     
                 # Small delay to prevent busy waiting
                 await asyncio.sleep(0.1)
                 
         except Exception as e:
             logger.error(f"Error in message processing loop for {self.name}: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             
     async def _process_message(self, message: Message):
         """Process an incoming message"""
@@ -121,16 +129,23 @@ class BaseAgent:
     async def _handle_coordination_message(self, message: Message):
         """Handle coordination messages"""
         try:
+            logger.info(f"Agent {self.name} handling coordination message")
             task_data = message.content.get("task", {})
             task_type = task_data.get("type")
             
+            logger.info(f"Agent {self.name} task type: {task_type}, capabilities: {self.capabilities}")
+            
             if task_type in self.capabilities:
+                logger.info(f"Agent {self.name} executing task: {task_type}")
                 await self._execute_task(task_data)
+                logger.info(f"Agent {self.name} task execution completed")
             else:
                 logger.warning(f"Agent {self.name} cannot handle task type: {task_type}")
                 
         except Exception as e:
             logger.error(f"Error handling coordination message: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             
     async def _handle_status_message(self, message: Message):
         """Handle status update messages"""
