@@ -473,8 +473,8 @@ class CoordinatorAgent(BaseAgent):
             # Export to markdown
             try:
                 import os
-                os.makedirs("/workspace/output", exist_ok=True)
-                md_path = f"/workspace/output/{workflow.topic.replace(' ', '_')}_{workflow_id[:8]}.md"
+                os.makedirs("/output", exist_ok=True)
+                md_path = f"/output/{workflow.topic.replace(' ', '_')}_{workflow_id[:8]}.md"
                 with open(md_path, "w", encoding="utf-8") as f:
                     f.write(f"# {workflow.topic}\n\n")
                     for i, stage in enumerate(workflow.stages):
