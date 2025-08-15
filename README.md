@@ -50,6 +50,15 @@ rich>=13.7.0
   PATENT_DESC="构建证据图以提升RAG可验证性与准确性" \
   python3 /workspace/run_patent_workflow.py | cat
   ```
+  Windows 等价命令：
+  - PowerShell
+    ```powershell
+    $env:PATENT_TOPIC="证据图增强的检索增强RAG系统"; $env:PATENT_DESC="构建证据图以提升RAG可验证性与准确性"; python .\run_patent_workflow.py
+    ```
+  - CMD
+    ```cmd
+    set "PATENT_TOPIC=证据图增强的检索增强RAG系统" && set "PATENT_DESC=构建证据图以提升RAG可验证性与准确性" && python run_patent_workflow.py
+    ```
   完成后导出到：`/workspace/output/证据图增强的检索增强RAG系统_<workflow_id前8位>.md`
 
 - 单次脚本（示例）：

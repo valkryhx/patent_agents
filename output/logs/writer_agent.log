@@ -24,3 +24,5 @@
 2025-08-15 12:40:01 INFO agent.writer_agent: SUBCHAPTER B begin: 证据构建与关系建模
 2025-08-15 12:45:16 INFO agent.writer_agent: SUBCHAPTER B end: chars=18480
 2025-08-15 12:45:16 INFO agent.writer_agent: SUBCHAPTER C begin: 生成与约束解码
+2025-08-15 12:50:39 INFO agent.writer_agent: SUBCHAPTER C end: chars=11647
+2025-08-15 12:50:39 INFO agent.writer_agent: SUBCHAPTER D begin: 验证与反馈闭环
