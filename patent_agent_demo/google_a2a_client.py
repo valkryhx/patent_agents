@@ -458,18 +458,12 @@ class DummyA2AClient:
 google_a2a_client = None
 
 async def get_google_a2a_client() -> Union[GoogleA2AClient, DummyA2AClient]:
-	"""Get or create the global Google A2A client; prefer GLM adapter if configured. Fallbacks disabled if GLM key is provided."""
+	"""Get or create the global A2A client; enforce GLM-4.5-flash only (Google disabled)."""
 	global google_a2a_client
 	if google_a2a_client is None:
-		# Prefer GLM if key present in env or private file
 		from .glm_client import _load_glm_key, GLMA2AClient
 		glm_key = _load_glm_key()
-		if glm_key:
-			google_a2a_client = GLMA2AClient(api_key=glm_key)
-			return google_a2a_client
-		# Otherwise try Google, else hard error (per requirement: forbid fallback)
-		if HAS_GOOGLE_GENAI and os.getenv("GOOGLE_API_KEY"):
-			google_a2a_client = GoogleA2AClient()
-			return google_a2a_client
-		raise ValueError("No GLM or Google API key available. Configure ZHIPUAI_API_KEY or /workspace/.private/GLM_API_KEY.")
+		if not glm_key:
+			raise ValueError("ZHIPUAI_API_KEY or GLM_API_KEY is required; Google models are disabled")
+		google_a2a_client = GLMA2AClient(api_key=glm_key)
 	return google_a2a_client
