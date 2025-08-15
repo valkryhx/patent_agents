@@ -33,3 +33,14 @@
 2025-08-15 11:29:08 INFO agent.planner_agent: RECV id=ae33ddb2-c5ca-489b-8747-fb873843ff9c type=coordination from=coordinator_agent pri=5
 2025-08-15 11:29:08 INFO agent.planner_agent: EXECUTE task_id=5a7f5d1a-e896-4c77-8c3a-08793c7a976d_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
 2025-08-15 11:32:03 INFO agent.planner_agent: COMPLETE task_id=5a7f5d1a-e896-4c77-8c3a-08793c7a976d_stage_0 success=True time=175.88s
+2025-08-15 12:09:46 INFO agent.planner_agent: planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 12:09:46 INFO agent.planner_agent: RECV id=f2772017-84c1-40d7-a13a-ace2d3021653 type=coordination from=coordinator_agent pri=5
+2025-08-15 12:09:46 INFO agent.planner_agent: EXECUTE task_id=bba30bdc-3c03-43ad-b1ef-01cacce138b8_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
+2025-08-15 12:14:44 INFO agent.planner_agent: planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 12:14:44 INFO agent.planner_agent: RECV id=ad00ed73-4f2e-44c6-a13f-a182c971015f type=coordination from=coordinator_agent pri=5
+2025-08-15 12:14:44 INFO agent.planner_agent: EXECUTE task_id=9cb2834f-158f-4e62-8672-c8e00af6452d_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
+2025-08-15 12:15:32 INFO agent.planner_agent: planner_agent initialized with capabilities: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-15 12:15:32 INFO agent.planner_agent: RECV id=ead63d7b-b91f-4dc5-93b4-3715ea4362af type=coordination from=coordinator_agent pri=5
+2025-08-15 12:15:32 INFO agent.planner_agent: EXECUTE task_id=cf77c2f2-bf88-441c-97fa-9eae9d40a2d2_stage_0 type=patent_planning meta={'topic': task_data.get('topic')}
+2025-08-15 12:17:49 INFO agent.planner_agent: COMPLETE task_id=9cb2834f-158f-4e62-8672-c8e00af6452d_stage_0 success=True time=184.87s
+2025-08-15 12:18:08 INFO agent.planner_agent: COMPLETE task_id=cf77c2f2-bf88-441c-97fa-9eae9d40a2d2_stage_0 success=True time=156.10s
