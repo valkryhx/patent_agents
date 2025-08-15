@@ -69,22 +69,10 @@ class PlannerAgent(BaseAgent):
                 logger.info(f"Creating patent strategy for: {topic}")
                 logger.info(f"Starting patent analysis...")
                 
-                # Analyze patent topic using GLM with timeout
+                # Analyze patent topic using GLM
                 logger.info(f"Calling GLM API for patent analysis...")
-                try:
-                    # Add timeout to GLM API call
-                    analysis = await asyncio.wait_for(
-                        self.openai_client.analyze_patent_topic(topic, description),
-                        timeout=30.0  # 30 second timeout
-                    )
-                    logger.info(f"GLM API call completed successfully")
-                except asyncio.TimeoutError:
-                    logger.warning("GLM API call timed out, using mock response")
-                    # Create mock analysis to avoid blocking
-                    analysis = await self._create_mock_analysis(topic, description)
-                except Exception as e:
-                    logger.warning(f"GLM API call failed: {e}, using mock response")
-                    analysis = await self._create_mock_analysis(topic, description)
+                analysis = await self.openai_client.analyze_patent_topic(topic, description)
+                logger.info(f"GLM API call completed successfully")
                 
                 # Create development strategy
                 logger.info(f"Creating development strategy...")
@@ -537,43 +525,3 @@ class PlannerAgent(BaseAgent):
         # Implementation for timeline creation
         pass
 
-    async def _create_mock_analysis(self, topic: str, description: str) -> PatentAnalysis:
-        """Create a mock patent analysis when GLM API fails"""
-        logger.info("Creating mock patent analysis")
-        
-        # Create mock analysis with reasonable values
-        mock_analysis = PatentAnalysis(
-            topic=topic,
-            description=description,
-            novelty_score=7.5,
-            inventive_step_score=7.0,
-            patentability_assessment="Likely patentable with modifications",
-            prior_art_analysis={
-                "existing_solutions": [
-                    "Traditional RAG systems without evidence graphs",
-                    "Basic document retrieval methods",
-                    "Simple question-answering systems"
-                ],
-                "novel_aspects": [
-                    "Cross-document evidence relationship mapping",
-                    "Subgraph selection for generation",
-                    "Evidence-driven verification process"
-                ]
-            },
-            technical_requirements=[
-                "Evidence graph construction algorithm",
-                "Cross-document relationship mapping",
-                "Subgraph selection mechanism",
-                "Evidence-driven generation pipeline",
-                "Verification and validation system"
-            ],
-            recommendations=[
-                "Focus on evidence graph construction methodology",
-                "Emphasize cross-document relationship discovery",
-                "Highlight subgraph selection innovation",
-                "Demonstrate evidence-driven generation benefits",
-                "Show verification accuracy improvements"
-            ]
-        )
-        
-        return mock_analysis
