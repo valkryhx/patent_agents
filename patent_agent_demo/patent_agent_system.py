@@ -1,6 +1,6 @@
 """
-Patent Agent System - Main System Class
-Manages all agents and provides the main interface for patent development
+Patent Agent System
+Main system for coordinating patent development agents
 """
 
 import asyncio
@@ -8,13 +8,15 @@ import logging
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 import time
-import uuid
 
-from .message_bus import fastmcp_config, MessageType
-from .agents import (
-    PlannerAgent, SearcherAgent, DiscusserAgent, 
-    WriterAgent, ReviewerAgent, RewriterAgent, CoordinatorAgent
-)
+from .agents.planner_agent import PlannerAgent
+from .agents.searcher_agent import SearcherAgent
+from .agents.discusser_agent import DiscusserAgent
+from .agents.writer_agent import WriterAgent
+from .agents.reviewer_agent import ReviewerAgent
+from .agents.rewriter_agent import RewriterAgent
+from .agents.coordinator_agent import CoordinatorAgent
+from .message_bus import message_bus_config, MessageType
 
 logger = logging.getLogger(__name__)
 
@@ -23,113 +25,86 @@ class SystemStatus:
     """System status information"""
     total_agents: int
     active_agents: int
-    active_workflows: int
+    message_queue_size: int
     system_health: str
     uptime: float
     performance_metrics: Dict[str, Any]
 
 class PatentAgentSystem:
-    """Main system class for the Patent Agent System"""
+    """Main system for coordinating patent development agents"""
     
     def __init__(self):
         self.agents: Dict[str, Any] = {}
         self.coordinator: Optional[CoordinatorAgent] = None
         self.system_start_time = time.time()
-        self.is_running = False
         
-        # Initialize FastMCP
-        self.fastmcp_config = fastmcp_config
-        
-        logger.info("Patent Agent System initialized")
+        # Initialize Message Bus
+        self.message_bus_config = message_bus_config
         
     async def start(self):
-        """Start the entire patent agent system"""
+        """Start the patent agent system"""
         try:
             logger.info("Starting Patent Agent System...")
             
-            # Initialize FastMCP
-            await self.fastmcp_config.initialize()
+            # Initialize Message Bus
+            await self.message_bus_config.initialize()
             
-            # Initialize logging to files
-            from .logging_utils import setup_root_file_logging
-            setup_root_file_logging()
-
-            # Create and start all agents
-            await self._create_agents()
-            await self._start_agents()
+            # Create and start agents
+            self.agents = {
+                "planner_agent": PlannerAgent(),
+                "searcher_agent": SearcherAgent(),
+                "discusser_agent": DiscusserAgent(),
+                "writer_agent": WriterAgent(),
+                "reviewer_agent": ReviewerAgent(),
+                "rewriter_agent": RewriterAgent(),
+                "coordinator_agent": CoordinatorAgent()
+            }
             
-            self.is_running = True
+            # Start all agents
+            for agent_name, agent in self.agents.items():
+                await agent.start()
+                logger.info(f"Agent {agent_name} started successfully")
+                
+            # Set coordinator reference
+            self.coordinator = self.agents["coordinator_agent"]
+            
+            logger.info("All agents started successfully")
             logger.info("Patent Agent System started successfully")
             
         except Exception as e:
-            logger.error(f"Failed to start Patent Agent System: {e}")
+            logger.error(f"Error starting Patent Agent System: {e}")
             raise
             
     async def stop(self):
-        """Stop the entire patent agent system"""
+        """Stop the patent agent system"""
         try:
             logger.info("Stopping Patent Agent System...")
             
             # Stop all agents
-            for agent in self.agents.values():
-                await agent.stop()
-                
-            # Stop FastMCP
-            await self.fastmcp_config.shutdown()
+            for agent_name, agent in self.agents.items():
+                try:
+                    await agent.stop()
+                    logger.info(f"Agent {agent_name} stopped successfully")
+                except Exception as e:
+                    logger.error(f"Error stopping agent {agent_name}: {e}")
+                    
+            # Stop Message Bus
+            await self.message_bus_config.shutdown()
             
-            self.is_running = False
             logger.info("Patent Agent System stopped successfully")
             
         except Exception as e:
             logger.error(f"Error stopping Patent Agent System: {e}")
-            
-    async def _create_agents(self):
-        """Create all agents"""
-        try:
-            # Create specialized agents
-            self.agents["planner_agent"] = PlannerAgent()
-            self.agents["searcher_agent"] = SearcherAgent()
-            self.agents["discusser_agent"] = DiscusserAgent()
-            self.agents["writer_agent"] = WriterAgent()
-            self.agents["reviewer_agent"] = ReviewerAgent()
-            self.agents["rewriter_agent"] = RewriterAgent()
-            
-            # Create coordinator agent
-            self.coordinator = CoordinatorAgent()
-            self.agents["coordinator_agent"] = self.coordinator
-            
-            logger.info(f"Created {len(self.agents)} agents")
-            
-        except Exception as e:
-            logger.error(f"Error creating agents: {e}")
             raise
             
-    async def _start_agents(self):
-        """Start all agents"""
+    async def execute_workflow(self, topic: str, description: str, 
+                             workflow_type: str = "standard") -> Dict[str, Any]:
+        """Execute a patent development workflow"""
         try:
-            # Start all agents concurrently
-            start_tasks = [agent.start() for agent in self.agents.values()]
-            await asyncio.gather(*start_tasks)
-            
-            logger.info("All agents started successfully")
-            
-        except Exception as e:
-            logger.error(f"Error starting agents: {e}")
-            raise
-            
-    async def develop_patent(self, topic: str, description: str, 
-                           workflow_type: str = "standard") -> Dict[str, Any]:
-        """Start a patent development workflow"""
-        try:
-            if not self.is_running:
-                raise RuntimeError("Patent Agent System is not running")
+            if not self.coordinator:
+                raise RuntimeError("Coordinator agent not available")
                 
-            if not topic or not description:
-                raise ValueError("Topic and description are required")
-                
-            logger.info(f"Starting patent development for: {topic}")
-            
-            # Send task to coordinator to start workflow
+            # Start workflow via coordinator
             result = await self.coordinator.execute_task({
                 "type": "start_patent_workflow",
                 "topic": topic,
@@ -140,126 +115,77 @@ class PatentAgentSystem:
             if not result.success:
                 raise RuntimeError(f"Failed to start workflow: {result.error_message}")
                 
-            workflow_data = result.data
-            workflow_id = workflow_data.get("workflow_id")
+            workflow_id = result.data.get("workflow_id")
+            logger.info(f"Started workflow: {workflow_id}")
             
-            # Wait for workflow completion
-            final_result = await self._wait_for_workflow_completion(workflow_id)
-            
-            return final_result
-            
-        except Exception as e:
-            logger.error(f"Error developing patent: {e}")
-            raise
-            
-    async def _wait_for_workflow_completion(self, workflow_id: str) -> Dict[str, Any]:
-        """Wait for a workflow to complete and return results"""
-        try:
-            max_wait_time = 300  # 5 minutes max wait
-            start_time = time.time()
-            
-            while time.time() - start_time < max_wait_time:
-                # Check workflow status
-                status_result = await self.coordinator.execute_task({
-                    "type": "monitor_workflow",
-                    "workflow_id": workflow_id
-                })
-                
-                if status_result.success:
-                    workflow_data = status_result.data.get("workflow")
-                    # workflow_data may be a dataclass or dict
-                    overall_status = None
-                    if hasattr(workflow_data, "overall_status"):
-                        overall_status = getattr(workflow_data, "overall_status", None)
-                    elif isinstance(workflow_data, dict):
-                        overall_status = workflow_data.get("overall_status")
-                    if overall_status == "completed":
-                        return await self._get_workflow_results(workflow_id)
-                        
-                # Wait before checking again
-                await asyncio.sleep(2)
-                
-            # Timeout reached
-            raise TimeoutError(f"Workflow {workflow_id} did not complete within {max_wait_time} seconds")
+            return {
+                "success": True,
+                "workflow_id": workflow_id,
+                "status": "started"
+            }
             
         except Exception as e:
-            logger.error(f"Error waiting for workflow completion: {e}")
-            raise
+            logger.error(f"Error executing workflow: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
             
-    async def _get_workflow_results(self, workflow_id: str) -> Dict[str, Any]:
-        """Get final results from a completed workflow"""
+    async def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:
+        """Get the status of a workflow"""
         try:
-            status_result = await self.coordinator.execute_task({
+            if not self.coordinator:
+                raise RuntimeError("Coordinator agent not available")
+                
+            result = await self.coordinator.execute_task({
                 "type": "monitor_workflow",
                 "workflow_id": workflow_id
             })
-            if status_result.success:
-                data = status_result.data or {}
-                # Prefer compiled final results if present
-                final_results = data.get("final_results") or data.get("results")
-                if final_results:
-                    return {
-                        "workflow_id": workflow_id,
-                        "status": "completed",
-                        **final_results
-                    }
-            # Fallback minimal
-            return {
-                "workflow_id": workflow_id,
-                "status": "completed",
-                "message": "Workflow completed"
-            }
+            
+            if not result.success:
+                raise RuntimeError(f"Failed to get workflow status: {result.error_message}")
+                
+            return result.data
+            
         except Exception as e:
-            logger.error(f"Error getting workflow results: {e}")
-            raise
+            logger.error(f"Error getting workflow status: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
             
     async def get_system_status(self) -> SystemStatus:
         """Get overall system status"""
         try:
-            # Get FastMCP system status
-            fastmcp_status = await self.fastmcp_config.broker.get_system_status()
+            # Get Message Bus system status
+            message_bus_status = await self.message_bus_config.broker.get_system_status()
             
             # Calculate system health
-            total_agents = len(self.agents)
-            active_agents = fastmcp_status.get("active_agents", 0)
-            active_workflows = len(self.coordinator.active_workflows) if self.coordinator else 0
+            total_agents = message_bus_status.get("total_agents", 0)
+            active_agents = message_bus_status.get("active_agents", 0)
             
-            # Determine system health
-            if active_agents == total_agents and active_workflows > 0:
-                system_health = "healthy"
-            elif active_agents == total_agents:
-                system_health = "idle"
-            elif active_agents > total_agents * 0.8:
-                system_health = "degraded"
-            else:
+            if total_agents == 0:
                 system_health = "unhealthy"
+            elif active_agents == 0:
+                system_health = "idle"
+            else:
+                system_health = "healthy"
                 
             # Calculate uptime
             uptime = time.time() - self.system_start_time
             
-            # Compile performance metrics
+            # Get performance metrics
             performance_metrics = {
-                "message_queue_size": fastmcp_status.get("message_queue_size", 0),
-                "agent_performance": {},
-                "workflow_success_rate": 0.95  # Mock value
+                "total_agents": total_agents,
+                "active_agents": active_agents,
+                "message_queue_size": message_bus_status.get("message_queue_size", 0),
+                "agent_statuses": message_bus_status.get("agents", {})
             }
             
-            # Get individual agent performance
-            for agent_name, agent in self.agents.items():
-                try:
-                    agent_status = await agent.get_status()
-                    performance_metrics["agent_performance"][agent_name] = {
-                        "status": agent_status.get("status"),
-                        "tasks_completed": agent_status.get("performance_metrics", {}).get("tasks_completed", 0),
-                        "average_execution_time": agent_status.get("performance_metrics", {}).get("average_execution_time", 0)
-                    }
-                except Exception as e:
-                    logger.warning(f"Could not get status for agent {agent_name}: {e}")
-                    
             return SystemStatus(
                 total_agents=total_agents,
                 active_agents=active_agents,
-                active_workflows=active_workflows,
+                message_queue_size=message_bus_status.get("message_queue_size", 0),
                 system_health=system_health,
                 uptime=uptime,
                 performance_metrics=performance_metrics
@@ -267,174 +193,79 @@ class PatentAgentSystem:
             
         except Exception as e:
             logger.error(f"Error getting system status: {e}")
-            raise
+            return SystemStatus(
+                total_agents=0,
+                active_agents=0,
+                message_queue_size=0,
+                system_health="error",
+                uptime=time.time() - self.system_start_time,
+                performance_metrics={"error": str(e)}
+            )
             
-    async def monitor_workflows(self) -> List[Dict[str, Any]]:
-        """Monitor all active workflows"""
-        try:
-            if not self.coordinator:
-                return []
-                
-            result = await self.coordinator.execute_task({
-                "type": "monitor_workflow"
-            })
-            
-            if result.success:
-                return result.data.get("active_workflows", [])
-            else:
-                logger.error(f"Failed to monitor workflows: {result.error_message}")
-                return []
-                
-        except Exception as e:
-            logger.error(f"Error monitoring workflows: {e}")
-            return []
-            
-    async def get_agent_status(self, agent_name: str) -> Optional[Dict[str, Any]]:
-        """Get status of a specific agent"""
-        try:
-            agent = self.agents.get(agent_name)
-            if agent:
-                return await agent.get_status()
-            else:
-                logger.warning(f"Agent {agent_name} not found")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Error getting agent status: {e}")
-            return None
-            
-    async def send_agent_message(self, agent_name: str, message_type: MessageType, 
-                               content: Dict[str, Any], priority: int = 1):
-        """Send a message to a specific agent"""
-        try:
-            agent = self.agents.get(agent_name)
-            if agent:
-                await agent.send_message(agent_name, message_type, content, priority)
-            else:
-                logger.warning(f"Agent {agent_name} not found")
-                
-        except Exception as e:
-            logger.error(f"Error sending message to agent: {e}")
-            
-    async def broadcast_system_message(self, message_type: MessageType, 
-                                    content: Dict[str, Any], priority: int = 1):
+    async def broadcast_message(self, message_type: MessageType, 
+                              content: Dict[str, Any], sender: str = "system"):
         """Broadcast a message to all agents"""
         try:
-            await self.fastmcp_config.broker.broadcast_message(
-                message_type, content, "system", priority
+            await self.message_bus_config.broker.broadcast_message(
+                message_type=message_type,
+                content=content,
+                sender=sender
             )
+            logger.info(f"Broadcast message sent: {message_type.value}")
+            
         except Exception as e:
-            logger.error(f"Error broadcasting system message: {e}")
+            logger.error(f"Error broadcasting message: {e}")
             
     async def health_check(self) -> Dict[str, Any]:
-        """Perform a comprehensive health check of the system"""
+        """Perform a comprehensive health check"""
         try:
             health_status = {
                 "system": "healthy",
+                "message_bus": "healthy",
                 "agents": {},
-                "fastmcp": "healthy",
-                "workflows": "healthy",
                 "timestamp": time.time()
             }
             
-            # Check FastMCP health
+            # Check Message Bus health
             try:
-                fastmcp_status = await self.fastmcp_config.broker.get_system_status()
-                if fastmcp_status.get("total_agents", 0) == 0:
-                    health_status["fastmcp"] = "unhealthy"
+                message_bus_status = await self.message_bus_config.broker.get_system_status()
+                if message_bus_status.get("total_agents", 0) == 0:
+                    health_status["message_bus"] = "unhealthy"
             except Exception as e:
-                health_status["fastmcp"] = "error"
-                health_status["fastmcp_error"] = str(e)
+                health_status["message_bus"] = "error"
+                health_status["message_bus_error"] = str(e)
                 
-            # Check individual agent health
+            # Check individual agents
             for agent_name, agent in self.agents.items():
                 try:
                     agent_status = await agent.get_status()
-                    health_status["agents"][agent_name] = {
-                        "status": agent_status.get("status"),
-                        "health": "healthy" if agent_status.get("status") != "error" else "unhealthy"
-                    }
+                    health_status["agents"][agent_name] = agent_status
                 except Exception as e:
                     health_status["agents"][agent_name] = {
-                        "status": "unknown",
-                        "health": "error",
+                        "status": "error",
                         "error": str(e)
                     }
                     
-            # Check workflow health
-            try:
-                workflows = await self.monitor_workflows()
-                if any(wf.get("status") == "error" for wf in workflows):
-                    health_status["workflows"] = "degraded"
-            except Exception as e:
-                health_status["workflows"] = "error"
-                health_status["workflow_error"] = str(e)
-                
-            # Determine overall system health
-            if any(status == "error" for status in health_status.values() if isinstance(status, str)):
+            # Overall system health
+            if health_status["message_bus"] != "healthy":
                 health_status["system"] = "unhealthy"
-            elif any(status == "unhealthy" for status in health_status.values() if isinstance(status, str)):
-                health_status["system"] = "degraded"
                 
             return health_status
             
         except Exception as e:
-            logger.error(f"Error performing health check: {e}")
+            logger.error(f"Error during health check: {e}")
             return {
                 "system": "error",
                 "error": str(e),
                 "timestamp": time.time()
             }
             
-    async def restart_agent(self, agent_name: str) -> bool:
-        """Restart a specific agent"""
+    async def shutdown(self):
+        """Shutdown the system"""
         try:
-            agent = self.agents.get(agent_name)
-            if not agent:
-                logger.warning(f"Agent {agent_name} not found")
-                return False
-                
-            logger.info(f"Restarting agent {agent_name}")
-            
-            # Stop agent
-            await agent.stop()
-            
-            # Wait a moment
-            await asyncio.sleep(1)
-            
-            # Start agent
-            await agent.start()
-            
-            logger.info(f"Agent {agent_name} restarted successfully")
-            return True
+            await self.stop()
+            logger.info("Patent Agent System shutdown complete")
             
         except Exception as e:
-            logger.error(f"Error restarting agent {agent_name}: {e}")
-            return False
-            
-    async def emergency_shutdown(self):
-        """Emergency shutdown of the system"""
-        try:
-            logger.critical("EMERGENCY SHUTDOWN INITIATED")
-            
-            # Stop all agents immediately
-            stop_tasks = [agent.stop() for agent in self.agents.values()]
-            await asyncio.gather(*stop_tasks, return_exceptions=True)
-            
-            # Stop FastMCP
-            await self.fastmcp_config.shutdown()
-            
-            self.is_running = False
-            logger.critical("Emergency shutdown completed")
-            
-        except Exception as e:
-            logger.critical(f"Error during emergency shutdown: {e}")
-            
-    def __enter__(self):
-        """Context manager entry"""
-        return self
-        
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit"""
-        if self.is_running:
-            asyncio.create_task(self.stop())
+            logger.error(f"Error during shutdown: {e}")
+            raise

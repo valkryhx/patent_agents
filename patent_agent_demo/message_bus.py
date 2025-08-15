@@ -1,49 +1,36 @@
 """
-FastMCP Configuration for Patent Agent System
-Handles message passing, agent coordination, and system communication
+Message Bus Configuration for Patent Agent System
+Provides message passing and coordination infrastructure
 """
 
 import asyncio
-import json
-from typing import Dict, Any, List, Optional
+import logging
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, asdict
 from enum import Enum
-import logging
+import time
+import uuid
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class MessageType(Enum):
-    """Types of messages in the system"""
-    PLANNING = "planning"
-    SEARCH = "search"
-    DISCUSSION = "discussion"
-    WRITING = "writing"
-    REVIEW = "review"
-    REWRITE = "rewrite"
+    """Message types for inter-agent communication"""
     COORDINATION = "coordination"
     STATUS = "status"
     ERROR = "error"
+    DATA = "data"
+    REQUEST = "request"
+    RESPONSE = "response"
 
 class AgentStatus(Enum):
     """Agent status enumeration"""
     IDLE = "idle"
     BUSY = "busy"
-    COMPLETED = "completed"
+    WORKING = "working"
     ERROR = "error"
-
-@dataclass
-class Message:
-    """Message structure for agent communication"""
-    id: str
-    type: MessageType
-    sender: str
-    recipient: str
-    content: Dict[str, Any]
-    timestamp: float
-    priority: int = 1
-    correlation_id: Optional[str] = None
+    OFFLINE = "offline"
 
 @dataclass
 class AgentInfo:
@@ -52,68 +39,77 @@ class AgentInfo:
     status: AgentStatus
     capabilities: List[str]
     current_task: Optional[str] = None
-    performance_metrics: Dict[str, float] = None
+    last_activity: float = 0.0
 
-class FastMCPBroker:
-    """Message broker for FastMCP communication"""
+@dataclass
+class Message:
+    """Message structure for inter-agent communication"""
+    id: str
+    type: MessageType
+    sender: str
+    recipient: str
+    content: Dict[str, Any]
+    timestamp: float
+    priority: int = 5
+
+class MessageBusBroker:
+    """Message broker for Message Bus communication"""
     
     def __init__(self):
         self.agents: Dict[str, AgentInfo] = {}
-        self.message_queue: asyncio.Queue = asyncio.Queue()
-        self.subscribers: Dict[str, List[str]] = {}
-        self.message_history: List[Message] = []
-        self.max_history = 1000
+        self.message_queue = asyncio.Queue()
+        self.message_handlers: Dict[str, callable] = {}
         
     async def register_agent(self, agent_name: str, capabilities: List[str]):
-        """Register a new agent"""
+        """Register an agent with the broker"""
         self.agents[agent_name] = AgentInfo(
             name=agent_name,
             status=AgentStatus.IDLE,
             capabilities=capabilities,
-            performance_metrics={}
+            last_activity=time.time()
         )
         logger.info(f"Agent {agent_name} registered with capabilities: {capabilities}")
         
     async def unregister_agent(self, agent_name: str):
-        """Unregister an agent"""
+        """Unregister an agent from the broker"""
         if agent_name in self.agents:
             del self.agents[agent_name]
             logger.info(f"Agent {agent_name} unregistered")
             
     async def send_message(self, message: Message):
-        """Send a message to the broker"""
+        """Send a message to the message queue"""
         await self.message_queue.put(message)
-        self.message_history.append(message)
-        
-        # Maintain message history size
-        if len(self.message_history) > self.max_history:
-            self.message_history.pop(0)
-            
         logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
         
-    async def receive_message(self, agent_name: str) -> Optional[Message]:
-        """Receive a message for a specific agent (removes it from history once delivered)"""
-        try:
-            # Find highest priority message addressed to this agent
-            candidate_indices = [i for i, msg in enumerate(self.message_history) if msg.recipient == agent_name or msg.recipient == "broadcast"]
-            if not candidate_indices:
-                return None
-            # Select highest priority among candidates
-            best_index = max(candidate_indices, key=lambda i: self.message_history[i].priority)
-            message = self.message_history.pop(best_index)
-            return message
-        except Exception as e:
-            logger.error(f"Error receiving message for {agent_name}: {e}")
-            return None
-        
-    async def broadcast_message(self, message_type: MessageType, content: Dict[str, Any], 
-                              sender: str, priority: int = 1):
+    async def broadcast_message(self, message: Message):
         """Broadcast a message to all agents"""
+        for agent_name in self.agents.keys():
+            broadcast_msg = Message(
+                id=f"broadcast_{uuid.uuid4()}",
+                type=message.type,
+                sender=message.sender,
+                recipient=agent_name,
+                content=message.content,
+                timestamp=time.time(),
+                priority=message.priority
+            )
+            await self.send_message(broadcast_msg)
+            
+    async def get_message(self) -> Optional[Message]:
+        """Get a message from the queue"""
+        try:
+            return await asyncio.wait_for(self.message_queue.get(), timeout=1.0)
+        except asyncio.TimeoutError:
+            return None
+            
+    async def send_message_direct(self, sender: str, recipient: str, 
+                                content: Dict[str, Any], priority: int = 5):
+        """Send a message directly"""
         message = Message(
-            id=f"broadcast_{asyncio.get_event_loop().time()}",
-            type=message_type,
+            id=str(uuid.uuid4()),
+            type=MessageType.COORDINATION,
             sender=sender,
-            recipient="broadcast",
+            recipient=recipient,
             content=content,
             timestamp=asyncio.get_event_loop().time(),
             priority=priority
@@ -146,7 +142,7 @@ class FastMCPBroker:
 class MessageHandler:
     """Handles message processing and routing"""
     
-    def __init__(self, broker: FastMCPBroker):
+    def __init__(self, broker: MessageBusBroker):
         self.broker = broker
         self.message_handlers: Dict[MessageType, callable] = {}
         
@@ -177,23 +173,23 @@ class MessageHandler:
             )
             await self.broker.send_message(error_message)
 
-class FastMCPConfig:
-    """Main configuration class for FastMCP"""
+class MessageBusConfig:
+    """Main configuration class for Message Bus"""
     
     def __init__(self):
-        self.broker = FastMCPBroker()
+        self.broker = MessageBusBroker()
         self.message_handler = MessageHandler(self.broker)
         self.agent_coordinator = None
         
     async def initialize(self):
-        """Initialize the FastMCP system"""
-        logger.info("Initializing FastMCP system...")
+        """Initialize the Message Bus system"""
+        logger.info("Initializing Message Bus system...")
         
         # Register default message handlers
         self.message_handler.register_handler(MessageType.STATUS, self._handle_status_message)
         self.message_handler.register_handler(MessageType.ERROR, self._handle_error_message)
         
-        logger.info("FastMCP system initialized successfully")
+        logger.info("Message Bus system initialized successfully")
         
     async def _handle_status_message(self, message: Message):
         """Handle status update messages"""
@@ -209,10 +205,10 @@ class FastMCPConfig:
         logger.error(f"Error from {message.sender}: {message.content.get('error', 'Unknown error')}")
         
     async def shutdown(self):
-        """Shutdown the FastMCP system"""
-        logger.info("Shutting down FastMCP system...")
+        """Shutdown the Message Bus system"""
+        logger.info("Shutting down Message Bus system...")
         # Cleanup resources
         pass
 
-# Global FastMCP configuration instance
-fastmcp_config = FastMCPConfig()
+# Global Message Bus configuration instance
+message_bus_config = MessageBusConfig()
