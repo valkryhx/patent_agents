@@ -221,38 +221,24 @@ class SearcherAgent(BaseAgent):
             return [topic, "technology", "system", "method", "device"]
             
     async def _search_with_openai_web_search(self, search_query: SearchQuery) -> List[SearchResult]:
-        """Search for prior art using OpenAI GPT-5 with web search tool"""
+        """Search for prior art using OpenAI GPT-5 with web search tool and fallback to DuckDuckGo"""
         try:
             # Create comprehensive search query for web search
             search_terms = f"patent prior art {search_query.topic} {' '.join(search_query.keywords)}"
             
-            # Use OpenAI web search tool with correct API call
-            prompt = f"Please search for prior art related to: {search_terms}"
-            response = await self.openai_client._generate_response(prompt)
+            # Use the search_prior_art method which includes fallback mechanism
+            logger.info(f"🔍 Starting web search for: {search_query.topic}")
+            web_search_results = await self.openai_client.search_prior_art(
+                search_query.topic, 
+                search_query.keywords, 
+                max_results=search_query.max_results
+            )
             
-            # Parse web search results and convert to SearchResult objects
-            # This is a simplified approach - in production, you'd want more robust parsing
-            web_search_results = [
-                SearchResult(
-                    title=f"Prior Art Result 1 for {search_query.topic}",
-                    abstract="This is a sample prior art result from web search.",
-                    url="https://example.com/patent1",
-                    publication_date="2023-01-01",
-                    relevance_score=0.8
-                ),
-                SearchResult(
-                    title=f"Prior Art Result 2 for {search_query.topic}",
-                    abstract="Another sample prior art result from web search.",
-                    url="https://example.com/patent2",
-                    publication_date="2023-02-01",
-                    relevance_score=0.7
-                )
-            ]
-            
+            logger.info(f"✅ Web search completed, found {len(web_search_results)} results")
             return web_search_results
             
         except Exception as e:
-            logger.error(f"Error in OpenAI web search: {e}")
+            logger.error(f"Error in web search: {e}")
             return []
             
     async def _search_multiple_databases(self, search_query: SearchQuery) -> List[SearchResult]:
@@ -556,7 +542,16 @@ class SearcherAgent(BaseAgent):
                 }
                 
             # Assess timing risk
-            recent_patents = [r for r in results if int(r.filing_date[:4]) >= 2020]
+            recent_patents = []
+            for r in results:
+                try:
+                    if r.filing_date and r.filing_date != "N/A" and len(r.filing_date) >= 4:
+                        year = int(r.filing_date[:4])
+                        if year >= 2020:
+                            recent_patents.append(r)
+                except (ValueError, TypeError):
+                    continue  # Skip invalid dates
+                    
             if len(recent_patents) > 10:
                 risk_factors["timing_risk"] = {
                     "level": "High",
@@ -615,7 +610,16 @@ class SearcherAgent(BaseAgent):
             score_reduction = high_relevance_count * 0.5
             
             # Reduce score based on recent patents
-            recent_patents = [r for r in results if int(r.filing_date[:4]) >= 2020]
+            recent_patents = []
+            for r in results:
+                try:
+                    if r.filing_date and r.filing_date != "N/A" and len(r.filing_date) >= 4:
+                        year = int(r.filing_date[:4])
+                        if year >= 2020:
+                            recent_patents.append(r)
+                except (ValueError, TypeError):
+                    continue  # Skip invalid dates
+                    
             recent_reduction = len(recent_patents) * 0.2
             
             # Calculate final score
