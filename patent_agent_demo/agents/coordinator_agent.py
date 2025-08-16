@@ -1022,7 +1022,7 @@ class CoordinatorAgent(BaseAgent):
         
         async def _validate_and_update_context(self, workflow_id: str, stage_index: int,
                                          result: Dict[str, Any], stage_name: str):
-        """Validate stage result and update context accordingly with enhanced error handling"""
+            """Validate stage result and update context accordingly with enhanced error handling"""
         try:
             logger.info(f"Validating and updating context for stage {stage_name}")
 

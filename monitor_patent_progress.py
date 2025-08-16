@@ -1,131 +1,107 @@
 #!/usr/bin/env python3
 """
-每10分钟检查专利撰写进度
+专利撰写进度监控脚本
+Monitor patent writing progress every 5 minutes
 """
-import os
-import sys
+
+import asyncio
 import time
-import glob
+import os
 from datetime import datetime
+from patent_agent_demo.patent_agent_system import PatentAgentSystem
 
-def check_progress():
-    """检查撰写进度"""
-    print(f"\n{'='*80}")
-    print(f"📊 进度检查时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"{'='*80}")
+async def monitor_progress():
+    """监控专利撰写进度"""
+    print("🔍 开始监控专利撰写进度...")
     
-    # 检查输出目录
-    output_dir = "output/progress"
-    if not os.path.exists(output_dir):
-        print("❌ 输出目录不存在")
-        return False
+    # 初始化系统
+    system = PatentAgentSystem()
+    await system.start()
     
-    # 获取所有进度目录
-    progress_dirs = glob.glob(f"{output_dir}/*")
-    if not progress_dirs:
-        print("❌ 没有找到进度目录")
-        return False
-    
-    # 按修改时间排序，获取最新的目录
-    progress_dirs.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    latest_dir = progress_dirs[0]
-    dir_name = os.path.basename(latest_dir)
-    
-    print(f"📁 最新进度目录: {dir_name}")
-    print(f"🕒 最后修改时间: {datetime.fromtimestamp(os.path.getmtime(latest_dir)).strftime('%Y-%m-%d %H:%M:%S')}")
-    
-    # 检查目录内容
-    files = os.listdir(latest_dir)
-    print(f"📄 生成的文件数量: {len(files)}")
-    
-    # 分析已完成的阶段
-    completed_stages = []
-    stage_files = {
-        "00_title_abstract.md": "策略制定 (planner_agent)",
-        "01_outline.md": "大纲生成 (writer_agent)",
-        "02_background.md": "背景技术撰写",
-        "03_invention.md": "发明内容撰写",
-        "04_implementation.md": "具体实施方式撰写",
-        "05_claims.md": "权利要求书撰写",
-        "06_drawings.md": "附图说明撰写",
-        "07_review.md": "审查 (reviewer_agent)",
-        "08_final.md": "最终版本 (rewriter_agent)"
-    }
-    
-    for file, stage_name in stage_files.items():
-        if file in files:
-            completed_stages.append(stage_name)
-    
-    print(f"\n✅ 已完成的阶段:")
-    for i, stage in enumerate(completed_stages, 1):
-        print(f"   {i}. {stage}")
-    
-    # 计算进度百分比
-    total_stages = len(stage_files)
-    progress_percent = (len(completed_stages) / total_stages) * 100
-    print(f"\n📊 总体进度: {progress_percent:.1f}% ({len(completed_stages)}/{total_stages})")
-    
-    # 检查是否有新文件生成
-    print(f"\n📄 当前文件列表:")
-    for file in sorted(files):
-        file_path = os.path.join(latest_dir, file)
-        file_size = os.path.getsize(file_path)
-        mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
-        print(f"   📄 {file} ({file_size} bytes) - {mod_time.strftime('%H:%M:%S')}")
-    
-    # 检查工作流是否还在运行
     try:
-        import subprocess
-        result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
-        if 'run_patent_workflow.py' in result.stdout:
-            print(f"\n🔄 工作流状态: 正在运行")
-            return False  # 继续监控
-        else:
-            print(f"\n✅ 工作流状态: 已完成")
-            return True   # 停止监控
-    except Exception as e:
-        print(f"\n⚠️  无法检查进程状态: {e}")
-        return False
-    
-    return False
-
-def main():
-    """主函数"""
-    print("🚀 开始监控专利撰写进度 (每10分钟检查一次)")
-    print("按 Ctrl+C 停止监控")
-    
-    check_count = 0
-    while True:
-        try:
+        # 查找最新的工作流
+        workflows = await system.coordinator.execute_task({
+            "type": "get_workflow_summary"
+        })
+        
+        if not workflows:
+            print("❌ 未找到正在进行的专利撰写工作流")
+            return
+        
+        # 获取最新的工作流ID
+        latest_workflow = workflows[-1]
+        workflow_id = latest_workflow.get("workflow_id")
+        
+        if not workflow_id:
+            print("❌ 无法获取工作流ID")
+            return
+        
+        print(f"📋 监控工作流ID: {workflow_id}")
+        
+        check_count = 0
+        while True:
             check_count += 1
-            print(f"\n{'='*80}")
-            print(f"🔍 第 {check_count} 次检查")
-            print(f"{'='*80}")
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            # 检查进度
-            is_completed = check_progress()
+            print(f"\n🕐 第{check_count}次检查 - {current_time}")
             
-            if is_completed:
-                print(f"\n🎉 专利撰写工作流已完成！")
-                print(f"📁 最终结果保存在: output/progress/")
-                break
+            try:
+                # 获取工作流状态
+                status = await system.coordinator.execute_task({
+                    "type": "monitor_workflow",
+                    "workflow_id": workflow_id
+                })
+                
+                if status.get("status") == "completed":
+                    print("🎉 专利撰写已完成！")
+                    print(f"📁 导出路径: /workspace/output/multi_parameter_tool_patent_{workflow_id[:8]}.md")
+                    break
+                elif status.get("status") == "failed":
+                    print(f"❌ 专利撰写失败: {status.get('error', '未知错误')}")
+                    break
+                else:
+                    current_stage = status.get("current_stage", "未知")
+                    progress = status.get("progress", 0)
+                    total_stages = status.get("total_stages", 0)
+                    current_stage_index = status.get("current_stage_index", 0)
+                    
+                    print(f"📊 工作流状态: {status.get('status', '进行中')}")
+                    print(f"🎯 当前阶段: {current_stage} ({current_stage_index + 1}/{total_stages})")
+                    print(f"📈 总体进度: {progress}%")
+                    
+                    # 检查是否有卡顿
+                    if check_count > 1 and progress == 0:
+                        print("⚠️ 警告: 进度可能卡顿，建议检查系统状态")
+                    
+                    # 显示详细阶段信息
+                    stages = status.get("stages", [])
+                    if stages:
+                        print("📋 阶段详情:")
+                        for i, stage in enumerate(stages):
+                            stage_status = "✅" if stage.get("status") == "completed" else "⏳" if stage.get("status") == "running" else "⏸️"
+                            print(f"   {stage_status} {stage.get('stage_name', '未知阶段')}: {stage.get('status', 'pending')}")
+                
+                # 检查输出目录
+                output_dir = "/workspace/output"
+                if os.path.exists(output_dir):
+                    files = os.listdir(output_dir)
+                    if files:
+                        print(f"📁 输出目录文件: {len(files)} 个文件")
+                        for file in files[:3]:  # 只显示前3个文件
+                            print(f"   📄 {file}")
+                        if len(files) > 3:
+                            print(f"   ... 还有 {len(files) - 3} 个文件")
+                
+            except Exception as e:
+                print(f"❌ 检查进度时出错: {e}")
             
-            print(f"\n⏰ 等待10分钟后进行下一次检查...")
-            print(f"下次检查时间: {datetime.fromtimestamp(time.time() + 600).strftime('%H:%M:%S')}")
+            print(f"⏰ 等待5分钟后进行下一次检查...")
+            await asyncio.sleep(300)  # 5分钟
             
-            # 等待10分钟
-            time.sleep(600)  # 10分钟 = 600秒
-            
-        except KeyboardInterrupt:
-            print(f"\n🛑 用户停止监控")
-            break
-        except Exception as e:
-            print(f"\n❌ 监控过程中出现错误: {e}")
-            print(f"⏰ 10分钟后重试...")
-            time.sleep(600)
+    except Exception as e:
+        print(f"❌ 监控过程中出错: {e}")
+    finally:
+        await system.stop()
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n🛑 程序已停止")
+    asyncio.run(monitor_progress())
