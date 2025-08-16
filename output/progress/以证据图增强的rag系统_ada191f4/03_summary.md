@@ -2,73 +2,100 @@
 
 # 发明内容/技术方案-总述
 
-## 以证据图增强的RAG系统
+本发明提出了一种以证据图增强的检索增强生成(Retrieval-Augmented Generation, RAG)系统，旨在解决传统RAG系统在处理复杂查询时面临的证据碎片化、相关性不足和可解释性差等问题。本系统的核心创新在于引入了证据图(Evidence Graph)机制，通过构建结构化的证据网络，实现多级证据推理和动态证据融合，显著提升了生成内容的准确性、相关性和可解释性。
 
-本发明提出了一种基于证据图增强的检索增强生成(Retrieval-Augmented Generation, RAG)系统，旨在解决传统RAG系统在处理复杂查询时面临的信息碎片化、证据可靠性不足以及知识整合能力有限等问题。本系统通过构建结构化的证据图，将非结构化文本信息转化为具有语义关联的知识网络，并利用图结构引导信息检索与答案生成过程，显著提升了系统的知识整合能力和答案的准确性与可解释性。
-
-### 系统架构
-
-本系统采用模块化设计，主要包括预处理模块、证据图构建模块、检索模块、证据融合模块、生成模块和反馈模块。系统整体架构如下图所示：
+系统整体架构采用模块化设计，主要包括检索模块、证据图构建模块、证据推理模块、证据融合模块和生成模块。检索模块负责从大规模知识库中检索与查询相关的文档片段；证据图构建模块从检索结果中提取实体、关系和证据链，构建结构化的证据图；证据推理模块利用图神经网络对证据图进行多级推理，计算各证据的相关性和重要性；证据融合模块根据查询的语义特征动态调整证据权重，实现自适应的证据融合；生成模块则基于融合后的证据和原始查询，生成高质量、可解释的回答。
 
 ```mermaid
 graph TD
-    A[输入查询] --> B[预处理模块]
-    B --> C[证据图构建模块]
-    D[知识库] --> C
-    C --> E[检索模块]
-    E --> F[证据融合模块]
-    G[外部数据源] --> F
-    F --> H[生成模块]
-    H --> I[生成答案]
-    I --> J[用户反馈]
-    J --> K[反馈模块]
-    K --> C
+    A[用户查询] --> B[检索模块]
+    B --> C[候选文档集]
+    C --> D[证据图构建模块]
+    D --> E[证据图]
+    E --> F[证据推理模块]
+    F --> G[证据相关性评分]
+    G --> H[证据融合模块]
+    H --> I[加权证据表示]
+    I --> J[生成模块]
+    J --> K[生成回答]
+    K --> L[证据追溯]
+    L --> M[可视化展示]
 ```
 
-预处理模块负责对输入文档进行清洗、分词和实体识别，为后续证据图构建提供基础数据。证据图构建模块利用自然语言处理技术从文档中抽取实体和关系，构建动态更新的证据图网络。检索模块结合语义相似度和图结构信息，从证据图中检索与查询最相关的证据片段。证据融合模块整合多源证据，解决冲突信息，计算各证据的可靠性权重。生成模块基于融合后的证据，利用图引导的注意力机制生成高质量答案。反馈模块收集用户对答案的评价，用于优化证据图结构和生成策略。
+在证据图构建过程中，本发明采用了一种基于注意力机制的实体关系抽取算法。给定一个文档集合D = {d₁, d₂, ..., dₙ}，系统首先识别文档中的实体集合E = {e₁, e₂, ..., eₘ}，然后通过预训练的关系抽取模型识别实体间的关系R = {r₁, r₂, ..., rₖ}。证据图G可以形式化为一个四元组G = (E, R, A, W)，其中E是实体节点集合，R是关系类型集合，A是邻接矩阵表示实体间的关系连接，W是权重矩阵表示关系的强度。具体构建过程如公式(1)所示：
 
-### 关键技术创新
+$$
+G = \text{BuildGraph}(D) = (E, R, A, W)
+$$
 
-本系统的核心创新在于证据图构建与融合机制。在证据图构建阶段，系统采用改进的实体关系抽取算法，不仅识别文档中的显式关系，还能通过上下文推理发现隐式语义关联。具体而言，实体表示采用以下公式计算：
+其中，邻接矩阵A和权重矩阵W的计算如公式(2)和公式(3)所示：
 
-$$E_{emb} = \frac{1}{|N_E|}\sum_{i=1}^{|N_E|}(W_e \cdot e_i + b_e) + W_g \cdot G_{path}$$
+$$
+A_{ij} = \begin{cases} 
+1 & \text{if } \exists r \in R \text{ s.t. } (e_i, r, e_j) \in D \\
+0 & \text{otherwise}
+\end{cases}
+$$
 
-其中，$E_{emb}$表示实体嵌入向量，$N_E$为实体邻域集合，$e_i$为邻域实体嵌入，$W_e$和$b_e$为实体编码器参数，$W_g$为图结构编码器权重，$G_{path}$表示实体在证据图中的路径特征。
+$$
+W_{ij} = \sum_{d \in D} \text{Attention}(e_i, e_j, d) \cdot \text{Reliability}(r_{ij})
+$$
 
-在证据融合阶段，系统提出了一种基于图结构的动态权重计算方法，综合考虑证据的语义相关性、权威性和时效性：
+在证据推理阶段，本发明采用了一种图注意力网络(Graph Attention Network, GAN)来计算证据的相关性和重要性。给定查询q和证据图G，证据相关性评分函数如公式(4)所示：
 
-$$w_i = \alpha \cdot \text{sim}(q, e_i) + \beta \cdot \text{Auth}(e_i) + \gamma \cdot \text{Time}(e_i)$$
+$$
+\text{Score}(e_i, q) = \text{GAT}(G, q, e_i) = \sigma \left( \sum_{j \in N_i} \alpha_{ij} W h_j \right)
+$$
 
-其中，$w_i$为证据$e_i$的融合权重，$q$为查询向量，$\text{sim}(q, e_i)$表示查询与证据的相似度，$\text{Auth}(e_i)$表示证据的权威性评分，$\text{Time}(e_i)$表示证据的时效性因子，$\alpha, \beta, \gamma$为可学习的权重参数。
+其中，N_i是实体e_i的邻居节点集合，α_{ij}是注意力系数，表示邻居节点e_j对中心节点e_i的影响权重，W是可学习的权重矩阵，h_j是节点e_j的特征表示，σ是非线性激活函数。注意力系数α_{ij}的计算如公式(5)所示：
 
-### 系统主流程
+$$
+\alpha_{ij} = \frac{\exp(\text{LeakyReLU}(\mathbf{a}^T[\mathbf{W}h_i \| \mathbf{W}h_j]))}{\sum_{k \in N_i} \exp(\text{LeakyReLU}(\mathbf{a}^T[\mathbf{W}h_i \| \mathbf{W}h_k]))}
+$$
 
-以下是本系统的主要处理流程伪代码：
+在证据融合阶段，系统根据查询的语义特征动态调整证据权重。给定查询q和证据集合E = {e₁, e₂, ..., eₘ}，融合后的证据表示v如公式(6)所示：
+
+$$
+v = \text{Fuse}(E, q) = \sum_{i=1}^{m} \beta_i \cdot \text{Score}(e_i, q) \cdot h_i
+$$
+
+其中，β_i是动态权重系数，表示证据e_i对查询q的重要性，计算如公式(7)所示：
+
+$$
+\beta_i = \frac{\exp(\text{Sim}(q, h_i))}{\sum_{j=1}^{m} \exp(\text{Sim}(q, h_j))}
+$$
+
+其中，Sim(·,·)表示余弦相似度函数。
+
+以下是系统主要处理流程的伪代码：
 
 ```
 function EvidenceGraphEnhancedRAG(query, knowledge_base):
-    # 1. 预处理查询
-    processed_query = preprocess(query)
+    # 步骤1：从知识库中检索相关文档
+    retrieved_docs = Retrieve(query, knowledge_base)
     
-    # 2. 构建证据图
-    evidence_graph = build_evidence_graph(knowledge_base)
+    # 步骤2：构建证据图
+    evidence_graph = BuildEvidenceGraph(retrieved_docs)
     
-    # 3. 基于图结构的检索
-    relevant_evidences = graph_based_search(processed_query, evidence_graph)
+    # 步骤3：证据推理，计算相关性评分
+    entity_scores = {}
+    for each entity in evidence_graph.entities:
+        score = EvidenceInference(evidence_graph, query, entity)
+        entity_scores[entity] = score
     
-    # 4. 多源证据融合
-    fused_evidence = evidence_fusion(relevant_evidences)
+    # 步骤4：选择top-k相关证据
+    top_k_entities = SelectTopK(entity_scores, k=10)
     
-    # 5. 图引导的生成
-    answer = graph_guided_generation(processed_query, fused_evidence, evidence_graph)
+    # 步骤5：动态证据融合
+    fused_evidence = DynamicEvidenceFusion(top_k_entities, query)
     
-    # 6. 收集用户反馈
-    user_feedback = collect_user_feedback(answer)
+    # 步骤6：生成回答
+    response = GenerateResponse(query, fused_evidence, evidence_graph)
     
-    # 7. 更新证据图
-    update_evidence_graph(evidence_graph, user_feedback)
+    # 步骤7：构建证据追溯链
+    evidence_chain = BuildEvidenceChain(response, evidence_graph)
     
-    return answer
+    return response, evidence_chain
 ```
 
-本系统通过证据图的引入，实现了从简单文本检索到结构化知识推理的转变，有效提升了RAG系统在复杂知识密集型任务中的表现。实验表明，与传统RAG系统相比，本系统在准确率、可解释性和知识更新效率方面均有显著提升，特别适用于需要高度准确性和可解释性的专业领域应用场景。
+本发明的创新点主要体现在三个方面：首先，通过构建结构化的证据图，系统能够捕捉文档间的复杂关系，提供更全面的上下文信息；其次，基于图神经网络的证据推理机制能够自动发现隐含的关联，提高检索的相关性；最后，动态证据融合策略能够根据查询特点自适应地调整证据权重，生成更加精准和个性化的回答。实验表明，与传统RAG系统相比，本发明在多个问答任务上取得了显著的性能提升，特别是在需要多步推理和证据整合的复杂问题上表现尤为突出。
