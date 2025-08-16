@@ -48,7 +48,7 @@ async def monitor_progress_loop():
             # 运行进度检查脚本
             result = subprocess.run([
                 sys.executable, "monitor_progress_10min.py"
-            ], capture_output=True, text=True, timeout=300)  # 5分钟超时
+            ], capture_output=True, text=True)
             
             if result.returncode == 0:
                 print("✅ 进度检查完成")
@@ -60,10 +60,6 @@ async def monitor_progress_loop():
             
             print(f"⏰ 等待10分钟后进行下一次检查...")
             await asyncio.sleep(600)  # 10分钟
-            
-        except subprocess.TimeoutExpired:
-            print("⏰ 进度检查超时，继续监控...")
-            await asyncio.sleep(600)
         except Exception as e:
             print(f"❌ 监控过程中出现错误: {e}")
             await asyncio.sleep(600)
@@ -96,10 +92,7 @@ async def main():
         if workflow_process.poll() is None:
             print("🔄 正在停止工作流进程...")
             workflow_process.terminate()
-            try:
-                workflow_process.wait(timeout=30)
-            except subprocess.TimeoutExpired:
-                workflow_process.kill()
+            workflow_process.wait()
         
         print("✅ 所有进程已停止")
         

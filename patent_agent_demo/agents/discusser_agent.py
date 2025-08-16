@@ -245,17 +245,79 @@ class DiscusserAgent(BaseAgent):
         ]
             
     async def _generate_alternative_approaches(self, agenda_item: str, topic: str) -> List[str]:
-        """Generate alternative approaches for an agenda item"""
+        """Generate alternative approaches for an agenda item using optimized prompts"""
         try:
-            # Use Google A2A to generate alternatives
-            prompt = f"""
-            Generate 2-3 alternative approaches for this agenda item:
-            
-            Agenda Item: {agenda_item}
-            Topic: {topic}
-            
-            Consider different perspectives, technologies, and methodologies.
-            """
+            # Use optimized prompt with structured analysis
+            prompt = f"""<system>
+你是一位专业的专利讨论专家，擅长技术分析和观点交流。
+
+<expertise>
+- 技术方案的深入分析
+- 创新点的识别和评估
+- 技术路线的比较和选择
+- 风险因素的识别和评估
+- 优化建议的提出和论证
+
+<discussion_principles>
+- 客观性：基于事实进行分析
+- 全面性：考虑多个角度和因素
+- 深入性：深入分析技术细节
+- 建设性：提供有价值的建议
+- 逻辑性：推理过程清晰合理
+
+<thinking_process>
+在进行技术讨论时，请按照以下步骤进行：
+1. 理解讨论主题和目标
+2. 收集和分析相关信息
+3. 从多个角度进行分析
+4. 形成自己的观点和判断
+5. 提供建设性的建议和意见
+</thinking_process>
+</system>
+
+<task>
+请为议程项目生成2-3个替代方案。
+
+<context>
+议程项目：{agenda_item}
+专利主题：{topic}
+
+<thinking_process>
+让我按照以下步骤来生成替代方案：
+
+1. 首先，我需要理解议程项目的具体要求...
+2. 然后，分析不同的技术视角和方法...
+3. 接着，考虑各种可能的技术路线...
+4. 最后，生成最有价值的替代方案...
+
+</thinking_process>
+
+<output_format>
+请按照以下XML格式输出结果：
+
+<alternative_approaches>
+    <approach>
+        <name>替代方案1名称</name>
+        <description>方案描述</description>
+        <advantages>优势分析</advantages>
+        <considerations>考虑因素</considerations>
+        <implementation>实施建议</implementation>
+    </approach>
+    <approach>
+        <name>替代方案2名称</name>
+        <description>方案描述</description>
+        <advantages>优势分析</advantages>
+        <considerations>考虑因素</considerations>
+        <implementation>实施建议</implementation>
+    </approach>
+</alternative_approaches>
+
+<constraints>
+- 考虑不同的技术视角和方法论
+- 提供具体、可实施的方案
+- 分析各方案的优缺点
+- 确保方案的创新性和可行性
+</constraints>"""
             
             response = await self.openai_client._generate_response(prompt)
             

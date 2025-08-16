@@ -89,6 +89,21 @@ class WriterAgent(BaseAgent):
             description = task_data.get("description")
             previous_results = task_data.get("previous_results", {})
             
+            # Get context information if available
+            context_data = getattr(self, 'current_context', {})
+            theme_definition = context_data.get("theme_definition")
+            terminology = context_data.get("terminology", {})
+            
+            if theme_definition:
+                logger.info(f"Using context theme: {theme_definition.primary_title}")
+                # Use context to ensure consistency
+                topic = theme_definition.primary_title
+                description = f"{description} 核心概念：{theme_definition.core_concept}"
+                
+                # Add terminology guidance
+                if terminology:
+                    description += f"\n术语标准：{terminology}"
+            
             if not topic or not description:
                 return TaskResult(
                     success=False,
@@ -197,14 +212,121 @@ class WriterAgent(BaseAgent):
             # 优化1: 减少字数要求，从≥2000字改为≥800字
             # 优化2: 合并多个API调用，减少网络延迟
             
-            # Outline first - 简化大纲生成
-            outline_prompt = f"""
-创建专利撰写大纲（中文），主题：{writing_task.topic}
-- 章节：技术领域、背景技术、发明内容、具体实施方式、权利要求书、附图说明
-- 每章给出3-5个要点
+            # Outline first - 使用优化的提示词
+            outline_prompt = f"""<system>
+你是一位专业的专利撰写专家，拥有丰富的技术文档撰写经验。
+
+<expertise>
+- 技术方案的系统性描述
+- 专利文档的结构化撰写
+- 技术细节的准确表达
+- 法律要求的合规性把控
+- 创新点的突出性展示
+
+<writing_principles>
+- 清晰准确：技术描述无歧义，逻辑严密
+- 结构完整：覆盖所有必要章节，层次分明
+- 术语统一：保持概念一致性，避免混淆
+- 创新突出：明确技术贡献，突出创新亮点
+
+<thinking_process>
+在创建专利大纲时，请按照以下步骤进行：
+1. 理解技术方案的核心创新点
+2. 确定目标读者和写作目的
+3. 设计清晰的结构框架
+4. 为每个章节规划详细内容
+5. 确保逻辑连贯和完整性
+</thinking_process>
+</system>
+
+<task>
+请为专利主题"{writing_task.topic}"创建详细的专利撰写大纲。
+
+<context>
+专利描述：{writing_task.description}
+目标受众：专利审查员和技术专家
+写作风格：技术性、法律性、专业性
+质量要求：结构完整、逻辑清晰、技术准确
+
+<thinking_process>
+让我按照以下步骤来创建专利大纲：
+
+1. 首先，我需要理解技术方案的核心内容...
+2. 然后，确定专利文档的标准结构...
+3. 接着，为每个章节设计详细的内容框架...
+4. 最后，确保整体逻辑的连贯性和完整性...
+
+</thinking_process>
+
+<output_format>
+请按照以下XML格式输出结果：
+
+<patent_outline>
+    <title_section>
+        <title>专利标题</title>
+        <abstract>摘要要点</abstract>
+    </title_section>
+    
+    <technical_field>
+        <description>技术领域描述</description>
+        <background_issues>背景技术问题</background_issues>
+    </technical_field>
+    
+    <background_art>
+        <existing_solutions>现有技术方案</existing_solutions>
+        <limitations>现有技术局限性</limitations>
+        <improvement_needs>改进需求</improvement_needs>
+    </background_art>
+    
+    <summary_of_invention>
+        <core_concept>核心概念</core_concept>
+        <technical_advantages>技术优势</technical_advantages>
+        <innovation_points>创新点</innovation_points>
+    </summary_of_invention>
+    
+    <detailed_description>
+        <overview>总体概述</overview>
+        <embodiments>
+            <embodiment>
+                <name>实施方式1</name>
+                <description>详细描述</description>
+                <components>主要组件</components>
+                <workflow>工作流程</workflow>
+            </embodiment>
+        </embodiments>
+        <technical_details>技术细节</technical_details>
+    </detailed_description>
+    
+    <claims>
+        <independent_claims>
+            <claim>
+                <number>权利要求1</number>
+                <scope>保护范围</scope>
+                <key_elements>关键要素</key_elements>
+            </claim>
+        </independent_claims>
+        <dependent_claims>
+            <claim>
+                <number>从属权利要求</number>
+                <reference>引用关系</reference>
+                <additional_features>附加特征</additional_features>
+            </claim>
+        </dependent_claims>
+    </claims>
+    
+    <drawings>
+        <figure_descriptions>附图说明</figure_descriptions>
+        <technical_diagrams>技术图表</technical_diagrams>
+    </drawings>
+</patent_outline>
+
+<constraints>
+- 确保大纲结构完整、层次清晰
+- 每个章节都要有明确的内容要点
+- 保持技术逻辑的连贯性
+- 符合专利撰写的标准格式
 - 预计字数：每章≥800字
-仅输出分章要点清单。
-"""
+</constraints>"""
             outline_text = await self.openai_client._generate_response(outline_prompt)
             try:
                 self._write_progress(progress_dir, "01_outline.md", "撰写大纲", outline_text)
@@ -212,21 +334,171 @@ class WriterAgent(BaseAgent):
                 pass
                 
             # 优化3: 并发生成背景和摘要，减少等待时间
-            background_prompt = f"""
-撰写"背景技术"（中文，≥800字），主题：{writing_task.topic}
-- 包含：技术领域、现有技术方案（1-2个）、技术痛点、对比分析
+            background_prompt = f"""<system>
+你是一位专业的专利撰写专家，拥有丰富的技术文档撰写经验。
+
+<expertise>
+- 技术方案的系统性描述
+- 专利文档的结构化撰写
+- 技术细节的准确表达
+- 法律要求的合规性把控
+- 创新点的突出性展示
+
+<writing_principles>
+- 清晰准确：技术描述无歧义，逻辑严密
+- 结构完整：覆盖所有必要章节，层次分明
+- 术语统一：保持概念一致性，避免混淆
+- 创新突出：明确技术贡献，突出创新亮点
+
+<thinking_process>
+在撰写背景技术时，请按照以下步骤进行：
+1. 理解技术方案的核心创新点
+2. 分析现有技术的局限性和问题
+3. 设计清晰的技术背景描述
+4. 突出技术改进的必要性
+5. 为后续创新点做好铺垫
+</thinking_process>
+</system>
+
+<task>
+请为专利主题"{writing_task.topic}"撰写技术背景部分。
+
+<context>
+专利描述：{writing_task.description}
+目标受众：专利审查员和技术专家
+写作风格：技术性、法律性、专业性
+质量要求：结构完整、逻辑清晰、技术准确
+
+<thinking_process>
+让我按照以下步骤来撰写背景技术：
+
+1. 首先，我需要分析技术方案所属的技术领域...
+2. 然后，描述现有技术方案及其局限性...
+3. 接着，识别技术痛点和改进需求...
+4. 最后，为创新点做好技术铺垫...
+
+</thinking_process>
+
+<output_format>
+请按照以下格式输出结果：
+
+## 技术领域
+
+[技术领域描述，明确专利所属的技术分支]
+
+## 背景技术
+
+### 现有技术方案1
+[详细描述第一个现有技术方案]
+
+### 现有技术方案2  
+[详细描述第二个现有技术方案]
+
+### 技术痛点分析
+[分析现有技术存在的问题和局限性]
+
+### 改进需求
+[说明技术改进的必要性和方向]
+
+[插入1个mermaid流程图展示现有技术流程]
+[插入1-2段算法公式展示现有技术算法]
+
+<constraints>
+- 确保内容≥800字
+- 包含技术领域、现有技术方案、技术痛点、对比分析
 - 插入1个mermaid流程图
 - 插入1-2段算法公式
 - 风格：正式、技术性
-"""
+- 为后续创新点做好铺垫
+</constraints>"""
             
-            summary_prompt = f"""
-撰写"发明内容/技术方案-总述"（中文，≥800字），主题：{writing_task.topic}
+            summary_prompt = f"""<system>
+你是一位专业的专利撰写专家，拥有丰富的技术文档撰写经验。
+
+<expertise>
+- 技术方案的系统性描述
+- 专利文档的结构化撰写
+- 技术细节的准确表达
+- 法律要求的合规性把控
+- 创新点的突出性展示
+
+<writing_principles>
+- 清晰准确：技术描述无歧义，逻辑严密
+- 结构完整：覆盖所有必要章节，层次分明
+- 术语统一：保持概念一致性，避免混淆
+- 创新突出：明确技术贡献，突出创新亮点
+
+<thinking_process>
+在撰写发明内容时，请按照以下步骤进行：
+1. 理解技术方案的核心创新点
+2. 设计清晰的系统架构描述
+3. 突出技术优势和创新特色
+4. 提供具体的技术实现细节
+5. 确保逻辑连贯和完整性
+</thinking_process>
+</system>
+
+<task>
+请为专利主题"{writing_task.topic}"撰写发明内容/技术方案总述部分。
+
+<context>
+专利描述：{writing_task.description}
+目标受众：专利审查员和技术专家
+写作风格：技术性、法律性、专业性
+质量要求：结构完整、逻辑清晰、技术准确
+
+<thinking_process>
+让我按照以下步骤来撰写发明内容：
+
+1. 首先，我需要概述技术方案的核心创新点...
+2. 然后，描述系统的整体架构设计...
+3. 接着，突出技术优势和创新特色...
+4. 最后，提供具体的技术实现细节...
+
+</thinking_process>
+
+<output_format>
+请按照以下格式输出结果：
+
+## 发明内容
+
+### 技术方案概述
+[概述核心创新点与系统架构]
+
+### 核心创新点
+[详细描述技术方案的核心创新点]
+
+### 技术优势
+[分析技术方案相比现有技术的优势]
+
+### 系统架构
+[描述系统的整体架构设计]
+
+[插入1个mermaid架构图展示系统架构]
+
+### 关键技术
+[描述关键技术要素和实现方法]
+
+[插入2-3段关键公式展示核心技术]
+
+### 主流程
+[描述技术方案的主要工作流程]
+
+```python
+# 伪代码展示主流程
+def main_process():
+    # 主要处理逻辑
+    pass
+```
+
+<constraints>
+- 确保内容≥800字
 - 概述核心创新点与系统架构
 - 插入1个mermaid架构图
-- 2-3段关键公式
-- 伪代码展示主流程
-"""
+- 插入2-3段关键公式
+- 提供伪代码展示主流程
+- 突出技术优势和创新特色
+</constraints>"""
             
             # 并发执行背景和摘要生成
             background_task = self.openai_client._generate_response(background_prompt)

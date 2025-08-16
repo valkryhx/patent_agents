@@ -12,6 +12,7 @@ import uuid
 
 from .base_agent import BaseAgent, TaskResult
 from ..message_bus import MessageType, AgentStatus
+from ..context_manager import context_manager, ContextType, ContextItem
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,11 @@ class CoordinatorAgent(BaseAgent):
             workflow_id = str(uuid.uuid4())
             logger.info(f"Starting patent workflow {workflow_id} for: {topic}")
             
+            # Initialize context for this workflow
+            logger.info(f"Initializing context for workflow {workflow_id}")
+            theme_definition = await context_manager.initialize_workflow_context(workflow_id, topic, description)
+            logger.info(f"Context initialized with theme: {theme_definition.primary_title}")
+            
             # Create workflow stages
             stages = await self._create_workflow_stages(topic, description)
             
@@ -186,63 +192,149 @@ class CoordinatorAgent(BaseAgent):
             raise
             
     async def _execute_workflow_stage(self, workflow_id: str, stage_index: int):
-        """Execute a specific workflow stage"""
+        """Execute a specific workflow stage with enhanced reliability"""
         try:
             workflow = self.active_workflows.get(workflow_id)
             if not workflow:
                 logger.error(f"Workflow {workflow_id} not found")
                 return
+                
             if stage_index >= len(workflow.stages):
                 logger.info(f"Workflow {workflow_id} completed all stages")
                 await self._complete_workflow(workflow_id)
                 return
+                
             stage = workflow.stages[stage_index]
             stage.status = "running"
             stage.start_time = time.time()
+            
             logger.info(f"Executing stage {stage_index}: {stage.stage_name} using {stage.agent_name}")
-            # Build task content with latest artifacts
+            
+            # Check agent availability
+            if not await self._check_agent_availability(stage.agent_name):
+                logger.error(f"Agent {stage.agent_name} is not available")
+                await self._handle_stage_error(workflow_id, stage_index, f"Agent {stage.agent_name} not available")
+                return
+            
+            # Get task type
             task_type = self._get_task_type_for_stage(stage.stage_name)
-            task_content = {
-                "task": {
-                    "id": f"{workflow_id}_stage_{stage_index}",
-                    "type": task_type,
-                    "workflow_id": workflow_id,
-                    "stage_index": stage_index,
-                    "topic": workflow.topic,
-                    "description": workflow.description,
-                    "previous_results": workflow.results
-                }
-            }
-            # Inject artifacts
-            if task_type == "patent_drafting":
-                # Hint writer to split large content into chapters in its internal prompts
-                task_content["task"]["generation_mode"] = "chapter_split"
-            elif task_type == "patent_review":
-                current_draft = self._get_current_draft(workflow)
-                if current_draft:
-                    task_content["task"]["patent_draft"] = current_draft
-            elif task_type == "patent_rewrite":
-                current_draft = self._get_current_draft(workflow)
-                last_feedback = self._get_latest_review_feedback(workflow)
-                if current_draft:
-                    task_content["task"]["patent_draft"] = current_draft
-                if last_feedback:
-                    task_content["task"]["review_feedback"] = last_feedback
-            elif task_type == "innovation_discussion":
-                last_feedback = self._get_latest_review_feedback(workflow)
-                if last_feedback:
-                    task_content["task"]["review_feedback"] = last_feedback
-            await self.send_message(
-                recipient=stage.agent_name,
-                message_type=MessageType.COORDINATION,
-                content=task_content,
-                priority=5
-            )
+            logger.info(f"Task type: {task_type}")
+            
+            # Get context for this agent
+            try:
+                context_data = await context_manager.get_context_for_agent(
+                    workflow_id, 
+                    stage.agent_name,
+                    self._get_context_types_for_stage(stage.stage_name)
+                )
+                logger.info(f"Context data retrieved for {stage.agent_name}")
+            except Exception as e:
+                logger.warning(f"Failed to get context data: {e}, using empty context")
+                context_data = {}
+            
+            # Build task content
+            task_content = self._build_task_content(workflow, stage_index, task_type, context_data)
+            logger.info(f"Task content built for {stage.agent_name}")
+            
+            # Send message and wait for confirmation
+            message_sent = await self._send_task_message(stage.agent_name, task_content)
+            if not message_sent:
+                logger.error(f"Failed to send task to {stage.agent_name}")
+                await self._handle_stage_error(workflow_id, stage_index, f"Failed to send task to {stage.agent_name}")
+                return
+                
             workflow.current_stage = stage_index
             workflow.overall_status = "running"
+            logger.info(f"Stage {stage_index} ({stage.stage_name}) started successfully")
+            
         except Exception as e:
             logger.error(f"Error executing workflow stage: {e}")
             await self._handle_stage_error(workflow_id, stage_index, str(e))
+            
+    async def _check_agent_availability(self, agent_name: str) -> bool:
+        """Check if agent is available"""
+        try:
+            agent_info = self.broker.agents.get(agent_name)
+            if not agent_info:
+                logger.warning(f"Agent {agent_name} not found in broker")
+                return False
+                
+            if agent_info.status == AgentStatus.OFFLINE:
+                logger.warning(f"Agent {agent_name} is offline")
+                return False
+                
+            logger.info(f"Agent {agent_name} is available (status: {agent_info.status.value})")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error checking agent availability: {e}")
+            return False
+            
+    def _build_task_content(self, workflow: PatentWorkflow, stage_index: int, task_type: str, context_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Build task content with artifacts"""
+        task_content = {
+            "task": {
+                "id": f"{workflow.workflow_id}_stage_{stage_index}",
+                "type": task_type,
+                "workflow_id": workflow.workflow_id,
+                "stage_index": stage_index,
+                "topic": workflow.topic,
+                "description": workflow.description,
+                "previous_results": workflow.results,
+                "context": context_data
+            }
+        }
+        
+        # Inject artifacts based on task type
+        if task_type == "patent_drafting":
+            task_content["task"]["generation_mode"] = "chapter_split"
+        elif task_type == "patent_review":
+            current_draft = self._get_current_draft(workflow)
+            if current_draft:
+                task_content["task"]["patent_draft"] = current_draft
+                logger.info("Added patent draft to review task")
+        elif task_type == "patent_rewrite":
+            current_draft = self._get_current_draft(workflow)
+            last_feedback = self._get_latest_review_feedback(workflow)
+            if current_draft:
+                task_content["task"]["patent_draft"] = current_draft
+                logger.info("Added patent draft to rewrite task")
+            if last_feedback:
+                task_content["task"]["review_feedback"] = last_feedback
+                logger.info("Added review feedback to rewrite task")
+        elif task_type == "innovation_discussion":
+            last_feedback = self._get_latest_review_feedback(workflow)
+            if last_feedback:
+                task_content["task"]["review_feedback"] = last_feedback
+                logger.info("Added review feedback to discussion task")
+                
+        return task_content
+        
+    async def _send_task_message(self, agent_name: str, task_content: Dict[str, Any]) -> bool:
+        """Send task message and wait for confirmation"""
+        try:
+            message = Message(
+                id=str(uuid.uuid4()),
+                type=MessageType.COORDINATION,
+                sender=self.name,
+                recipient=agent_name,
+                content=task_content,
+                timestamp=time.time(),
+                priority=5
+            )
+            
+            logger.info(f"Sending task message to {agent_name}")
+            await self.broker.send_message(message)
+            
+            # Wait a short time to confirm message was sent
+            await asyncio.sleep(0.1)
+            
+            logger.info(f"Task message sent successfully to {agent_name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error sending task message to {agent_name}: {e}")
+            return False
  
     def _get_task_type_for_stage(self, stage_name: str) -> str:
         """Get the task type for a specific stage"""
@@ -255,6 +347,45 @@ class CoordinatorAgent(BaseAgent):
             "Final Rewrite": "patent_rewrite"
         }
         return task_mapping.get(stage_name, "unknown")
+        
+    def _get_context_types_for_stage(self, stage_name: str) -> List[ContextType]:
+        """Get required context types for a specific stage"""
+        context_mapping = {
+            "Planning & Strategy": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN
+            ],
+            "Prior Art Search": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN,
+                ContextType.TERMINOLOGY
+            ],
+            "Innovation Discussion": [
+                ContextType.THEME_DEFINITION,
+                ContextType.INNOVATION_POINTS,
+                ContextType.PRIOR_ART
+            ],
+            "Patent Drafting": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN,
+                ContextType.INNOVATION_POINTS,
+                ContextType.TERMINOLOGY,
+                ContextType.PRIOR_ART
+            ],
+            "Quality Review": [
+                ContextType.THEME_DEFINITION,
+                ContextType.CLAIMS_FOCUS,
+                ContextType.TERMINOLOGY
+            ],
+            "Final Rewrite": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN,
+                ContextType.INNOVATION_POINTS,
+                ContextType.TERMINOLOGY,
+                ContextType.CLAIMS_FOCUS
+            ]
+        }
+        return context_mapping.get(stage_name, [ContextType.THEME_DEFINITION])
         
     async def _handle_status_message(self, message):
         """Override status handler to catch completion events and advance workflow"""
@@ -332,10 +463,11 @@ class CoordinatorAgent(BaseAgent):
             return None
  
     async def _handle_stage_completion(self, workflow_id: str, stage_index: int, result: Dict[str, Any]):
-        """Handle completion of a workflow stage with iterative review-rewrite loop"""
+        """Handle completion of a workflow stage with iterative review-rewrite loop control"""
         try:
             workflow = self.active_workflows.get(workflow_id)
             if not workflow:
+                logger.error(f"Workflow {workflow_id} not found in stage completion")
                 return
             
             stage = workflow.stages[stage_index]
@@ -343,43 +475,154 @@ class CoordinatorAgent(BaseAgent):
             stage.end_time = time.time()
             stage.result = result
             workflow.results[f"stage_{stage_index}"] = {"result": result}
-            logger.info(f"Stage {stage_index} completed for workflow {workflow_id}")
-            logger.info(f"ADVANCE from_stage={stage.stage_name} index={stage_index}")
-            # If writer stage completed, start review/rewriter iterative loop
+            logger.info(f"Stage {stage_index} ({stage.stage_name}) completed for workflow {workflow_id}")
+            
+            # Validate and update context based on stage result
+            await self._validate_and_update_context(workflow_id, stage_index, result, stage.stage_name)
+            
+            # Initialize iteration tracking if not exists
+            if "iteration" not in workflow.results:
+                workflow.results["iteration"] = {
+                    "review_count": 0,
+                    "rewrite_count": 0,
+                    "max_reviews": 3,
+                    "max_rewrites": 3,
+                    "target_quality_score": 8.0,
+                    "consecutive_failures": 0,
+                    "max_consecutive_failures": 2
+                }
+            
+            iteration = workflow.results["iteration"]
             stage_name = stage.stage_name
+            logger.info(f"Processing stage completion: {stage_name}")
+            logger.info(f"Current iteration state: Review={iteration['review_count']}, Rewrite={iteration['rewrite_count']}")
+            
             if stage_name == "Patent Drafting":
-                workflow.results.setdefault("iteration", {"count": 0, "max": 3, "target_score": 8.8})
-                await self._start_review_iteration(workflow_id)
-                return
-            
-            # If review result suggests revisions OR below target quality, trigger rewrite
-            if stage_name == "Quality Review":
-                compliance = result.get("compliance_status") or result.get("review_result", {}).get("compliance_status")
-                outcome = result.get("review_outcome")
-                quality_score = result.get("quality_score") or result.get("review_result", {}).get("overall_score")
-                iteration = workflow.results.setdefault("iteration", {"count": 0, "max": 3, "target_score": 8.8})
-                if (compliance in ("needs_major_revision", "needs_minor_revision", "non_compliant")
-                    or outcome in ("needs_revision", "major_revision_required")
-                    or (quality_score is not None and quality_score < iteration.get("target_score", 8.8))):
-                    await self._trigger_rewrite_cycle(workflow_id, stage_index)
+                # Reset iteration counters for new draft
+                iteration["review_count"] = 0
+                iteration["rewrite_count"] = 0
+                iteration["consecutive_failures"] = 0
+                logger.info("Patent drafting completed, resetting iteration counters")
+                logger.info("Proceeding to quality review")
+                await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
+                
+            elif stage_name == "Quality Review":
+                # Increment review count
+                iteration["review_count"] += 1
+                logger.info(f"Quality review #{iteration['review_count']} completed")
+                
+                # Check if we've exceeded max reviews
+                if iteration["review_count"] > iteration["max_reviews"]:
+                    logger.warning(f"Maximum reviews ({iteration['max_reviews']}) exceeded, completing workflow")
+                    await self._complete_workflow(workflow_id)
                     return
-                # Meets target -> proceed
-            
-            # If rewrite completed, then re-discuss and re-review
-            if stage_name == "Final Rewrite":
-                await self._post_rewrite_next_steps(workflow_id, stage_index)
-                return
-            
-            # Default: proceed to next stage
-            if stage_index == len(workflow.stages) - 1:
-                await self._complete_workflow(workflow_id)
+                
+                # Check if rewrite is needed
+                needs_rewrite = self._check_if_rewrite_needed(result, iteration)
+                
+                if needs_rewrite:
+                    # Check if we've exceeded max rewrites
+                    if iteration["rewrite_count"] >= iteration["max_rewrites"]:
+                        logger.warning(f"Maximum rewrites ({iteration['max_rewrites']}) reached, completing workflow")
+                        await self._complete_workflow(workflow_id)
+                        return
+                    
+                    logger.info(f"Quality review indicates rewrite needed (review #{iteration['review_count']})")
+                    logger.info("Proceeding to final rewrite")
+                    await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Final Rewrite"))
+                else:
+                    logger.info(f"Quality review #{iteration['review_count']} passed, completing workflow")
+                    await self._complete_workflow(workflow_id)
+                    
+            elif stage_name == "Final Rewrite":
+                # Increment rewrite count
+                iteration["rewrite_count"] += 1
+                logger.info(f"Final rewrite #{iteration['rewrite_count']} completed")
+                
+                # Check if we've exceeded max rewrites
+                if iteration["rewrite_count"] > iteration["max_rewrites"]:
+                    logger.warning(f"Maximum rewrites ({iteration['max_rewrites']}) exceeded, completing workflow")
+                    await self._complete_workflow(workflow_id)
+                    return
+                
+                logger.info(f"Final rewrite #{iteration['rewrite_count']} completed, proceeding to quality review")
+                await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
+                
             else:
-                next_stage = workflow.stages[stage_index + 1]
-                logger.info(f"EXECUTE_NEXT index={stage_index+1} stage={next_stage.stage_name} agent={next_stage.agent_name}")
-                await self._execute_workflow_stage(workflow_id, stage_index + 1)
+                # Continue to next stage for other stages
+                if stage_index < len(workflow.stages) - 1:
+                    logger.info(f"Proceeding to next stage: {stage_index + 1}")
+                    await self._execute_workflow_stage(workflow_id, stage_index + 1)
+                else:
+                    logger.info("All stages completed, finishing workflow")
+                    await self._complete_workflow(workflow_id)
          
         except Exception as e:
             logger.error(f"Error handling stage completion: {e}")
+            await self._handle_stage_error(workflow_id, stage_index, str(e))
+            
+    def _check_if_rewrite_needed(self, result: Dict[str, Any], iteration: Dict[str, Any]) -> bool:
+        """Check if rewrite is needed based on review result and iteration state"""
+        try:
+            # Extract quality score
+            quality_score = result.get("quality_score", 0)
+            if isinstance(quality_score, str):
+                try:
+                    quality_score = float(quality_score)
+                except ValueError:
+                    quality_score = 0
+                    
+            # Extract compliance status
+            compliance_status = result.get("compliance_status", "unknown")
+            if not compliance_status:
+                compliance_status = result.get("review_result", {}).get("compliance_status", "unknown")
+                
+            # Extract review outcome
+            review_outcome = result.get("review_outcome", "")
+            if not review_outcome:
+                review_outcome = result.get("review_result", {}).get("review_outcome", "")
+            
+            # Get iteration parameters
+            target_quality_score = iteration.get("target_quality_score", 8.0)
+            review_count = iteration.get("review_count", 1)
+            rewrite_count = iteration.get("rewrite_count", 0)
+            
+            logger.info(f"Review analysis - Quality score: {quality_score}, Compliance: {compliance_status}, Outcome: {review_outcome}")
+            logger.info(f"Iteration state - Review #{review_count}, Rewrite #{rewrite_count}, Target score: {target_quality_score}")
+            
+            # Adjust target score based on iteration count (be more lenient in later iterations)
+            adjusted_target = target_quality_score
+            if review_count > 2:
+                adjusted_target = max(6.0, target_quality_score - 1.0)  # Lower threshold for later reviews
+                logger.info(f"Adjusted target score to {adjusted_target} for review #{review_count}")
+            
+            # Check if rewrite is needed
+            needs_rewrite = (
+                quality_score < adjusted_target or 
+                compliance_status in ["needs_major_revision", "needs_minor_revision", "non_compliant"] or
+                review_outcome in ["needs_revision", "major_revision_required"]
+            )
+            
+            # Additional logic for consecutive failures
+            if needs_rewrite and review_count > 1:
+                # Check if this is a consecutive failure
+                iteration["consecutive_failures"] += 1
+                max_consecutive_failures = iteration.get("max_consecutive_failures", 2)
+                
+                if iteration["consecutive_failures"] >= max_consecutive_failures:
+                    logger.warning(f"Consecutive failures ({iteration['consecutive_failures']}) reached limit, forcing completion")
+                    needs_rewrite = False  # Force completion instead of continuing to rewrite
+            else:
+                # Reset consecutive failures counter if review passed
+                iteration["consecutive_failures"] = 0
+            
+            logger.info(f"Rewrite needed: {needs_rewrite} (consecutive failures: {iteration.get('consecutive_failures', 0)})")
+            return needs_rewrite
+            
+        except Exception as e:
+            logger.error(f"Error checking if rewrite needed: {e}")
+            # Default to rewrite if we can't determine
+            return True
             
     async def _start_review_iteration(self, workflow_id: str):
         """Begin the first review after drafting, with loop metadata."""
@@ -776,3 +1019,259 @@ class CoordinatorAgent(BaseAgent):
             "reviewer_agent": ["writer_agent"],
             "rewriter_agent": ["reviewer_agent"]
         }
+        
+        async def _validate_and_update_context(self, workflow_id: str, stage_index: int,
+                                         result: Dict[str, Any], stage_name: str):
+        """Validate stage result and update context accordingly with enhanced error handling"""
+        try:
+            logger.info(f"Validating and updating context for stage {stage_name}")
+
+            # Extract output text for validation
+            output_text = self._extract_output_text(result, stage_name)
+            output_type = "general"
+
+            if output_text:
+                logger.info(f"Extracted output text for validation: {output_text[:100]}...")
+                
+                # Validate output against context
+                try:
+                    validation_result = await context_manager.validate_agent_output(
+                        workflow_id, f"stage_{stage_index}", output_text, output_type
+                    )
+
+                    if not validation_result["is_consistent"]:
+                        logger.warning(f"Context consistency issues in {stage_name}: {validation_result['issues']}")
+
+                        # Add context item for the issues
+                        try:
+                            await context_manager.add_context_item(workflow_id, ContextItem(
+                                context_type=ContextType.THEME_DEFINITION,
+                                key=f"consistency_issue_{stage_name}",
+                                value=validation_result["issues"],
+                                source_agent=f"stage_{stage_index}",
+                                timestamp=time.time(),
+                                confidence=validation_result["score"]
+                            ))
+                        except Exception as e:
+                            logger.warning(f"Failed to add consistency issue to context: {e}")
+                    else:
+                        logger.info(f"Context validation passed for {stage_name}")
+
+                except Exception as e:
+                    logger.warning(f"Context validation failed: {e}, continuing without validation")
+
+                # Extract and add new context items based on stage result
+                try:
+                    await self._extract_context_from_result(workflow_id, stage_index, result, stage_name)
+                    logger.info(f"Context extraction completed for {stage_name}")
+                except Exception as e:
+                    logger.warning(f"Context extraction failed: {e}")
+
+            else:
+                logger.info(f"No output text extracted for {stage_name}, skipping validation")
+
+        except Exception as e:
+            logger.error(f"Error validating and updating context: {e}")
+            # Don't block the workflow, just log the error
+
+    def _extract_output_text(self, result: Dict[str, Any], stage_name: str) -> str:
+        """Extract output text for validation"""
+        try:
+            if stage_name == "Planning & Strategy":
+                return result.get("strategy", {}).get("summary", "")
+            elif stage_name == "Prior Art Search":
+                return result.get("search_results", {}).get("summary", "")
+            elif stage_name == "Innovation Discussion":
+                return result.get("discussion", {}).get("summary", "")
+            elif stage_name == "Patent Drafting":
+                return result.get("patent_draft", {}).get("title", "")
+            elif stage_name == "Quality Review":
+                return result.get("feedback", {}).get("summary", "")
+            elif stage_name == "Final Rewrite":
+                return result.get("improved_draft", {}).get("title", "")
+            else:
+                return str(result)
+        except Exception as e:
+            logger.warning(f"Error extracting output text: {e}")
+            return str(result)
+            
+    async def _extract_context_from_result(self, workflow_id: str, stage_index: int, 
+                                         result: Dict[str, Any], stage_name: str):
+        """Extract context items from stage result"""
+        try:
+            if stage_name == "Planning & Strategy":
+                strategy = result.get("strategy", {})
+                if strategy:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.INNOVATION_POINTS,
+                        key="planned_innovations",
+                        value=strategy.get("key_innovations", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Prior Art Search":
+                search_results = result.get("search_results", {})
+                if search_results:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.PRIOR_ART,
+                        key="prior_art_summary",
+                        value=search_results.get("summary", ""),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Innovation Discussion":
+                discussion = result.get("discussion", {})
+                if discussion:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.INNOVATION_POINTS,
+                        key="discussed_innovations",
+                        value=discussion.get("key_points", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Patent Drafting":
+                draft = result.get("patent_draft", {})
+                if draft:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.CLAIMS_FOCUS,
+                        key="draft_claims",
+                        value=draft.get("claims", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Quality Review":
+                feedback = result.get("feedback", {})
+                if feedback:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.CLAIMS_FOCUS,
+                        key="review_feedback",
+                        value=feedback.get("issues", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+        except Exception as e:
+            logger.error(f"Error extracting context from result: {e}")
+            
+    async def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:
+        """Get detailed workflow status"""
+        try:
+            workflow = self.active_workflows.get(workflow_id)
+            if not workflow:
+                return {"status": "not_found", "workflow_id": workflow_id}
+            
+            # Get iteration status
+            iteration_status = self._get_iteration_status(workflow)
+            
+            return {
+                "workflow_id": workflow_id,
+                "current_stage": workflow.current_stage,
+                "current_stage_name": workflow.stages[workflow.current_stage].stage_name if workflow.stages else None,
+                "overall_status": workflow.overall_status,
+                "topic": workflow.topic,
+                "start_time": workflow.start_time,
+                "iteration_status": iteration_status,
+                "stages": [
+                    {
+                        "name": stage.stage_name,
+                        "agent": stage.agent_name,
+                        "status": stage.status,
+                        "start_time": stage.start_time,
+                        "end_time": stage.end_time,
+                        "error": stage.error
+                    }
+                    for stage in workflow.stages
+                ],
+                "results": workflow.results
+            }
+        except Exception as e:
+            logger.error(f"Error getting workflow status: {e}")
+            return {"status": "error", "error": str(e)}
+            
+    def _get_iteration_status(self, workflow: PatentWorkflow) -> Dict[str, Any]:
+        """Get iteration status for the workflow"""
+        try:
+            iteration = workflow.results.get("iteration", {})
+            if not iteration:
+                return {"status": "not_started"}
+            
+            review_count = iteration.get("review_count", 0)
+            rewrite_count = iteration.get("rewrite_count", 0)
+            max_reviews = iteration.get("max_reviews", 3)
+            max_rewrites = iteration.get("max_rewrites", 3)
+            consecutive_failures = iteration.get("consecutive_failures", 0)
+            target_quality_score = iteration.get("target_quality_score", 8.0)
+            
+            # Determine iteration phase
+            if review_count == 0:
+                phase = "initial"
+            elif review_count > 0 and rewrite_count == 0:
+                phase = "first_review"
+            elif rewrite_count > 0:
+                phase = "rewrite_cycle"
+            else:
+                phase = "unknown"
+            
+            # Check if limits are approaching
+            review_limit_warning = review_count >= max_reviews * 0.8  # 80% of limit
+            rewrite_limit_warning = rewrite_count >= max_rewrites * 0.8
+            consecutive_failure_warning = consecutive_failures >= iteration.get("max_consecutive_failures", 2) * 0.8
+            
+            return {
+                "status": "active",
+                "phase": phase,
+                "review_count": review_count,
+                "rewrite_count": rewrite_count,
+                "max_reviews": max_reviews,
+                "max_rewrites": max_rewrites,
+                "consecutive_failures": consecutive_failures,
+                "target_quality_score": target_quality_score,
+                "warnings": {
+                    "review_limit_approaching": review_limit_warning,
+                    "rewrite_limit_approaching": rewrite_limit_warning,
+                    "consecutive_failure_approaching": consecutive_failure_warning
+                },
+                "remaining_reviews": max(0, max_reviews - review_count),
+                "remaining_rewrites": max(0, max_rewrites - rewrite_count)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting iteration status: {e}")
+            return {"status": "error", "error": str(e)}
+            
+    async def get_all_agents_status(self) -> Dict[str, Any]:
+        """Get status of all agents"""
+        try:
+            return {
+                agent_name: {
+                    "status": agent_info.status.value,
+                    "capabilities": agent_info.capabilities,
+                    "current_task": agent_info.current_task,
+                    "last_activity": agent_info.last_activity
+                }
+                for agent_name, agent_info in self.broker.agents.items()
+            }
+        except Exception as e:
+            logger.error(f"Error getting agents status: {e}")
+            return {"error": str(e)}
+            
+    async def get_workflow_summary(self) -> Dict[str, Any]:
+        """Get summary of all workflows"""
+        try:
+            active_workflows = len(self.active_workflows)
+            completed_workflows = len(self.completed_workflows)
+            
+            return {
+                "active_workflows": active_workflows,
+                "completed_workflows": completed_workflows,
+                "total_workflows": active_workflows + completed_workflows,
+                "active_workflow_ids": list(self.active_workflows.keys()),
+                "completed_workflow_ids": list(self.completed_workflows.keys())
+            }
+        except Exception as e:
+            logger.error(f"Error getting workflow summary: {e}")
+            return {"error": str(e)}
