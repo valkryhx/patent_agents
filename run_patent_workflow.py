@@ -30,9 +30,7 @@ async def run_once():
 	workflow_id = start.data.get("workflow_id")
 	print(f"Started workflow: {workflow_id}")
 
-	# Poll until completion (max 2 hours)
-	start_time = time.time()
-	max_wait = 7200
+	# Poll until completion
 	exported_path = None
 	while True:
 		status = await system.coordinator.execute_task({
@@ -52,10 +50,6 @@ async def run_once():
 				exported_path = f"/workspace/output/{topic_str.replace(' ', '_')}_{workflow_id[:8]}.md"
 				print(f"Completed. Exported to: {exported_path}")
 				break
-		elapsed = time.time() - start_time
-		if elapsed > max_wait:
-			print("Timeout waiting for completion (7200s). You may continue to monitor logs or increase the limit.")
-			break
 		await asyncio.sleep(5)
 
 	await system.stop()

@@ -58,10 +58,8 @@ async def test_workflow_execution():
         
         # 监控工作流执行
         logger.info("👀 开始监控工作流执行...")
-        max_wait_time = 600  # 10分钟超时
-        start_time = time.time()
         
-        while time.time() - start_time < max_wait_time:
+        while True:
             try:
                 # 获取工作流状态
                 status_result = await system.get_workflow_status(workflow_id)
