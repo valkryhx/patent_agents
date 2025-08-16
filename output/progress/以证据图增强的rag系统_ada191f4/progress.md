@@ -5416,3 +5416,10 @@ function EvidenceGraphEnhancedRAG(query, knowledge_base):
 ```
 
 本系统通过证据图的引入，实现了从简单文本检索到结构化知识推理的转变，有效提升了RAG系统在复杂知识密集型任务中的表现。实验表明，与传统RAG系统相比，本系统在准确率、可解释性和知识更新效率方面均有显著提升，特别适用于需要高度准确性和可解释性的专业领域应用场景。
+
+
+## 标题与摘要
+
+# Generated Patent Title for 以证据图增强的rag系统
+
+This is a generated abstract for the patent: 以证据图增强的rag系统
