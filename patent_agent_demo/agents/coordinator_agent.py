@@ -263,6 +263,10 @@ class CoordinatorAgent(BaseAgent):
             # Add a small delay to allow agents to fully initialize
             await asyncio.sleep(1)
             
+            # Log all available agents for debugging
+            available_agents = list(self.broker.agents.keys())
+            logger.info(f"Available agents in broker: {available_agents}")
+            
             agent_info = self.broker.agents.get(agent_name)
             if not agent_info:
                 logger.warning(f"Agent {agent_name} not found in broker")
@@ -271,6 +275,7 @@ class CoordinatorAgent(BaseAgent):
                 agent_info = self.broker.agents.get(agent_name)
                 if not agent_info:
                     logger.error(f"Agent {agent_name} still not found in broker after retry")
+                    logger.error(f"Available agents: {list(self.broker.agents.keys())}")
                     return False
                 
             if agent_info.status == AgentStatus.OFFLINE:
@@ -742,9 +747,12 @@ class CoordinatorAgent(BaseAgent):
             stage.error = error
             stage.end_time = time.time()
             
+            # Set workflow status to error - each stage must succeed
+            workflow.overall_status = "error"
+            
             logger.error(f"Stage {stage_index} failed for workflow {workflow_id}: {error}")
             
-            # Attempt to recover or escalate
+            # Attempt to recover or terminate workflow
             await self._attempt_recovery(workflow_id, stage_index)
             
         except Exception as e:
@@ -774,16 +782,13 @@ class CoordinatorAgent(BaseAgent):
                 await self._execute_workflow_stage(workflow_id, stage_index)
                 
             else:
-                # Log the issue but continue with next stage
-                logger.warning(f"Stage {stage_index} failed after retry, continuing with next stage")
-                # Continue to next stage instead of escalating
+                # Stage failed after retry - terminate workflow
+                logger.error(f"Stage {stage_index} failed after retry, terminating workflow")
                 workflow = self.active_workflows.get(workflow_id)
-                if workflow and stage_index < len(workflow.stages) - 1:
-                    logger.info(f"Proceeding to next stage: {stage_index + 1}")
-                    await self._execute_workflow_stage(workflow_id, stage_index + 1)
-                else:
-                    logger.warning("No more stages to execute, completing workflow with partial results")
-                    await self._complete_workflow(workflow_id)
+                if workflow:
+                    workflow.overall_status = "failed"
+                    logger.error(f"Workflow {workflow_id} terminated due to stage {stage_index} failure")
+                # Don't continue to next stage - workflow must be terminated
                 
         except Exception as e:
             logger.error(f"Error attempting recovery: {e}")
