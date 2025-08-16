@@ -339,3 +339,10 @@ def generate_response(query, evidence, evidence_scores):
 ```
 
 本发明的技术方案通过证据图增强机制，有效解决了传统RAG系统在知识关联、证据检索和生成可解释性方面的不足。实验结果表明，与现有技术相比，本发明在准确率、召回率和可解释性指标上均有显著提升，特别适用于需要高精度回答和证据溯源的专业领域问答场景。未来，本系统可进一步扩展到多语言支持、实时更新和跨领域知识融合等方向，具有广阔的应用前景。
+
+
+## 标题与摘要
+
+# Generated Patent Title for 以证据图增强的rag系统
+
+This is a generated abstract for the patent: 以证据图增强的rag系统
