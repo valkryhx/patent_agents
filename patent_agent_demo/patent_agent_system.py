@@ -33,10 +33,11 @@ class SystemStatus:
 class PatentAgentSystem:
     """Main system for coordinating patent development agents"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         self.agents: Dict[str, Any] = {}
         self.coordinator: Optional[CoordinatorAgent] = None
         self.system_start_time = time.time()
+        self.test_mode = test_mode
         
         # Initialize Message Bus
         self.message_bus_config = message_bus_config
@@ -51,12 +52,12 @@ class PatentAgentSystem:
             
             # Create and start agents
             self.agents = {
-                "planner_agent": PlannerAgent(),
-                "searcher_agent": SearcherAgent(),
-                "discusser_agent": DiscusserAgent(),
-                "writer_agent": WriterAgent(),
-                "reviewer_agent": ReviewerAgent(),
-                "rewriter_agent": RewriterAgent(),
+                "planner_agent": PlannerAgent(test_mode=self.test_mode),
+                "searcher_agent": SearcherAgent(test_mode=self.test_mode),
+                "discusser_agent": DiscusserAgent(test_mode=self.test_mode),
+                "writer_agent": WriterAgent(test_mode=self.test_mode),
+                "reviewer_agent": ReviewerAgent(test_mode=self.test_mode),
+                "rewriter_agent": RewriterAgent(test_mode=self.test_mode),
                 "coordinator_agent": CoordinatorAgent()
             }
             

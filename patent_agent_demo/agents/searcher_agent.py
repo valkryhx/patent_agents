@@ -37,10 +37,11 @@ class SearchReport:
 class SearcherAgent(BaseAgent):
     """Agent responsible for prior art research and patent searches"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         super().__init__(
             name="searcher_agent",
-            capabilities=["prior_art_search", "patent_analysis", "competitive_research", "novelty_assessment"]
+            capabilities=["prior_art_search", "patent_analysis", "competitive_research", "novelty_assessment"],
+            test_mode=test_mode
         )
         self.openai_client = None
         self.search_databases = self._load_search_databases()
@@ -670,3 +671,99 @@ class SearcherAgent(BaseAgent):
                 "api_available": False
             }
         }
+        
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data"""
+        try:
+            task_type = task_data.get("type")
+            topic = task_data.get("topic", "测试专利主题")
+            description = task_data.get("description", "测试专利描述")
+            
+            if task_type == "prior_art_search":
+                # Create mock search results
+                mock_results = [
+                    SearchResult(
+                        title="相关专利1",
+                        abstract="这是一个相关的现有技术专利",
+                        filing_date="2020-01-15",
+                        publication_date="2021-07-20",
+                        patent_number="US12345678",
+                        inventors=["张三", "李四"],
+                        assignee="测试公司",
+                        relevance_score=7.5,
+                        similarity_score=0.65,
+                        claims=["权利要求1", "权利要求2"],
+                        classification="G06F 17/00",
+                        legal_status="Granted"
+                    ),
+                    SearchResult(
+                        title="相关专利2",
+                        abstract="另一个相关的现有技术专利",
+                        filing_date="2019-03-10",
+                        publication_date="2020-09-15",
+                        patent_number="US87654321",
+                        inventors=["王五", "赵六"],
+                        assignee="另一测试公司",
+                        relevance_score=6.8,
+                        similarity_score=0.45,
+                        claims=["权利要求1"],
+                        classification="G06F 15/00",
+                        legal_status="Granted"
+                    )
+                ]
+                
+                # Create mock analysis
+                mock_analysis = {
+                    "total_results": len(mock_results),
+                    "relevance_distribution": {"high": 1, "medium": 1, "low": 0},
+                    "technology_areas": ["人工智能", "机器学习", "数据处理"],
+                    "key_competitors": ["测试公司", "另一测试公司"],
+                    "trends": ["技术发展趋势1", "技术发展趋势2"],
+                    "risk_factors": {
+                        "prior_art_risks": {"level": "Medium", "description": "存在相关现有技术"},
+                        "competitive_filing_risks": {"level": "Low", "description": "竞争风险较低"}
+                    },
+                    "overall_risk_level": "Medium"
+                }
+                
+                # Create mock search report
+                mock_report = SearchReport(
+                    query=SearchQuery(
+                        topic=topic,
+                        keywords=["人工智能", "机器学习", "数据处理"],
+                        date_range="2019-2024",
+                        jurisdiction="US",
+                        max_results=50,
+                        search_filters={}
+                    ),
+                    results=mock_results,
+                    analysis=mock_analysis,
+                    recommendations=["建议1: 加强技术创新点", "建议2: 扩大权利要求范围"],
+                    risk_assessment=mock_analysis["risk_factors"],
+                    novelty_score=7.2
+                )
+                
+                return TaskResult(
+                    success=True,
+                    data={
+                        "search_report": mock_report,
+                        "results": mock_results,
+                        "analysis": mock_analysis,
+                        "recommendations": ["建议1: 加强技术创新点", "建议2: 扩大权利要求范围"],
+                        "novelty_score": 7.2
+                    }
+                )
+            else:
+                return TaskResult(
+                    success=False,
+                    data={},
+                    error_message=f"Unknown task type: {task_type}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in test task execution: {e}")
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )

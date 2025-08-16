@@ -39,10 +39,11 @@ class DiscussionOutcome:
 class DiscusserAgent(BaseAgent):
     """Agent responsible for facilitating discussions and brainstorming"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         super().__init__(
             name="discusser_agent",
-            capabilities=["innovation_discussion", "discussion_facilitation", "brainstorming", "consensus_building", "idea_refinement"]
+            capabilities=["innovation_discussion", "discussion_facilitation", "brainstorming", "consensus_building", "idea_refinement"],
+            test_mode=test_mode
         )
         self.openai_client = None
         self.active_sessions: Dict[str, DiscussionSession] = {}
@@ -436,3 +437,69 @@ class DiscusserAgent(BaseAgent):
                 "format": "Decision-focused discussion"
             }
         }
+        
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data"""
+        try:
+            task_type = task_data.get("type")
+            topic = task_data.get("topic", "测试专利主题")
+            description = task_data.get("description", "测试专利描述")
+            
+            if task_type == "innovation_discussion":
+                # Create mock discussion outcome
+                mock_outcome = DiscussionOutcome(
+                    session_id="test_session_123",
+                    key_insights=[
+                        "技术创新点1: 分层推理机制",
+                        "技术创新点2: 自适应参数管理",
+                        "技术创新点3: 智能工具调用"
+                    ],
+                    innovative_solutions=[
+                        "解决方案1: 基于上下文的参数推断",
+                        "解决方案2: 分层参数验证机制",
+                        "解决方案3: 动态工具适配策略"
+                    ],
+                    alternative_approaches=[
+                        "替代方案1: 模板化参数管理",
+                        "替代方案2: 规则驱动的参数选择"
+                    ],
+                    consensus_points=[
+                        "共识1: 需要智能化的参数处理",
+                        "共识2: 分层架构是必要的",
+                        "共识3: 自适应机制是关键"
+                    ],
+                    disagreements=[
+                        "分歧1: 参数验证的严格程度",
+                        "分歧2: 性能与准确性的平衡"
+                    ],
+                    next_steps=[
+                        "下一步1: 详细设计分层架构",
+                        "下一步2: 实现参数推断算法",
+                        "下一步3: 测试自适应机制"
+                    ]
+                )
+                
+                return TaskResult(
+                    success=True,
+                    data={
+                        "discussion_outcome": mock_outcome,
+                        "key_insights": mock_outcome.key_insights,
+                        "innovative_solutions": mock_outcome.innovative_solutions,
+                        "consensus_points": mock_outcome.consensus_points,
+                        "next_steps": mock_outcome.next_steps
+                    }
+                )
+            else:
+                return TaskResult(
+                    success=False,
+                    data={},
+                    error_message=f"Unknown task type: {task_type}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in test task execution: {e}")
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )

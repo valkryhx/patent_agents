@@ -30,7 +30,7 @@ class TaskResult:
 class BaseAgent:
     """Base class for all patent development agents"""
     
-    def __init__(self, name: str, capabilities: List[str]):
+    def __init__(self, name: str, capabilities: List[str], test_mode: bool = False):
         self.name = name
         self.capabilities = capabilities
         self.status = AgentStatus.IDLE
@@ -43,6 +43,9 @@ class BaseAgent:
             "total_execution_time": 0.0
         }
         self.agent_logger = logging.getLogger(f"agent.{name}")
+        self.test_mode = test_mode
+        if test_mode:
+            self.agent_logger.info(f"{self.name} initialized in TEST MODE")
         
     async def start(self):
         """Start the agent"""
@@ -225,7 +228,12 @@ class BaseAgent:
                 self.current_workflow_id = None
             
             # Execute the task using the abstract method
-            result = await self.execute_task(task_data)
+            if self.test_mode:
+                # In test mode, use mock execution
+                result = await self._execute_test_task(task_data)
+            else:
+                # Normal execution
+                result = await self.execute_task(task_data)
             
             # Calculate execution time
             execution_time = time.time() - start_time
@@ -280,6 +288,10 @@ class BaseAgent:
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
         """Execute a task - to be implemented by subclasses"""
         raise NotImplementedError("Subclasses must implement execute_task")
+        
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data - to be implemented by subclasses"""
+        raise NotImplementedError("Subclasses must implement _execute_test_task")
         
     def _update_performance_metrics(self, success: bool, execution_time: float):
         """Update performance metrics"""

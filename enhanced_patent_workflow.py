@@ -27,11 +27,12 @@ logger = logging.getLogger(__name__)
 class EnhancedPatentWorkflow:
     """增强的专利撰写工作流，整合上下文管理"""
     
-    def __init__(self):
-        self.system = PatentAgentSystem()
+    def __init__(self, test_mode: bool = False):
+        self.system = PatentAgentSystem(test_mode=test_mode)
         self.workflow_id = None
         self.topic = None
         self.description = None
+        self.test_mode = test_mode
         
     async def start_workflow(self, topic: str, description: str) -> Dict[str, Any]:
         """启动增强的专利撰写工作流"""
@@ -483,8 +484,8 @@ class EnhancedPatentWorkflow:
 async def main():
     """主函数"""
     try:
-        # 创建增强工作流实例
-        workflow = EnhancedPatentWorkflow()
+        # 创建增强工作流实例（使用测试模式）
+        workflow = EnhancedPatentWorkflow(test_mode=True)
         
         # 定义专利主题
         topic = "基于智能分层推理的多参数工具自适应调用系统"

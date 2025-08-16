@@ -39,10 +39,11 @@ class WritingOutput:
 class WriterAgent(BaseAgent):
     """Agent responsible for drafting patent applications"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         super().__init__(
             name="writer_agent",
-            capabilities=["patent_drafting", "technical_writing", "claim_writing", "legal_compliance"]
+            capabilities=["patent_drafting", "technical_writing", "claim_writing", "legal_compliance"],
+            test_mode=test_mode
         )
         self.openai_client = None
         self.writing_templates = self._load_writing_templates()
@@ -1164,3 +1165,111 @@ def main_process():
         with open(progress_md, "a", encoding="utf-8") as f:
             f.write(f"\n\n## {section_title}\n\n{body.strip()}\n")
         self.agent_logger.info(f"WROTE_PROGRESS dir={progress_dir} file={filename} len={len(body or '')}")
+        
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data"""
+        try:
+            task_type = task_data.get("type")
+            topic = task_data.get("topic", "测试专利主题")
+            description = task_data.get("description", "测试专利描述")
+            
+            if task_type == "patent_drafting":
+                # Create mock patent draft
+                from ..google_a2a_client import PatentDraft
+                
+                mock_draft = PatentDraft(
+                    title=f"{topic} - 专利申请书",
+                    abstract=f"本发明涉及{topic}的技术领域，提供了一种创新的解决方案。{description}",
+                    description=f"""
+# 技术领域
+
+本发明涉及{topic}的技术领域，具体涉及一种基于智能分层推理的多参数工具自适应调用系统。
+
+# 背景技术
+
+现有技术中，大语言模型在调用具有大量参数的工具时存在准确性和效率问题。本发明提供了一种创新的解决方案。
+
+# 发明内容
+
+本发明的目的是提供一种能够智能处理多参数工具调用的系统，通过分层推理和自适应机制提高调用准确性。
+
+# 附图说明
+
+图1为本发明的系统架构图；
+图2为本发明的参数处理流程图。
+
+# 具体实施方式
+
+## 实施例1
+
+本实施例提供了一种基于智能分层推理的多参数工具自适应调用系统，包括：
+
+1. 参数分层模块：将参数按重要性和使用频率进行分类；
+2. 智能推理模块：基于上下文自动推断参数值；
+3. 自适应调用模块：根据工具特性动态调整调用策略。
+
+## 实施例2
+
+本实施例进一步优化了参数验证机制，包括：
+
+1. 参数有效性检查；
+2. 参数一致性验证；
+3. 调用结果反馈优化。
+
+# 权利要求
+
+1. 一种基于智能分层推理的多参数工具自适应调用系统，其特征在于，包括：
+   - 参数分层模块；
+   - 智能推理模块；
+   - 自适应调用模块。
+
+2. 根据权利要求1所述的系统，其特征在于，所述参数分层模块将参数按重要性和使用频率进行分类。
+
+3. 根据权利要求1所述的系统，其特征在于，所述智能推理模块基于上下文自动推断参数值。
+                    """,
+                    claims=[
+                        "1. 一种基于智能分层推理的多参数工具自适应调用系统，其特征在于，包括参数分层模块、智能推理模块和自适应调用模块。",
+                        "2. 根据权利要求1所述的系统，其特征在于，所述参数分层模块将参数按重要性和使用频率进行分类。",
+                        "3. 根据权利要求1所述的系统，其特征在于，所述智能推理模块基于上下文自动推断参数值。"
+                    ],
+                    drawings=["图1：系统架构图", "图2：参数处理流程图"],
+                    technical_details={
+                        "invention_type": "System",
+                        "technical_field": "Artificial Intelligence",
+                        "key_features": ["分层推理", "自适应调用", "参数优化"],
+                        "advantages": ["提高调用准确性", "降低参数复杂度", "增强系统适应性"]
+                    }
+                )
+                
+                return TaskResult(
+                    success=True,
+                    data={
+                        "patent_draft": mock_draft,
+                        "writing_metrics": {
+                            "word_count": 1500,
+                            "claim_count": 3,
+                            "compliance_score": 0.85
+                        },
+                        "quality_score": 0.82,
+                        "compliance_check": {
+                            "title_length": "OK",
+                            "abstract_length": "OK",
+                            "claims_count": "OK",
+                            "drawings_required": "OK"
+                        }
+                    }
+                )
+            else:
+                return TaskResult(
+                    success=False,
+                    data={},
+                    error_message=f"Unknown task type: {task_type}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in test task execution: {e}")
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )
