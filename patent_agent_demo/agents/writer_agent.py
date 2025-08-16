@@ -89,6 +89,21 @@ class WriterAgent(BaseAgent):
             description = task_data.get("description")
             previous_results = task_data.get("previous_results", {})
             
+            # Get context information if available
+            context_data = getattr(self, 'current_context', {})
+            theme_definition = context_data.get("theme_definition")
+            terminology = context_data.get("terminology", {})
+            
+            if theme_definition:
+                logger.info(f"Using context theme: {theme_definition.primary_title}")
+                # Use context to ensure consistency
+                topic = theme_definition.primary_title
+                description = f"{description} 核心概念：{theme_definition.core_concept}"
+                
+                # Add terminology guidance
+                if terminology:
+                    description += f"\n术语标准：{terminology}"
+            
             if not topic or not description:
                 return TaskResult(
                     success=False,

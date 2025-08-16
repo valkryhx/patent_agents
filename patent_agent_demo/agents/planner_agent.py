@@ -66,6 +66,16 @@ class PlannerAgent(BaseAgent):
                 topic = task_data.get("topic", "Unknown Topic")
                 description = task_data.get("description", "No description provided")
                 
+                # Get context information if available
+                context_data = getattr(self, 'current_context', {})
+                theme_definition = context_data.get("theme_definition")
+                
+                if theme_definition:
+                    logger.info(f"Using context theme: {theme_definition.primary_title}")
+                    # Use context to ensure consistency
+                    topic = theme_definition.primary_title
+                    description = f"{description} 核心概念：{theme_definition.core_concept}"
+                
                 logger.info(f"Creating patent strategy for: {topic}")
                 logger.info(f"Starting patent analysis...")
                 

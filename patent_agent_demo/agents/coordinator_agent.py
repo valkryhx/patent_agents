@@ -12,6 +12,7 @@ import uuid
 
 from .base_agent import BaseAgent, TaskResult
 from ..message_bus import MessageType, AgentStatus
+from ..context_manager import context_manager, ContextType, ContextItem
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,11 @@ class CoordinatorAgent(BaseAgent):
                 
             workflow_id = str(uuid.uuid4())
             logger.info(f"Starting patent workflow {workflow_id} for: {topic}")
+            
+            # Initialize context for this workflow
+            logger.info(f"Initializing context for workflow {workflow_id}")
+            theme_definition = await context_manager.initialize_workflow_context(workflow_id, topic, description)
+            logger.info(f"Context initialized with theme: {theme_definition.primary_title}")
             
             # Create workflow stages
             stages = await self._create_workflow_stages(topic, description)
@@ -202,6 +208,14 @@ class CoordinatorAgent(BaseAgent):
             logger.info(f"Executing stage {stage_index}: {stage.stage_name} using {stage.agent_name}")
             # Build task content with latest artifacts
             task_type = self._get_task_type_for_stage(stage.stage_name)
+            
+            # Get context for this agent
+            context_data = await context_manager.get_context_for_agent(
+                workflow_id, 
+                stage.agent_name,
+                self._get_context_types_for_stage(stage.stage_name)
+            )
+            
             task_content = {
                 "task": {
                     "id": f"{workflow_id}_stage_{stage_index}",
@@ -210,7 +224,8 @@ class CoordinatorAgent(BaseAgent):
                     "stage_index": stage_index,
                     "topic": workflow.topic,
                     "description": workflow.description,
-                    "previous_results": workflow.results
+                    "previous_results": workflow.results,
+                    "context": context_data  # Add context data
                 }
             }
             # Inject artifacts
@@ -255,6 +270,45 @@ class CoordinatorAgent(BaseAgent):
             "Final Rewrite": "patent_rewrite"
         }
         return task_mapping.get(stage_name, "unknown")
+        
+    def _get_context_types_for_stage(self, stage_name: str) -> List[ContextType]:
+        """Get required context types for a specific stage"""
+        context_mapping = {
+            "Planning & Strategy": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN
+            ],
+            "Prior Art Search": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN,
+                ContextType.TERMINOLOGY
+            ],
+            "Innovation Discussion": [
+                ContextType.THEME_DEFINITION,
+                ContextType.INNOVATION_POINTS,
+                ContextType.PRIOR_ART
+            ],
+            "Patent Drafting": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN,
+                ContextType.INNOVATION_POINTS,
+                ContextType.TERMINOLOGY,
+                ContextType.PRIOR_ART
+            ],
+            "Quality Review": [
+                ContextType.THEME_DEFINITION,
+                ContextType.CLAIMS_FOCUS,
+                ContextType.TERMINOLOGY
+            ],
+            "Final Rewrite": [
+                ContextType.THEME_DEFINITION,
+                ContextType.TECHNICAL_DOMAIN,
+                ContextType.INNOVATION_POINTS,
+                ContextType.TERMINOLOGY,
+                ContextType.CLAIMS_FOCUS
+            ]
+        }
+        return context_mapping.get(stage_name, [ContextType.THEME_DEFINITION])
         
     async def _handle_status_message(self, message):
         """Override status handler to catch completion events and advance workflow"""
@@ -344,6 +398,9 @@ class CoordinatorAgent(BaseAgent):
             stage.result = result
             workflow.results[f"stage_{stage_index}"] = {"result": result}
             logger.info(f"Stage {stage_index} completed for workflow {workflow_id}")
+            
+            # Validate and update context based on stage result
+            await self._validate_and_update_context(workflow_id, stage_index, result, stage.stage_name)
             logger.info(f"ADVANCE from_stage={stage.stage_name} index={stage_index}")
             # If writer stage completed, start review/rewriter iterative loop
             stage_name = stage.stage_name
@@ -776,3 +833,119 @@ class CoordinatorAgent(BaseAgent):
             "reviewer_agent": ["writer_agent"],
             "rewriter_agent": ["reviewer_agent"]
         }
+        
+    async def _validate_and_update_context(self, workflow_id: str, stage_index: int, 
+                                         result: Dict[str, Any], stage_name: str):
+        """Validate stage result and update context accordingly"""
+        try:
+            logger.info(f"Validating and updating context for stage {stage_name}")
+            
+            # Extract relevant output for validation
+            output_text = ""
+            output_type = "general"
+            
+            if stage_name == "Planning & Strategy":
+                output_text = result.get("strategy", {}).get("summary", "")
+                output_type = "strategy"
+            elif stage_name == "Prior Art Search":
+                output_text = result.get("search_results", {}).get("summary", "")
+                output_type = "search"
+            elif stage_name == "Innovation Discussion":
+                output_text = result.get("discussion", {}).get("summary", "")
+                output_type = "discussion"
+            elif stage_name == "Patent Drafting":
+                output_text = result.get("patent_draft", {}).get("title", "")
+                output_type = "title"
+            elif stage_name == "Quality Review":
+                output_text = result.get("feedback", {}).get("summary", "")
+                output_type = "review"
+            elif stage_name == "Final Rewrite":
+                output_text = result.get("improved_draft", {}).get("title", "")
+                output_type = "title"
+                
+            if output_text:
+                # Validate output against context
+                validation_result = await context_manager.validate_agent_output(
+                    workflow_id, f"stage_{stage_index}", output_text, output_type
+                )
+                
+                if not validation_result["is_consistent"]:
+                    logger.warning(f"Context consistency issues in {stage_name}: {validation_result['issues']}")
+                    
+                    # Add context item for the issues
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.THEME_DEFINITION,
+                        key=f"consistency_issue_{stage_name}",
+                        value=validation_result["issues"],
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time(),
+                        confidence=validation_result["score"]
+                    ))
+                    
+                # Extract and add new context items based on stage result
+                await self._extract_context_from_result(workflow_id, stage_index, result, stage_name)
+                
+        except Exception as e:
+            logger.error(f"Error validating and updating context: {e}")
+            
+    async def _extract_context_from_result(self, workflow_id: str, stage_index: int, 
+                                         result: Dict[str, Any], stage_name: str):
+        """Extract context items from stage result"""
+        try:
+            if stage_name == "Planning & Strategy":
+                strategy = result.get("strategy", {})
+                if strategy:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.INNOVATION_POINTS,
+                        key="planned_innovations",
+                        value=strategy.get("key_innovations", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Prior Art Search":
+                search_results = result.get("search_results", {})
+                if search_results:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.PRIOR_ART,
+                        key="prior_art_summary",
+                        value=search_results.get("summary", ""),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Innovation Discussion":
+                discussion = result.get("discussion", {})
+                if discussion:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.INNOVATION_POINTS,
+                        key="discussed_innovations",
+                        value=discussion.get("key_points", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Patent Drafting":
+                draft = result.get("patent_draft", {})
+                if draft:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.CLAIMS_FOCUS,
+                        key="draft_claims",
+                        value=draft.get("claims", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+            elif stage_name == "Quality Review":
+                feedback = result.get("feedback", {})
+                if feedback:
+                    await context_manager.add_context_item(workflow_id, ContextItem(
+                        context_type=ContextType.CLAIMS_FOCUS,
+                        key="review_feedback",
+                        value=feedback.get("issues", []),
+                        source_agent=f"stage_{stage_index}",
+                        timestamp=time.time()
+                    ))
+                    
+        except Exception as e:
+            logger.error(f"Error extracting context from result: {e}")

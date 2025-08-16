@@ -14,6 +14,7 @@ from enum import Enum
 from ..message_bus import (
     MessageBusBroker, Message, MessageType, AgentStatus, message_bus_config
 )
+from ..context_manager import context_manager
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +210,19 @@ class BaseAgent:
             
             logger.info(f"Agent {self.name} executing task: {task_id}")
             self.agent_logger.info(f"EXECUTE task_id={task_id} type={task_data.get('type')} meta={{'topic': task_data.get('topic')}}")
+            
+            # Extract context information if available
+            context_data = task_data.get("context", {})
+            workflow_id = task_data.get("workflow_id")
+            
+            if context_data and workflow_id:
+                logger.info(f"Agent {self.name} received context data for workflow {workflow_id}")
+                # Store context for use during task execution
+                self.current_context = context_data
+                self.current_workflow_id = workflow_id
+            else:
+                self.current_context = {}
+                self.current_workflow_id = None
             
             # Execute the task using the abstract method
             result = await self.execute_task(task_data)
