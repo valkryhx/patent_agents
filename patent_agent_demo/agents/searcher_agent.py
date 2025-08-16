@@ -160,23 +160,90 @@ class SearcherAgent(BaseAgent):
             )
             
     async def _extract_keywords(self, topic: str, description: str = "") -> List[str]:
-        """Extract relevant keywords for search using OpenAI GPT-5"""
+        """Extract relevant keywords for search using optimized prompts"""
         try:
-            # Use OpenAI GPT-5 to extract keywords
-            prompt = f"""
-            Extract 10-15 relevant technical keywords for patent search from:
-            
-            Topic: {topic}
-            Description: {description}
-            
-            Focus on:
-            - Technical terms
-            - Industry-specific terminology
-            - Synonyms and related terms
-            - Abbreviations and acronyms
-            
-            Return only the keywords, one per line.
-            """
+            # Use optimized prompt with structured analysis
+            prompt = f"""<system>
+你是一位专业的专利检索专家，擅长信息收集和分析。
+
+<expertise>
+- 专利文献的检索和分析
+- 技术信息的收集和整理
+- 竞争情报的搜集和评估
+- 技术趋势的分析和预测
+- 相关技术的识别和分类
+
+<search_principles>
+- 全面性：覆盖相关技术领域
+- 准确性：确保信息的相关性
+- 时效性：关注最新技术发展
+- 系统性：有序组织和分析信息
+- 实用性：提供有价值的信息
+
+<thinking_process>
+在进行关键词提取时，请按照以下步骤进行：
+1. 明确检索目标和范围
+2. 分析技术方案的核心要素
+3. 识别关键技术术语和概念
+4. 考虑同义词和相关术语
+5. 整理和优化关键词列表
+</thinking_process>
+</system>
+
+<task>
+请为专利主题"{topic}"提取相关的技术关键词。
+
+<context>
+专利描述：{description}
+
+<thinking_process>
+让我按照以下步骤来提取关键词：
+
+1. 首先，我需要分析技术方案的核心内容...
+2. 然后，识别关键技术术语和概念...
+3. 接着，考虑同义词和相关术语...
+4. 最后，整理出最相关的关键词...
+
+</thinking_process>
+
+<output_format>
+请按照以下XML格式输出结果：
+
+<keywords>
+    <technical_terms>
+        <term>技术术语1</term>
+        <term>技术术语2</term>
+        <term>技术术语3</term>
+    </technical_terms>
+    
+    <industry_terms>
+        <term>行业术语1</term>
+        <term>行业术语2</term>
+    </industry_terms>
+    
+    <synonyms>
+        <term>同义词1</term>
+        <term>同义词2</term>
+    </synonyms>
+    
+    <abbreviations>
+        <term>缩写1</term>
+        <term>缩写2</term>
+    </abbreviations>
+    
+    <related_concepts>
+        <term>相关概念1</term>
+        <term>相关概念2</term>
+    </related_concepts>
+</keywords>
+
+<constraints>
+- 提取10-15个最相关的技术关键词
+- 重点关注技术术语和行业术语
+- 包含同义词和相关术语
+- 考虑缩写和首字母缩写
+- 确保关键词的准确性和相关性
+</constraints>"""
             
             response = self.openai_client.client.responses.create(
                 model="gpt-5",

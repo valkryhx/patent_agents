@@ -309,18 +309,71 @@ class RewriterAgent(BaseAgent):
             return draft
             
     async def _improve_title(self, title: str, recommendation: str) -> str:
-        """Improve the patent title"""
+        """Improve the patent title using optimized prompts"""
         try:
-            # Use Google A2A to improve title
-            prompt = f"""
-            Improve this patent title based on the recommendation:
-            
-            Current Title: {title}
-            Recommendation: {recommendation}
-            
-            Make the title more descriptive, clear, and technically accurate.
-            Return only the improved title.
-            """
+            # Use optimized prompt with structured improvement
+            prompt = f"""<system>
+你是一位专业的专利内容优化专家，擅长改进和优化专利文档。
+
+<expertise>
+- 技术内容的优化和重构
+- 语言表达的改进和润色
+- 结构逻辑的调整和完善
+- 创新点的强化和突出
+- 合规性问题的修正
+
+<optimization_principles>
+- 保持技术准确性：不改变技术实质
+- 提升表达质量：使内容更清晰易懂
+- 强化创新亮点：突出技术贡献
+- 确保合规性：符合法律要求
+- 保持一致性：术语和风格统一
+
+<thinking_process>
+在优化专利标题时，请按照以下步骤进行：
+1. 分析现有标题的优缺点
+2. 识别需要改进的方面
+3. 制定优化策略和方案
+4. 逐步实施改进措施
+5. 验证优化效果和质量
+</thinking_process>
+</system>
+
+<task>
+请根据审查建议优化专利标题。
+
+<context>
+当前标题：{title}
+改进建议：{recommendation}
+
+<thinking_process>
+让我按照以下步骤来优化标题：
+
+1. 首先，我需要分析当前标题的问题...
+2. 然后，理解改进建议的具体要求...
+3. 接着，制定优化策略...
+4. 最后，生成改进后的标题...
+
+</thinking_process>
+
+<output_format>
+请按照以下XML格式输出结果：
+
+<improved_title>
+    <title>改进后的标题</title>
+    <improvements>
+        <improvement>改进点1</improvement>
+        <improvement>改进点2</improvement>
+    </improvements>
+    <rationale>改进理由</rationale>
+</improved_title>
+
+<constraints>
+- 确保标题更加描述性、清晰和技术准确
+- 保持技术实质不变
+- 符合专利标题的规范要求
+- 突出技术方案的创新点
+</constraints>"""
             
             response = await self.openai_client._generate_response(prompt)
             
