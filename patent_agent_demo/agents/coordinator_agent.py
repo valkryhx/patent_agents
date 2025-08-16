@@ -49,6 +49,8 @@ class CoordinatorAgent(BaseAgent):
             capabilities=["workflow_orchestration", "agent_coordination", "progress_tracking", "quality_assurance"]
         )
         self.active_workflows: Dict[str, PatentWorkflow] = {}
+        self.completed_tasks: set = set()  # Track completed task IDs
+        self.failed_tasks: set = set()     # Track failed task IDs
         self.workflow_templates = self._load_workflow_templates()
         self.agent_dependencies = self._load_agent_dependencies()
         self.completed_workflows: Dict[str, Dict[str, Any]] = {}
@@ -315,8 +317,9 @@ class CoordinatorAgent(BaseAgent):
         return task_content
         
     async def _send_task_message(self, agent_name: str, task_content: Dict[str, Any]) -> bool:
-        """Send task message and wait for confirmation"""
+        """Send task message and wait for completion"""
         try:
+            task_id = task_content["task"]["id"]
             message = Message(
                 id=str(uuid.uuid4()),
                 type=MessageType.COORDINATION,
@@ -327,14 +330,39 @@ class CoordinatorAgent(BaseAgent):
                 priority=5
             )
             
-            logger.info(f"Sending task message to {agent_name}")
+            logger.info(f"Sending task message to {agent_name} with task_id: {task_id}")
             await self.broker.send_message(message)
             
-            # Wait a short time to confirm message was sent
-            await asyncio.sleep(0.1)
+            # Wait for task completion with timeout
+            timeout = 300  # 5 minutes timeout
+            start_time = time.time()
             
-            logger.info(f"Task message sent successfully to {agent_name}")
-            return True
+            logger.info(f"Waiting for task {task_id} completion...")
+            logger.info(f"Current completed_tasks: {self.completed_tasks}")
+            logger.info(f"Current failed_tasks: {self.failed_tasks}")
+            
+            while time.time() - start_time < timeout:
+                # Check if we have received a completion message for this task
+                if task_id in self.completed_tasks:
+                    logger.info(f"Task {task_id} completed successfully")
+                    return True
+                    
+                # Check if we have received an error message for this task
+                if task_id in self.failed_tasks:
+                    logger.error(f"Task {task_id} failed")
+                    return False
+                    
+                # Log progress every 10 seconds
+                elapsed = time.time() - start_time
+                if int(elapsed) % 10 == 0 and elapsed > 0:
+                    logger.info(f"Still waiting for task {task_id} completion... ({elapsed:.1f}s elapsed)")
+                    logger.info(f"Current completed_tasks: {self.completed_tasks}")
+                    logger.info(f"Current failed_tasks: {self.failed_tasks}")
+                    
+                await asyncio.sleep(1)  # Check every second
+                
+            logger.error(f"Task {task_id} timed out after {timeout} seconds")
+            return False
             
         except Exception as e:
             logger.error(f"Error sending task message to {agent_name}: {e}")
@@ -401,6 +429,15 @@ class CoordinatorAgent(BaseAgent):
             
             logger.info(f"STATUS RECV from={message.sender} status={status} success={success} task_id={task_id}")
             
+            # Track task completion/failure for _send_task_message waiting
+            if task_id:
+                if status == "completed" or success is True:
+                    self.completed_tasks.add(task_id)
+                    logger.info(f"Task {task_id} marked as completed")
+                elif status == "failed" or success is False:
+                    self.failed_tasks.add(task_id)
+                    logger.error(f"Task {task_id} marked as failed")
+            
             # Check if this is a stage completion message
             if (task_id and "_stage_" in task_id and 
                 (status == "completed" or success is True)):
@@ -433,6 +470,23 @@ class CoordinatorAgent(BaseAgent):
             logger.error(f"Coordinator status handling error: {e}")
             # Fallback to base handler
             await super()._handle_status_message(message)
+ 
+    async def _handle_error_message(self, message: Message):
+        """Handle error messages and track failed tasks"""
+        try:
+            content = message.content or {}
+            task_id = content.get("task_id")
+            
+            if task_id:
+                self.failed_tasks.add(task_id)
+                logger.error(f"Task {task_id} marked as failed due to error message")
+            
+            # Call parent error handler
+            await super()._handle_error_message(message)
+            
+        except Exception as e:
+            logger.error(f"Error handling error message: {e}")
+            await super()._handle_error_message(message)
  
     def _get_current_draft(self, workflow: PatentWorkflow):
         """Return the most recent draft object from writer or rewriter stage results"""

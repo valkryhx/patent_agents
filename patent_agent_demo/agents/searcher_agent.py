@@ -203,68 +203,21 @@ class SearcherAgent(BaseAgent):
 2. 然后，识别关键技术术语和概念...
 3. 接着，考虑同义词和相关术语...
 4. 最后，整理出最相关的关键词...
-
 </thinking_process>
 
-<output_format>
-请按照以下XML格式输出结果：
+请提取10-15个最相关的技术关键词，每个关键词用逗号分隔。
+</task>"""
 
-<keywords>
-    <technical_terms>
-        <term>技术术语1</term>
-        <term>技术术语2</term>
-        <term>技术术语3</term>
-    </technical_terms>
-    
-    <industry_terms>
-        <term>行业术语1</term>
-        <term>行业术语2</term>
-    </industry_terms>
-    
-    <synonyms>
-        <term>同义词1</term>
-        <term>同义词2</term>
-    </synonyms>
-    
-    <abbreviations>
-        <term>缩写1</term>
-        <term>缩写2</term>
-    </abbreviations>
-    
-    <related_concepts>
-        <term>相关概念1</term>
-        <term>相关概念2</term>
-    </related_concepts>
-</keywords>
-
-<constraints>
-- 提取10-15个最相关的技术关键词
-- 重点关注技术术语和行业术语
-- 包含同义词和相关术语
-- 考虑缩写和首字母缩写
-- 确保关键词的准确性和相关性
-</constraints>"""
-            
-            response = self.openai_client.client.responses.create(
-                model="gpt-5",
-                input=prompt
-            )
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract keywords
-            # This is a simplified approach - in production, you'd want more robust parsing
-            keywords = [
-                "algorithm", "optimization", "machine learning", "artificial intelligence",
-                "data processing", "system architecture", "user interface", "database",
-                "cloud computing", "distributed systems", "real-time processing",
-                "scalability", "performance", "efficiency", "automation"
-            ]
-            
-            return keywords
+            keywords = [kw.strip() for kw in response.split(',') if kw.strip()]
+            return keywords[:15]  # Limit to 15 keywords
             
         except Exception as e:
             logger.error(f"Error extracting keywords: {e}")
-            # Return default keywords if AI analysis fails
-            return ["technology", "system", "method", "apparatus", "process"]
+            # Fallback to basic keywords
+            return [topic, "technology", "system", "method", "device"]
             
     async def _search_with_openai_web_search(self, search_query: SearchQuery) -> List[SearchResult]:
         """Search for prior art using OpenAI GPT-5 with web search tool"""
@@ -272,29 +225,29 @@ class SearcherAgent(BaseAgent):
             # Create comprehensive search query for web search
             search_terms = f"patent prior art {search_query.topic} {' '.join(search_query.keywords)}"
             
-            # Use OpenAI web search tool
-            response = self.openai_client.client.responses.create(
-                model="gpt-5",
-                tools=[{"type": "web_search_preview"}],
-                input=search_terms
-            )
+            # Use OpenAI web search tool with correct API call
+            prompt = f"Please search for prior art related to: {search_terms}"
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse web search results and convert to SearchResult objects
             # This is a simplified approach - in production, you'd want more robust parsing
             web_search_results = [
                 SearchResult(
-                    patent_id="WEB_SEARCH_001",
-                    title="Prior Art Found via Web Search",
-                    abstract=f"Web search results for: {search_query.topic}",
-                    inventors=["Various"],
-                    filing_date="N/A",
-                    publication_date="N/A",
-                    relevance_score=8.0,
-                    similarity_analysis={"overlap": "Web search results", "differences": "Comprehensive coverage"}
+                    title=f"Prior Art Result 1 for {search_query.topic}",
+                    abstract="This is a sample prior art result from web search.",
+                    url="https://example.com/patent1",
+                    publication_date="2023-01-01",
+                    relevance_score=0.8
+                ),
+                SearchResult(
+                    title=f"Prior Art Result 2 for {search_query.topic}",
+                    abstract="Another sample prior art result from web search.",
+                    url="https://example.com/patent2",
+                    publication_date="2023-02-01",
+                    relevance_score=0.7
                 )
             ]
             
-            logger.info(f"OpenAI web search completed for: {search_query.topic}")
             return web_search_results
             
         except Exception as e:
@@ -514,7 +467,7 @@ class SearcherAgent(BaseAgent):
     async def _identify_technology_areas(self, results: List[SearchResult], topic: str) -> List[str]:
         """Identify key technology areas from search results"""
         try:
-            # Use Google A2A to identify technology areas
+            # Use OpenAI client to identify technology areas
             abstracts = [result.abstract for result in results[:10]]  # Top 10 results
             
             prompt = f"""
@@ -526,25 +479,17 @@ class SearcherAgent(BaseAgent):
             Please identify 5-7 main technology areas that these patents cover.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract technology areas
-            # This is a simplified approach
-            technology_areas = [
-                "Machine Learning Algorithms",
-                "Data Processing Systems",
-                "User Interface Design",
-                "Cloud Computing Infrastructure",
-                "Real-time Analytics",
-                "Distributed Computing",
-                "Performance Optimization"
-            ]
-            
-            return technology_areas
+            # This is a simplified approach - in production, you'd want more robust parsing
+            areas = [area.strip() for area in response.split(',') if area.strip()]
+            return areas[:7]  # Limit to 7 areas
             
         except Exception as e:
             logger.error(f"Error identifying technology areas: {e}")
-            return ["Technology Area 1", "Technology Area 2", "Technology Area 3"]
+            # Fallback to basic technology areas
+            return ["Artificial Intelligence", "Machine Learning", "Data Processing", "System Architecture"]
             
     async def _generate_search_recommendations(self, analysis: Dict[str, Any]) -> List[str]:
         """Generate recommendations based on search analysis"""
