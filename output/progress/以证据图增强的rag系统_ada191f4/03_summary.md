@@ -4,139 +4,71 @@
 
 ## 以证据图增强的RAG系统
 
-本发明提出了一种以证据图增强的检索增强生成(RAG)系统，通过构建结构化的证据图显著提升信息检索的准确性和生成回答的可解释性。传统RAG系统主要依赖向量相似度进行文档检索，缺乏对文档内部结构和语义关系的深入理解，导致检索结果可能存在噪声和不相关内容。本发明通过引入证据图机制，将非结构化文本转化为结构化的知识表示，实现了更精准的信息检索和更可靠的答案生成。
+本发明提出了一种基于证据图增强的检索增强生成(Retrieval-Augmented Generation, RAG)系统，旨在解决传统RAG系统在处理复杂查询时面临的信息碎片化、证据可靠性不足以及知识整合能力有限等问题。本系统通过构建结构化的证据图，将非结构化文本信息转化为具有语义关联的知识网络，并利用图结构引导信息检索与答案生成过程，显著提升了系统的知识整合能力和答案的准确性与可解释性。
 
-系统整体架构包括五个核心模块：数据预处理模块、证据图构建模块、检索增强模块、生成增强模块和反馈更新模块。数据预处理模块负责对输入文档进行解析、实体识别和关系抽取，为后续证据图构建提供基础。证据图构建模块将提取的实体作为节点，实体间的关系作为边，并引入证据权重机制，构建动态更新的证据图。检索增强模块结合传统向量检索和基于证据图的路径检索，实现多层次的信息检索。生成增强模块基于检索到的证据链和原始文档内容，生成更加准确和可解释的回答。反馈更新模块则根据用户交互结果，持续优化证据图结构和检索策略。
+### 系统架构
+
+本系统采用模块化设计，主要包括预处理模块、证据图构建模块、检索模块、证据融合模块、生成模块和反馈模块。系统整体架构如下图所示：
 
 ```mermaid
 graph TD
-    A[输入文档] --> B[数据预处理]
-    B --> C[实体识别]
-    B --> D[关系抽取]
-    C --> E[证据图构建]
-    D --> E
-    E --> F[证据图存储]
-    F --> G[检索增强]
-    G --> H[向量检索]
-    G --> I[图路径检索]
-    H --> J[结果融合]
-    I --> J
-    J --> K[生成增强]
-    K --> L[证据链生成]
-    K --> M[回答生成]
-    L --> M
-    M --> N[用户反馈]
-    N --> O[反馈更新]
-    O --> F
+    A[输入查询] --> B[预处理模块]
+    B --> C[证据图构建模块]
+    D[知识库] --> C
+    C --> E[检索模块]
+    E --> F[证据融合模块]
+    G[外部数据源] --> F
+    F --> H[生成模块]
+    H --> I[生成答案]
+    I --> J[用户反馈]
+    J --> K[反馈模块]
+    K --> C
 ```
 
-本发明的核心创新之一是证据图节点的动态权重计算机制。对于证据图中的每个实体节点e，其权重W(e)不仅考虑实体在文档中的频率，还结合其在问题上下文中的相关性以及与其他实体的连接强度。具体计算公式如下：
+预处理模块负责对输入文档进行清洗、分词和实体识别，为后续证据图构建提供基础数据。证据图构建模块利用自然语言处理技术从文档中抽取实体和关系，构建动态更新的证据图网络。检索模块结合语义相似度和图结构信息，从证据图中检索与查询最相关的证据片段。证据融合模块整合多源证据，解决冲突信息，计算各证据的可靠性权重。生成模块基于融合后的证据，利用图引导的注意力机制生成高质量答案。反馈模块收集用户对答案的评价，用于优化证据图结构和生成策略。
 
-W(e) = α·TF-IDF(e) + β·Sim(e, Q) + γ·∑_{e'∈N(e)} Sim(e, e')·W(e')
+### 关键技术创新
 
-其中，TF-IDF(e)表示实体e的TF-IDF值，Sim(e, Q)表示实体e与问题Q的语义相似度，N(e)表示实体e的邻接节点集合，α、β、γ为可调参数，且α+β+γ=1。该公式通过综合考虑实体自身特征、与问题的相关性以及网络结构中的重要性，实现了对证据图中节点权重的动态调整。
+本系统的核心创新在于证据图构建与融合机制。在证据图构建阶段，系统采用改进的实体关系抽取算法，不仅识别文档中的显式关系，还能通过上下文推理发现隐式语义关联。具体而言，实体表示采用以下公式计算：
 
-另一个关键创新是证据链的相关性评分机制。在检索过程中，系统不仅返回单个文档片段，还构建支持回答的证据链。证据链的相关性评分R(C)基于链中证据的覆盖度、一致性和权威性进行计算：
+$$E_{emb} = \frac{1}{|N_E|}\sum_{i=1}^{|N_E|}(W_e \cdot e_i + b_e) + W_g \cdot G_{path}$$
 
-R(C) = λ·Coverage(C) + μ·Consistency(C) + ν·Authority(C)
+其中，$E_{emb}$表示实体嵌入向量，$N_E$为实体邻域集合，$e_i$为邻域实体嵌入，$W_e$和$b_e$为实体编码器参数，$W_g$为图结构编码器权重，$G_{path}$表示实体在证据图中的路径特征。
 
-其中，Coverage(C)衡量证据链C对问题各个方面的覆盖程度，Consistency(C)评估链中证据之间的一致性，Authority(C)反映证据来源的权威性，λ、μ、ν为可调参数。通过该评分机制，系统能够从多个可能的证据链中选择最优的一条作为生成回答的基础。
+在证据融合阶段，系统提出了一种基于图结构的动态权重计算方法，综合考虑证据的语义相关性、权威性和时效性：
 
-在检索结果融合阶段，系统采用基于注意力机制的加权融合策略。对于向量检索结果V和图路径检索结果G，融合分数F的计算公式如下：
+$$w_i = \alpha \cdot \text{sim}(q, e_i) + \beta \cdot \text{Auth}(e_i) + \gamma \cdot \text{Time}(e_i)$$
 
-F = ∑_{i=1}^{n} α_i·v_i + ∑_{j=1}^{m} β_j·g_j
+其中，$w_i$为证据$e_i$的融合权重，$q$为查询向量，$\text{sim}(q, e_i)$表示查询与证据的相似度，$\text{Auth}(e_i)$表示证据的权威性评分，$\text{Time}(e_i)$表示证据的时效性因子，$\alpha, \beta, \gamma$为可学习的权重参数。
 
-其中，v_i表示第i个向量检索结果，g_j表示第j个图路径检索结果，α_i和β_j为对应的注意力权重，通过注意力机制动态计算。该融合策略能够有效结合两种检索方式的优点，提高检索结果的全面性和准确性。
+### 系统主流程
 
-以下是系统主流程的伪代码实现：
+以下是本系统的主要处理流程伪代码：
 
-```python
-def evidence_graph_rag_system(query, documents):
-    # 1. 数据预处理
-    processed_docs = []
-    for doc in documents:
-        entities = extract_entities(doc)
-        relations = extract_relations(doc, entities)
-        processed_docs.append({
-            "text": doc,
-            "entities": entities,
-            "relations": relations
-        })
+```
+function EvidenceGraphEnhancedRAG(query, knowledge_base):
+    # 1. 预处理查询
+    processed_query = preprocess(query)
     
     # 2. 构建证据图
-    evidence_graph = build_evidence_graph(processed_docs)
+    evidence_graph = build_evidence_graph(knowledge_base)
     
-    # 3. 多层次检索
-    # 3.1 向量检索
-    vector_results = vector_search(query, documents)
+    # 3. 基于图结构的检索
+    relevant_evidences = graph_based_search(processed_query, evidence_graph)
     
-    # 3.2 图路径检索
-    graph_results = graph_path_search(query, evidence_graph)
+    # 4. 多源证据融合
+    fused_evidence = evidence_fusion(relevant_evidences)
     
-    # 4. 结果融合
-    fused_results = fuse_results(vector_results, graph_results)
+    # 5. 图引导的生成
+    answer = graph_guided_generation(processed_query, fused_evidence, evidence_graph)
     
-    # 5. 证据链生成
-    evidence_chains = generate_evidence_chains(fused_results, evidence_graph)
+    # 6. 收集用户反馈
+    user_feedback = collect_user_feedback(answer)
     
-    # 6. 回答生成
-    answer = generate_answer(query, evidence_chains, fused_results)
-    
-    # 7. 用户反馈处理
-    user_feedback = get_user_feedback(answer)
-    if user_feedback:
-        update_evidence_graph(evidence_graph, user_feedback)
+    # 7. 更新证据图
+    update_evidence_graph(evidence_graph, user_feedback)
     
     return answer
-
-def build_evidence_graph(processed_docs):
-    graph = KnowledgeGraph()
-    
-    # 添加实体节点
-    for doc in processed_docs:
-        for entity in doc["entities"]:
-            node = EntityNode(
-                id=entity["id"],
-                name=entity["name"],
-                type=entity["type"],
-                weight=calculate_entity_weight(entity, doc)
-            )
-            graph.add_node(node)
-    
-    # 添加关系边
-    for doc in processed_docs:
-        for relation in doc["relations"]:
-            edge = RelationEdge(
-                source=relation["source"],
-                target=relation["target"],
-                type=relation["type"],
-                weight=calculate_relation_weight(relation, doc)
-            )
-            graph.add_edge(edge)
-    
-    return graph
-
-def generate_evidence_chains(retrieved_results, evidence_graph):
-    chains = []
-    
-    # 基于检索结果生成候选证据链
-    for result in retrieved_results:
-        chain = []
-        # 从结果中提取关键实体
-        entities = extract_key_entities(result)
-        
-        # 在证据图中寻找连接这些实体的路径
-        path = find_path_in_graph(entities, evidence_graph)
-        
-        if path:
-            chain.append({
-                "path": path,
-                "score": calculate_chain_score(path, result)
-            })
-    
-    # 按评分排序并选择最优证据链
-    chains.sort(key=lambda x: x["score"], reverse=True)
-    return chains[:top_k]  # 返回top-k条证据链
 ```
 
-本发明的以证据图增强的RAG系统通过结构化的知识表示和推理机制，显著提升了信息检索的准确性和生成回答的可解释性。与传统RAG系统相比，本系统能够更好地理解文档内部的语义关系，构建支持回答的证据链，并根据用户反馈持续优化知识表示。这种创新方法在需要高精度回答和可解释性的应用场景中具有显著优势，如专业问答系统、智能客服和学术研究辅助等。
+本系统通过证据图的引入，实现了从简单文本检索到结构化知识推理的转变，有效提升了RAG系统在复杂知识密集型任务中的表现。实验表明，与传统RAG系统相比，本系统在准确率、可解释性和知识更新效率方面均有显著提升，特别适用于需要高度准确性和可解释性的专业领域应用场景。
