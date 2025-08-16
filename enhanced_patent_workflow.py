@@ -56,6 +56,9 @@ class EnhancedPatentWorkflow:
                 )
                 logger.info(f"✅ 工作流启动成功: {self.workflow_id}")
             except Exception as e:
+                logger.error(f"启动工作流失败: {e}")
+                import traceback
+                traceback.print_exc()
                 raise RuntimeError(f"启动工作流失败: {e}")
             
             return {
@@ -66,6 +69,8 @@ class EnhancedPatentWorkflow:
             
         except Exception as e:
             logger.error(f"❌ 启动工作流失败: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 "success": False,
                 "error": str(e)
@@ -79,6 +84,7 @@ class EnhancedPatentWorkflow:
                 
             logger.info(f"📊 开始监控工作流: {self.workflow_id}")
             start_time = time.time()
+            last_status = None
             
             while True:
                 # 获取工作流状态
@@ -93,16 +99,55 @@ class EnhancedPatentWorkflow:
                         overall_status = workflow_data.get("overall_status", "unknown")
                     else:
                         overall_status = "unknown"
+                        
+                    # Get current stage info
+                    current_stage = None
+                    if hasattr(workflow_data, 'current_stage'):
+                        current_stage = workflow_data.current_stage
+                    elif isinstance(workflow_data, dict):
+                        current_stage = workflow_data.get("current_stage", 0)
+                        
+                    # Get stages info
+                    stages = []
+                    if hasattr(workflow_data, 'stages'):
+                        stages = workflow_data.stages
+                    elif isinstance(workflow_data, dict):
+                        stages = workflow_data.get("stages", [])
+                        
                 except Exception as e:
                     logger.error(f"获取工作流状态失败: {e}")
+                    import traceback
+                    traceback.print_exc()
                     break
                 
-                logger.info(f"📈 工作流状态: {overall_status}")
+                # Log status changes
+                if overall_status != last_status:
+                    logger.info(f"📈 工作流状态变化: {last_status} -> {overall_status}")
+                    last_status = overall_status
+                
+                logger.info(f"📈 工作流状态: {overall_status}, 当前阶段: {current_stage}")
+                
+                # Log stage details
+                if stages and current_stage is not None and current_stage < len(stages):
+                    stage = stages[current_stage]
+                    if hasattr(stage, 'status'):
+                        stage_status = stage.status
+                        stage_name = stage.stage_name
+                        logger.info(f"📋 当前阶段: {stage_name} - {stage_status}")
+                        
+                        # If stage is running for too long, log more details
+                        if stage_status == 'running' and hasattr(stage, 'start_time') and stage.start_time:
+                            elapsed = time.time() - stage.start_time
+                            if elapsed > 300:  # 5 minutes
+                                logger.warning(f"⚠️ 阶段 {stage_name} 运行时间过长: {elapsed:.1f}秒")
                 
                 # 获取上下文摘要
-                context_summary = await context_manager.get_context_summary(self.workflow_id)
-                if context_summary:
-                    logger.info(f"📋 上下文摘要: {context_summary.get('theme', {}).get('primary_title')}")
+                try:
+                    context_summary = await context_manager.get_context_summary(self.workflow_id)
+                    if context_summary:
+                        logger.info(f"📋 上下文摘要: {context_summary.get('theme', {}).get('primary_title')}")
+                except Exception as e:
+                    logger.warning(f"获取上下文摘要失败: {e}")
                     
                 # 检查是否完成
                 if overall_status == "completed":
@@ -128,6 +173,8 @@ class EnhancedPatentWorkflow:
             
         except Exception as e:
             logger.error(f"❌ 监控工作流失败: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 "success": False,
                 "error": str(e)
@@ -167,6 +214,8 @@ class EnhancedPatentWorkflow:
             
         except Exception as e:
             logger.error(f"❌ 获取最终专利文档失败: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 "success": False,
                 "error": str(e)
@@ -278,6 +327,8 @@ class EnhancedPatentWorkflow:
             
         except Exception as e:
             logger.error(f"构建专利文档失败: {e}")
+            import traceback
+            traceback.print_exc()
             return {}
             
     def _get_stage_name(self, stage_key: str) -> str:
@@ -342,15 +393,21 @@ class EnhancedPatentWorkflow:
             if "strategy" in sections:
                 strategy = sections["strategy"]
                 markdown_content.append("## 策略规划")
-                if strategy.get("summary"):
+                if hasattr(strategy, 'summary'):
+                    markdown_content.append(strategy.summary)
+                elif isinstance(strategy, dict) and strategy.get("summary"):
                     markdown_content.append(strategy["summary"])
+                elif hasattr(strategy, 'topic'):
+                    markdown_content.append(f"专利主题: {strategy.topic}")
                 markdown_content.append("")
                 
             # 现有技术
             if "prior_art" in sections:
                 prior_art = sections["prior_art"]
                 markdown_content.append("## 现有技术")
-                if prior_art.get("summary"):
+                if hasattr(prior_art, 'summary'):
+                    markdown_content.append(prior_art.summary)
+                elif isinstance(prior_art, dict) and prior_art.get("summary"):
                     markdown_content.append(prior_art["summary"])
                 markdown_content.append("")
                 
@@ -358,7 +415,9 @@ class EnhancedPatentWorkflow:
             if "discussion" in sections:
                 discussion = sections["discussion"]
                 markdown_content.append("## 创新讨论")
-                if discussion.get("summary"):
+                if hasattr(discussion, 'summary'):
+                    markdown_content.append(discussion.summary)
+                elif isinstance(discussion, dict) and discussion.get("summary"):
                     markdown_content.append(discussion["summary"])
                 markdown_content.append("")
                 
@@ -366,9 +425,13 @@ class EnhancedPatentWorkflow:
             if "draft" in sections:
                 draft = sections["draft"]
                 markdown_content.append("## 专利草稿")
-                if draft.get("title"):
+                if hasattr(draft, 'title'):
+                    markdown_content.append(f"**标题**: {draft.title}")
+                elif isinstance(draft, dict) and draft.get("title"):
                     markdown_content.append(f"**标题**: {draft['title']}")
-                if draft.get("abstract"):
+                if hasattr(draft, 'abstract'):
+                    markdown_content.append(f"**摘要**: {draft.abstract}")
+                elif isinstance(draft, dict) and draft.get("abstract"):
                     markdown_content.append(f"**摘要**: {draft['abstract']}")
                 markdown_content.append("")
                 
@@ -376,7 +439,9 @@ class EnhancedPatentWorkflow:
             if "review" in sections:
                 review = sections["review"]
                 markdown_content.append("## 质量审查")
-                if review.get("summary"):
+                if hasattr(review, 'summary'):
+                    markdown_content.append(review.summary)
+                elif isinstance(review, dict) and review.get("summary"):
                     markdown_content.append(review["summary"])
                 markdown_content.append("")
                 
@@ -384,9 +449,13 @@ class EnhancedPatentWorkflow:
             if "final_draft" in sections:
                 final_draft = sections["final_draft"]
                 markdown_content.append("## 最终版本")
-                if final_draft.get("title"):
+                if hasattr(final_draft, 'title'):
+                    markdown_content.append(f"**标题**: {final_draft.title}")
+                elif isinstance(final_draft, dict) and final_draft.get("title"):
                     markdown_content.append(f"**标题**: {final_draft['title']}")
-                if final_draft.get("abstract"):
+                if hasattr(final_draft, 'abstract'):
+                    markdown_content.append(f"**摘要**: {final_draft.abstract}")
+                elif isinstance(final_draft, dict) and final_draft.get("abstract"):
                     markdown_content.append(f"**摘要**: {final_draft['abstract']}")
                 markdown_content.append("")
                 
@@ -394,6 +463,8 @@ class EnhancedPatentWorkflow:
             
         except Exception as e:
             logger.error(f"生成Markdown文档失败: {e}")
+            import traceback
+            traceback.print_exc()
             return f"# 专利文档生成失败\n\n错误: {str(e)}"
             
     async def cleanup(self):

@@ -1024,7 +1024,7 @@ class CoordinatorAgent(BaseAgent):
             "rewriter_agent": ["reviewer_agent"]
         }
         
-        async def _validate_and_update_context(self, workflow_id: str, stage_index: int,
+    async def _validate_and_update_context(self, workflow_id: str, stage_index: int,
                                          result: Dict[str, Any], stage_name: str):
             """Validate stage result and update context accordingly with enhanced error handling"""
             try:
@@ -1337,19 +1337,3 @@ class CoordinatorAgent(BaseAgent):
         except Exception as e:
             logger.error(f"Error broadcasting message: {e}")
             
-    async def _validate_and_update_context(self, workflow_id: str, stage_result: Dict[str, Any]) -> bool:
-        """Validate and update context based on stage result"""
-        try:
-            # Validate that the result contains expected data
-            if not stage_result or not isinstance(stage_result, dict):
-                logger.warning(f"Invalid stage result format for workflow {workflow_id}")
-                return False
-                
-            # Update context with stage result
-            await context_manager.update_workflow_context(workflow_id, stage_result)
-            logger.info(f"Context updated for workflow {workflow_id}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error validating and updating context: {e}")
-            return False
