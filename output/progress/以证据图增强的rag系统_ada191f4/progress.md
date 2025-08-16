@@ -4643,3 +4643,10 @@ flowchart TB
 ```
 
 本发明通过上述系统架构、数据流和核心算法的协同工作，实现了高效、准确、可解释的智能医疗诊断功能，有效辅助医生进行临床决策，提高诊断效率和准确性，同时降低漏诊和误诊的风险。
+
+
+## 标题与摘要
+
+# Generated Patent Title for 以证据图增强的rag系统
+
+This is a generated abstract for the patent: 以证据图增强的rag系统
