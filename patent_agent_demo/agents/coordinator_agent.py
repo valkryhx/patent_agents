@@ -11,7 +11,7 @@ import time
 import uuid
 
 from .base_agent import BaseAgent, TaskResult
-from ..message_bus import MessageType, AgentStatus
+from ..message_bus import MessageType, AgentStatus, Message
 from ..context_manager import context_manager, ContextType, ContextItem
 
 logger = logging.getLogger(__name__)
@@ -71,6 +71,10 @@ class CoordinatorAgent(BaseAgent):
                 return await self._handle_workflow_completion(task_data)
             elif task_type == "escalate_issue":
                 return await self._escalate_issue(task_data)
+            elif task_type == "get_all_agents_status":
+                return await self.get_all_agents_status()
+            elif task_type == "get_workflow_summary":
+                return await self.get_workflow_summary()
             else:
                 return TaskResult(
                     success=False,
@@ -1023,56 +1027,56 @@ class CoordinatorAgent(BaseAgent):
         async def _validate_and_update_context(self, workflow_id: str, stage_index: int,
                                          result: Dict[str, Any], stage_name: str):
             """Validate stage result and update context accordingly with enhanced error handling"""
-        try:
-            logger.info(f"Validating and updating context for stage {stage_name}")
+            try:
+                logger.info(f"Validating and updating context for stage {stage_name}")
 
-            # Extract output text for validation
-            output_text = self._extract_output_text(result, stage_name)
-            output_type = "general"
+                # Extract output text for validation
+                output_text = self._extract_output_text(result, stage_name)
+                output_type = "general"
 
-            if output_text:
-                logger.info(f"Extracted output text for validation: {output_text[:100]}...")
-                
-                # Validate output against context
-                try:
-                    validation_result = await context_manager.validate_agent_output(
-                        workflow_id, f"stage_{stage_index}", output_text, output_type
-                    )
+                if output_text:
+                    logger.info(f"Extracted output text for validation: {output_text[:100]}...")
+                    
+                    # Validate output against context
+                    try:
+                        validation_result = await context_manager.validate_agent_output(
+                            workflow_id, f"stage_{stage_index}", output_text, output_type
+                        )
 
-                    if not validation_result["is_consistent"]:
-                        logger.warning(f"Context consistency issues in {stage_name}: {validation_result['issues']}")
+                        if not validation_result["is_consistent"]:
+                            logger.warning(f"Context consistency issues in {stage_name}: {validation_result['issues']}")
 
-                        # Add context item for the issues
-                        try:
-                            await context_manager.add_context_item(workflow_id, ContextItem(
-                                context_type=ContextType.THEME_DEFINITION,
-                                key=f"consistency_issue_{stage_name}",
-                                value=validation_result["issues"],
-                                source_agent=f"stage_{stage_index}",
-                                timestamp=time.time(),
-                                confidence=validation_result["score"]
-                            ))
-                        except Exception as e:
-                            logger.warning(f"Failed to add consistency issue to context: {e}")
-                    else:
-                        logger.info(f"Context validation passed for {stage_name}")
+                            # Add context item for the issues
+                            try:
+                                await context_manager.add_context_item(workflow_id, ContextItem(
+                                    context_type=ContextType.THEME_DEFINITION,
+                                    key=f"consistency_issue_{stage_name}",
+                                    value=validation_result["issues"],
+                                    source_agent=f"stage_{stage_index}",
+                                    timestamp=time.time(),
+                                    confidence=validation_result["score"]
+                                ))
+                            except Exception as e:
+                                logger.warning(f"Failed to add consistency issue to context: {e}")
+                        else:
+                            logger.info(f"Context validation passed for {stage_name}")
 
-                except Exception as e:
-                    logger.warning(f"Context validation failed: {e}, continuing without validation")
+                    except Exception as e:
+                        logger.warning(f"Context validation failed: {e}, continuing without validation")
 
-                # Extract and add new context items based on stage result
-                try:
-                    await self._extract_context_from_result(workflow_id, stage_index, result, stage_name)
-                    logger.info(f"Context extraction completed for {stage_name}")
-                except Exception as e:
-                    logger.warning(f"Context extraction failed: {e}")
+                    # Extract and add new context items based on stage result
+                    try:
+                        await self._extract_context_from_result(workflow_id, stage_index, result, stage_name)
+                        logger.info(f"Context extraction completed for {stage_name}")
+                    except Exception as e:
+                        logger.warning(f"Context extraction failed: {e}")
 
-            else:
-                logger.info(f"No output text extracted for {stage_name}, skipping validation")
+                else:
+                    logger.info(f"No output text extracted for {stage_name}, skipping validation")
 
-        except Exception as e:
-            logger.error(f"Error validating and updating context: {e}")
-            # Don't block the workflow, just log the error
+            except Exception as e:
+                logger.error(f"Error validating and updating context: {e}")
+                # Don't block the workflow, just log the error
 
     def _extract_output_text(self, result: Dict[str, Any], stage_name: str) -> str:
         """Extract output text for validation"""
@@ -1243,10 +1247,10 @@ class CoordinatorAgent(BaseAgent):
             logger.error(f"Error getting iteration status: {e}")
             return {"status": "error", "error": str(e)}
             
-    async def get_all_agents_status(self) -> Dict[str, Any]:
+    async def get_all_agents_status(self) -> TaskResult:
         """Get status of all agents"""
         try:
-            return {
+            agents_status = {
                 agent_name: {
                     "status": agent_info.status.value,
                     "capabilities": agent_info.capabilities,
@@ -1255,23 +1259,97 @@ class CoordinatorAgent(BaseAgent):
                 }
                 for agent_name, agent_info in self.broker.agents.items()
             }
+            return TaskResult(
+                success=True,
+                data=agents_status,
+                metadata={"timestamp": time.time()}
+            )
         except Exception as e:
             logger.error(f"Error getting agents status: {e}")
-            return {"error": str(e)}
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )
             
-    async def get_workflow_summary(self) -> Dict[str, Any]:
+    async def get_workflow_summary(self) -> TaskResult:
         """Get summary of all workflows"""
         try:
             active_workflows = len(self.active_workflows)
             completed_workflows = len(self.completed_workflows)
             
-            return {
+            summary = {
                 "active_workflows": active_workflows,
                 "completed_workflows": completed_workflows,
                 "total_workflows": active_workflows + completed_workflows,
                 "active_workflow_ids": list(self.active_workflows.keys()),
                 "completed_workflow_ids": list(self.completed_workflows.keys())
             }
+            
+            # Add latest workflow details if available
+            if self.active_workflows:
+                latest_workflow_id = list(self.active_workflows.keys())[-1]
+                latest_workflow = self.active_workflows[latest_workflow_id]
+                summary["latest_workflow"] = {
+                    "workflow_id": latest_workflow_id,
+                    "topic": latest_workflow.topic,
+                    "status": latest_workflow.overall_status,
+                    "current_stage": latest_workflow.current_stage,
+                    "start_time": latest_workflow.start_time
+                }
+            
+            return TaskResult(
+                success=True,
+                data=summary,
+                metadata={"timestamp": time.time()}
+            )
         except Exception as e:
             logger.error(f"Error getting workflow summary: {e}")
-            return {"error": str(e)}
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )
+            
+    async def broadcast_message(self, message_type: MessageType, content: Dict[str, Any], 
+                              recipient: str = "all", priority: int = 5) -> None:
+        """Broadcast a message to all agents or a specific agent"""
+        try:
+            message = Message(
+                id=str(uuid.uuid4()),
+                type=message_type,
+                sender=self.name,
+                recipient=recipient,
+                content=content,
+                timestamp=time.time(),
+                priority=priority
+            )
+            
+            if recipient == "all":
+                # Broadcast to all agents
+                for agent_name in self.broker.agents.keys():
+                    if agent_name != self.name:
+                        await self.broker.send_message(message)
+            else:
+                # Send to specific agent
+                await self.broker.send_message(message)
+                
+        except Exception as e:
+            logger.error(f"Error broadcasting message: {e}")
+            
+    async def _validate_and_update_context(self, workflow_id: str, stage_result: Dict[str, Any]) -> bool:
+        """Validate and update context based on stage result"""
+        try:
+            # Validate that the result contains expected data
+            if not stage_result or not isinstance(stage_result, dict):
+                logger.warning(f"Invalid stage result format for workflow {workflow_id}")
+                return False
+                
+            # Update context with stage result
+            await context_manager.update_workflow_context(workflow_id, stage_result)
+            logger.info(f"Context updated for workflow {workflow_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error validating and updating context: {e}")
+            return False

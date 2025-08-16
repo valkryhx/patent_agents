@@ -102,7 +102,7 @@ class PatentAgentSystem:
             raise
             
     async def execute_workflow(self, topic: str, description: str, 
-                             workflow_type: str = "standard") -> Dict[str, Any]:
+                             workflow_type: str = "standard") -> str:
         """Execute a patent development workflow"""
         try:
             if not self.coordinator:
@@ -122,18 +122,11 @@ class PatentAgentSystem:
             workflow_id = result.data.get("workflow_id")
             logger.info(f"Started workflow: {workflow_id}")
             
-            return {
-                "success": True,
-                "workflow_id": workflow_id,
-                "status": "started"
-            }
+            return workflow_id
             
         except Exception as e:
             logger.error(f"Error executing workflow: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            raise
             
     async def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:
         """Get the status of a workflow"""

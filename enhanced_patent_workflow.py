@@ -48,17 +48,15 @@ class EnhancedPatentWorkflow:
             logger.info("✅ 专利代理系统启动成功")
             
             # 启动工作流
-            start_result = await self.system.execute_workflow(
-                topic=topic,
-                description=description,
-                workflow_type="enhanced"
-            )
-            
-            if not start_result["success"]:
-                raise RuntimeError(f"启动工作流失败: {start_result.get('error')}")
-                
-            self.workflow_id = start_result["workflow_id"]
-            logger.info(f"✅ 工作流启动成功: {self.workflow_id}")
+            try:
+                self.workflow_id = await self.system.execute_workflow(
+                    topic=topic,
+                    description=description,
+                    workflow_type="enhanced"
+                )
+                logger.info(f"✅ 工作流启动成功: {self.workflow_id}")
+            except Exception as e:
+                raise RuntimeError(f"启动工作流失败: {e}")
             
             return {
                 "success": True,
@@ -84,14 +82,20 @@ class EnhancedPatentWorkflow:
             
             while True:
                 # 获取工作流状态
-                status_result = await self.system.get_workflow_status(self.workflow_id)
-                
-                if not status_result["success"]:
-                    logger.error(f"获取工作流状态失败: {status_result.get('error')}")
-                    break
+                try:
+                    status_result = await self.system.get_workflow_status(self.workflow_id)
+                    workflow_data = status_result.get("workflow", {})
                     
-                workflow_data = status_result.get("workflow", {})
-                overall_status = workflow_data.get("overall_status", "unknown")
+                    # Handle both dictionary and object cases
+                    if hasattr(workflow_data, 'overall_status'):
+                        overall_status = workflow_data.overall_status
+                    elif isinstance(workflow_data, dict):
+                        overall_status = workflow_data.get("overall_status", "unknown")
+                    else:
+                        overall_status = "unknown"
+                except Exception as e:
+                    logger.error(f"获取工作流状态失败: {e}")
+                    break
                 
                 logger.info(f"📈 工作流状态: {overall_status}")
                 
@@ -138,12 +142,19 @@ class EnhancedPatentWorkflow:
             logger.info(f"📄 获取最终专利文档: {self.workflow_id}")
             
             # 获取工作流状态
-            status_result = await self.system.get_workflow_status(self.workflow_id)
-            if not status_result["success"]:
-                raise RuntimeError(f"获取工作流状态失败: {status_result.get('error')}")
+            try:
+                status_result = await self.system.get_workflow_status(self.workflow_id)
+                workflow_data = status_result.get("workflow", {})
                 
-            workflow_data = status_result.get("workflow", {})
-            results = workflow_data.get("results", {})
+                # Handle both dictionary and object cases
+                if hasattr(workflow_data, 'results'):
+                    results = workflow_data.results
+                elif isinstance(workflow_data, dict):
+                    results = workflow_data.get("results", {})
+                else:
+                    results = {}
+            except Exception as e:
+                raise RuntimeError(f"获取工作流状态失败: {e}")
             
             # 构建完整的专利文档
             patent_document = await self._build_patent_document(results)
@@ -166,34 +177,102 @@ class EnhancedPatentWorkflow:
         try:
             # 获取主题定义
             theme_definition = await context_manager.get_context_summary(self.workflow_id)
-            theme = theme_definition.get("theme", {})
             
-            patent_document = {
-                "title": theme.get("primary_title", self.topic),
-                "core_concept": theme.get("core_concept", ""),
-                "technical_domain": theme.get("technical_domain", ""),
-                "key_innovations": theme.get("key_innovations", []),
-                "sections": {}
-            }
+            # Handle both dictionary and object cases for theme_definition
+            if isinstance(theme_definition, dict):
+                theme = theme_definition.get("theme", {})
+                patent_document = {
+                    "title": theme.get("primary_title", self.topic),
+                    "core_concept": theme.get("core_concept", ""),
+                    "technical_domain": theme.get("technical_domain", ""),
+                    "key_innovations": theme.get("key_innovations", []),
+                    "sections": {}
+                }
+            else:
+                # Handle object case
+                patent_document = {
+                    "title": self.topic,
+                    "core_concept": "",
+                    "technical_domain": "",
+                    "key_innovations": [],
+                    "sections": {}
+                }
             
             # 提取各个阶段的结果
             for stage_key, stage_result in results.items():
                 if stage_key.startswith("stage_"):
-                    stage_data = stage_result.get("result", {})
+                    # Handle both dictionary and object cases
+                    if isinstance(stage_result, dict):
+                        stage_data = stage_result.get("result", {})
+                    elif hasattr(stage_result, 'result'):
+                        stage_data = stage_result.result
+                    elif hasattr(stage_result, 'topic'):
+                        # This is a PatentStrategy object
+                        stage_data = stage_result
+                    else:
+                        stage_data = {}
+                        
                     stage_name = self._get_stage_name(stage_key)
                     
                     if stage_name == "Planning & Strategy":
-                        patent_document["sections"]["strategy"] = stage_data.get("strategy", {})
+                        # Handle PatentStrategy object
+                        if hasattr(stage_data, 'topic'):
+                            # This is a PatentStrategy object
+                            patent_document["sections"]["strategy"] = {
+                                "summary": f"专利主题: {stage_data.topic}",
+                                "description": stage_data.description,
+                                "novelty_score": stage_data.novelty_score,
+                                "inventive_step_score": stage_data.inventive_step_score,
+                                "patentability_assessment": stage_data.patentability_assessment,
+                                "key_innovation_areas": stage_data.key_innovation_areas,
+                                "development_phases": stage_data.development_phases,
+                                "competitive_analysis": stage_data.competitive_analysis,
+                                "risk_assessment": stage_data.risk_assessment,
+                                "timeline_estimate": stage_data.timeline_estimate,
+                                "resource_requirements": stage_data.resource_requirements,
+                                "success_probability": stage_data.success_probability
+                            }
+                        elif hasattr(stage_data, 'strategy'):
+                            patent_document["sections"]["strategy"] = stage_data.strategy
+                        elif isinstance(stage_data, dict):
+                            patent_document["sections"]["strategy"] = stage_data.get("strategy", {})
+                        else:
+                            patent_document["sections"]["strategy"] = {"summary": str(stage_data)}
                     elif stage_name == "Prior Art Search":
-                        patent_document["sections"]["prior_art"] = stage_data.get("search_results", {})
+                        if hasattr(stage_data, 'search_results'):
+                            patent_document["sections"]["prior_art"] = stage_data.search_results
+                        elif isinstance(stage_data, dict):
+                            patent_document["sections"]["prior_art"] = stage_data.get("search_results", {})
+                        else:
+                            patent_document["sections"]["prior_art"] = {"summary": str(stage_data)}
                     elif stage_name == "Innovation Discussion":
-                        patent_document["sections"]["discussion"] = stage_data.get("discussion", {})
+                        if hasattr(stage_data, 'discussion'):
+                            patent_document["sections"]["discussion"] = stage_data.discussion
+                        elif isinstance(stage_data, dict):
+                            patent_document["sections"]["discussion"] = stage_data.get("discussion", {})
+                        else:
+                            patent_document["sections"]["discussion"] = {"summary": str(stage_data)}
                     elif stage_name == "Patent Drafting":
-                        patent_document["sections"]["draft"] = stage_data.get("patent_draft", {})
+                        if hasattr(stage_data, 'patent_draft'):
+                            patent_document["sections"]["draft"] = stage_data.patent_draft
+                        elif isinstance(stage_data, dict):
+                            patent_document["sections"]["draft"] = stage_data.get("patent_draft", {})
+                        else:
+                            patent_document["sections"]["draft"] = {"summary": str(stage_data)}
                     elif stage_name == "Quality Review":
-                        patent_document["sections"]["review"] = stage_data.get("feedback", {})
+                        if hasattr(stage_data, 'feedback'):
+                            patent_document["sections"]["review"] = stage_data.feedback
+                        elif isinstance(stage_data, dict):
+                            patent_document["sections"]["review"] = stage_data.get("feedback", {})
+                        else:
+                            patent_document["sections"]["review"] = {"summary": str(stage_data)}
                     elif stage_name == "Final Rewrite":
-                        patent_document["sections"]["final_draft"] = stage_data.get("improved_draft", {})
+                        if hasattr(stage_data, 'improved_draft'):
+                            patent_document["sections"]["final_draft"] = stage_data.improved_draft
+                        elif isinstance(stage_data, dict):
+                            patent_document["sections"]["final_draft"] = stage_data.get("improved_draft", {})
+                        else:
+                            patent_document["sections"]["final_draft"] = {"summary": str(stage_data)}
                         
             return patent_document
             
@@ -212,6 +291,18 @@ class EnhancedPatentWorkflow:
             "stage_5": "Final Rewrite"
         }
         return stage_mapping.get(stage_key, "Unknown Stage")
+        
+    def _safe_get(self, obj, key, default=None):
+        """Safely get a value from either a dictionary or an object"""
+        try:
+            if isinstance(obj, dict):
+                return obj.get(key, default)
+            elif hasattr(obj, key):
+                return getattr(obj, key, default)
+            else:
+                return default
+        except Exception:
+            return default
         
     async def generate_markdown_document(self, patent_document: Dict[str, Any]) -> str:
         """生成Markdown格式的专利文档"""
@@ -325,15 +416,11 @@ async def main():
         workflow = EnhancedPatentWorkflow()
         
         # 定义专利主题
-        topic = "证据图增强的检索增强生成系统"
+        topic = "基于智能分层推理的多参数工具自适应调用系统"
         description = """
-        一种通过构建跨文档证据关系图并进行子图选择驱动生成与验证的RAG系统。
-        该系统能够：
-        1. 构建多源异构信息的证据关系图
-        2. 基于查询动态选择相关证据子图
-        3. 利用证据图约束大语言模型的生成过程
-        4. 提供完整的证据链和推理路径
-        5. 显著提升生成内容的准确性和可解释性
+        一种基于智能分层推理的多参数工具自适应调用系统，解决现有技术中多参数工具调用成功率低的问题。
+        技术方案包括智能分层推理引擎、自适应参数收集策略、动态调用策略优化和智能错误诊断与恢复。
+        技术效果：调用成功率从30%提升至85%以上，减少参数收集时间60%，错误诊断准确率90%。
         """
         
         # 启动工作流
