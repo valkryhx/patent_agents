@@ -138,6 +138,11 @@ class UltraRealTimeMonitor:
                     await self._check_output_files()
                     self._last_output_check = current_time
                 
+                # Periodic status report (every 60 seconds)
+                if current_time - getattr(self, '_last_periodic_report', 0) >= 60:
+                    await self._generate_periodic_report()
+                    self._last_periodic_report = current_time
+                
                 # Check for workflow completion
                 if self._is_workflow_completed():
                     self.logger.info("✅ 工作流完成")
@@ -395,6 +400,75 @@ class UltraRealTimeMonitor:
                 
         except Exception as e:
             self.logger.error(f"保存输出更新失败: {e}")
+            
+    async def _generate_periodic_report(self):
+        """生成周期性状态报告"""
+        try:
+            current_time = datetime.now().strftime("%H:%M:%S")
+            elapsed_time = time.time() - self.start_time if self.start_time else 0
+            
+            # Calculate progress
+            progress_info = "未知"
+            if self.last_status:
+                progress_info = f"{self.last_status['overall_status']} | 阶段: {self.last_status['progress']}"
+            
+            # Count recent file changes
+            recent_changes = len([c for c in self.file_changes if time.time() - self._parse_timestamp(c.get('timestamp', '0')) < 60])
+            
+            # Count status updates
+            recent_status_updates = len([s for s in self.status_history if time.time() - self._parse_timestamp(s.get('timestamp', '0')) < 60])
+            
+            # Generate report
+            report = f"""
+{'='*80}
+📊 周期性状态报告 - {current_time}
+{'='*80}
+⏱️  运行时间: {elapsed_time:.1f} 秒
+🆔  工作流ID: {self.workflow_id or '未启动'}
+📈  当前状态: {progress_info}
+📝  状态更新: {len(self.status_history)} 次 (最近1分钟: {recent_status_updates} 次)
+📄  文件变化: {len(self.file_changes)} 次 (最近1分钟: {recent_changes} 次)
+🔄  监控状态: {'运行中' if self.monitoring else '已停止'}
+{'='*80}
+"""
+            
+            # Log the report
+            self.logger.info(report)
+            
+            # Save periodic report
+            report_data = {
+                "timestamp": current_time,
+                "elapsed_time": elapsed_time,
+                "workflow_id": self.workflow_id,
+                "current_status": progress_info,
+                "total_status_updates": len(self.status_history),
+                "recent_status_updates": recent_status_updates,
+                "total_file_changes": len(self.file_changes),
+                "recent_file_changes": recent_changes,
+                "monitoring_active": self.monitoring
+            }
+            
+            report_file = os.path.join(self.output_dir, f"periodic_report_{self.workflow_id}.json")
+            with open(report_file, 'w', encoding='utf-8') as f:
+                json.dump(report_data, f, ensure_ascii=False, indent=2)
+                
+        except Exception as e:
+            self.logger.error(f"生成周期性报告失败: {e}")
+            
+    def _parse_timestamp(self, timestamp_str: str) -> float:
+        """解析时间戳字符串"""
+        try:
+            # Parse timestamp in format HH:MM:SS.mmm
+            if '.' in timestamp_str:
+                time_part, ms_part = timestamp_str.split('.')
+                hours, minutes, seconds = map(int, time_part.split(':'))
+                milliseconds = int(ms_part)
+                return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000
+            else:
+                hours, minutes, seconds = map(int, timestamp_str.split(':'))
+                return hours * 3600 + minutes * 60 + seconds
+        except:
+            return 0
             
     async def stop_monitoring(self):
         """停止监控"""

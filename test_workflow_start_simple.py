@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test workflow start
+Simple test to start workflow
 """
 
 import asyncio
@@ -44,8 +44,8 @@ async def test_workflow_start():
         logger.info(f"✅ Workflow started with ID: {workflow_id}")
         
         # Wait a bit to see if workflow progresses
-        logger.info("Waiting 10 seconds to see workflow progress...")
-        await asyncio.sleep(10)
+        logger.info("Waiting 30 seconds to see workflow progress...")
+        await asyncio.sleep(30)
         
         # Get workflow status
         status = await system.get_workflow_status(workflow_id)
