@@ -48,14 +48,36 @@ class EnhancedPatentWorkflow:
             await self.system.start()
             logger.info("✅ 专利代理系统启动成功")
             
+            # 检查协调器是否可用
+            if not self.system.coordinator:
+                logger.error("❌ 协调器不可用")
+                return None
+            logger.info("✅ 协调器可用")
+            
+            # 检查其他智能体是否可用
+            if hasattr(self.system, 'agents'):
+                logger.info(f"✅ 智能体数量: {len(self.system.agents)}")
+                for agent_name, agent in self.system.agents.items():
+                    logger.info(f"   - {agent_name}: {type(agent).__name__}")
+            else:
+                logger.warning("⚠️ 无法获取智能体信息")
+            
             # 启动工作流
             try:
+                logger.info("🔧 正在启动工作流...")
                 self.workflow_id = await self.system.execute_workflow(
                     topic=topic,
                     description=description,
                     workflow_type="enhanced"
                 )
                 logger.info(f"✅ 工作流启动成功: {self.workflow_id}")
+                
+                # 验证工作流ID
+                if not self.workflow_id:
+                    logger.error("❌ 工作流ID为空")
+                    return None
+                    
+                logger.info(f"✅ 工作流ID验证成功: {self.workflow_id}")
                 return self.workflow_id
             except Exception as e:
                 logger.error(f"启动工作流失败: {e}")
