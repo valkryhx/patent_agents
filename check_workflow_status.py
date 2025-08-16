@@ -1,57 +1,63 @@
 #!/usr/bin/env python3
 """
-检查工作流状态
+Check current workflow status
 """
 
 import asyncio
-import os
 import sys
+import os
+import logging
 
-# 添加patent_agent_demo到路径
-sys.path.append('patent_agent_demo')
+# Add project path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'patent_agent_demo'))
+
+from patent_agent_demo.patent_agent_system import PatentAgentSystem
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 async def check_workflow_status():
-    """检查工作流状态"""
+    """Check current workflow status"""
     try:
-        print("🔍 检查工作流状态...")
+        logger.info("🔍 Checking workflow status...")
         
-        from patent_agent_demo.patent_agent_system import PatentAgentSystem
-        
-        # 创建系统实例
-        system = PatentAgentSystem()
-        
-        print("🚀 启动专利代理系统...")
+        # Create system
+        system = PatentAgentSystem(test_mode=False)
         await system.start()
+        logger.info("✅ System started")
         
-        print("✅ 系统启动成功")
-        print(f"🤖 已启动的Agent数量: {len(system.agents)}")
-        
-        # 检查coordinator状态
+        # Check if coordinator is available
         if system.coordinator:
-            print("📋 Coordinator状态: 正常")
+            logger.info("✅ Coordinator is available")
             
-            # 尝试启动一个简单的工作流
-            print("🔄 尝试启动测试工作流...")
-            start_result = await system.coordinator.execute_task({
-                "type": "start_patent_workflow",
-                "topic": "测试主题",
-                "description": "测试描述",
-                "workflow_type": "standard"
-            })
+            # Check active workflows
+            active_workflows = getattr(system.coordinator, 'active_workflows', {})
+            logger.info(f"📊 Active workflows: {list(active_workflows.keys())}")
             
-            if start_result.success:
-                print(f"✅ 测试工作流启动成功: {start_result.data.get('workflow_id')}")
+            if active_workflows:
+                for workflow_id, workflow in active_workflows.items():
+                    logger.info(f"📋 Workflow {workflow_id}:")
+                    logger.info(f"   Topic: {workflow.topic}")
+                    logger.info(f"   Status: {workflow.overall_status}")
+                    logger.info(f"   Current stage: {workflow.current_stage}")
+                    logger.info(f"   Stages: {[stage.stage_name for stage in workflow.stages]}")
+                    
+                    if workflow.stages:
+                        current_stage = workflow.stages[workflow.current_stage]
+                        logger.info(f"   Current stage status: {current_stage.status}")
+                        logger.info(f"   Current stage agent: {current_stage.agent_name}")
             else:
-                print(f"❌ 测试工作流启动失败: {start_result.error_message}")
+                logger.info("📊 No active workflows found")
         else:
-            print("❌ Coordinator未找到")
+            logger.error("❌ Coordinator not available")
         
-        # 停止系统
+        # Stop system
         await system.stop()
-        print("🛑 系统已停止")
+        logger.info("✅ System stopped")
         
     except Exception as e:
-        print(f"❌ 检查过程中发生错误: {e}")
+        logger.error(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
 
