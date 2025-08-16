@@ -34,7 +34,7 @@ class EnhancedPatentWorkflow:
         self.description = None
         self.test_mode = test_mode
         
-    async def start_workflow(self, topic: str, description: str) -> Dict[str, Any]:
+    async def start_workflow(self, topic: str, description: str) -> str:
         """启动增强的专利撰写工作流"""
         try:
             logger.info("🚀 启动增强的专利撰写工作流")
@@ -56,28 +56,20 @@ class EnhancedPatentWorkflow:
                     workflow_type="enhanced"
                 )
                 logger.info(f"✅ 工作流启动成功: {self.workflow_id}")
+                return self.workflow_id
             except Exception as e:
                 logger.error(f"启动工作流失败: {e}")
                 import traceback
                 traceback.print_exc()
                 raise RuntimeError(f"启动工作流失败: {e}")
             
-            return {
-                "success": True,
-                "workflow_id": self.workflow_id,
-                "message": "工作流启动成功"
-            }
-            
         except Exception as e:
             logger.error(f"❌ 启动工作流失败: {e}")
             import traceback
             traceback.print_exc()
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return None
             
-    async def monitor_workflow(self, max_wait: int = 1800) -> Dict[str, Any]:
+    async def monitor_workflow(self, workflow_id: str, max_wait: int = 1800) -> Dict[str, Any]:
         """监控工作流进度"""
         try:
             if not self.workflow_id:
