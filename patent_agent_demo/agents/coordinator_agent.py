@@ -463,7 +463,7 @@ class CoordinatorAgent(BaseAgent):
             return None
  
     async def _handle_stage_completion(self, workflow_id: str, stage_index: int, result: Dict[str, Any]):
-        """Handle completion of a workflow stage with simplified iterative review-rewrite loop"""
+        """Handle completion of a workflow stage with iterative review-rewrite loop control"""
         try:
             workflow = self.active_workflows.get(workflow_id)
             if not workflow:
@@ -480,28 +480,72 @@ class CoordinatorAgent(BaseAgent):
             # Validate and update context based on stage result
             await self._validate_and_update_context(workflow_id, stage_index, result, stage.stage_name)
             
-            # Simplified flow control
+            # Initialize iteration tracking if not exists
+            if "iteration" not in workflow.results:
+                workflow.results["iteration"] = {
+                    "review_count": 0,
+                    "rewrite_count": 0,
+                    "max_reviews": 3,
+                    "max_rewrites": 3,
+                    "target_quality_score": 8.0,
+                    "consecutive_failures": 0,
+                    "max_consecutive_failures": 2
+                }
+            
+            iteration = workflow.results["iteration"]
             stage_name = stage.stage_name
             logger.info(f"Processing stage completion: {stage_name}")
+            logger.info(f"Current iteration state: Review={iteration['review_count']}, Rewrite={iteration['rewrite_count']}")
             
             if stage_name == "Patent Drafting":
-                # Directly proceed to review stage
-                logger.info("Patent drafting completed, proceeding to quality review")
+                # Reset iteration counters for new draft
+                iteration["review_count"] = 0
+                iteration["rewrite_count"] = 0
+                iteration["consecutive_failures"] = 0
+                logger.info("Patent drafting completed, resetting iteration counters")
+                logger.info("Proceeding to quality review")
                 await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
                 
             elif stage_name == "Quality Review":
+                # Increment review count
+                iteration["review_count"] += 1
+                logger.info(f"Quality review #{iteration['review_count']} completed")
+                
+                # Check if we've exceeded max reviews
+                if iteration["review_count"] > iteration["max_reviews"]:
+                    logger.warning(f"Maximum reviews ({iteration['max_reviews']}) exceeded, completing workflow")
+                    await self._complete_workflow(workflow_id)
+                    return
+                
                 # Check if rewrite is needed
-                needs_rewrite = self._check_if_rewrite_needed(result)
+                needs_rewrite = self._check_if_rewrite_needed(result, iteration)
+                
                 if needs_rewrite:
-                    logger.info("Quality review indicates rewrite needed, proceeding to final rewrite")
+                    # Check if we've exceeded max rewrites
+                    if iteration["rewrite_count"] >= iteration["max_rewrites"]:
+                        logger.warning(f"Maximum rewrites ({iteration['max_rewrites']}) reached, completing workflow")
+                        await self._complete_workflow(workflow_id)
+                        return
+                    
+                    logger.info(f"Quality review indicates rewrite needed (review #{iteration['review_count']})")
+                    logger.info("Proceeding to final rewrite")
                     await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Final Rewrite"))
                 else:
-                    logger.info("Quality review passed, completing workflow")
+                    logger.info(f"Quality review #{iteration['review_count']} passed, completing workflow")
                     await self._complete_workflow(workflow_id)
                     
             elif stage_name == "Final Rewrite":
-                # Rewrite completed, re-review
-                logger.info("Final rewrite completed, proceeding to quality review")
+                # Increment rewrite count
+                iteration["rewrite_count"] += 1
+                logger.info(f"Final rewrite #{iteration['rewrite_count']} completed")
+                
+                # Check if we've exceeded max rewrites
+                if iteration["rewrite_count"] > iteration["max_rewrites"]:
+                    logger.warning(f"Maximum rewrites ({iteration['max_rewrites']}) exceeded, completing workflow")
+                    await self._complete_workflow(workflow_id)
+                    return
+                
+                logger.info(f"Final rewrite #{iteration['rewrite_count']} completed, proceeding to quality review")
                 await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
                 
             else:
@@ -517,8 +561,8 @@ class CoordinatorAgent(BaseAgent):
             logger.error(f"Error handling stage completion: {e}")
             await self._handle_stage_error(workflow_id, stage_index, str(e))
             
-    def _check_if_rewrite_needed(self, result: Dict[str, Any]) -> bool:
-        """Check if rewrite is needed based on review result"""
+    def _check_if_rewrite_needed(self, result: Dict[str, Any], iteration: Dict[str, Any]) -> bool:
+        """Check if rewrite is needed based on review result and iteration state"""
         try:
             # Extract quality score
             quality_score = result.get("quality_score", 0)
@@ -538,16 +582,41 @@ class CoordinatorAgent(BaseAgent):
             if not review_outcome:
                 review_outcome = result.get("review_result", {}).get("review_outcome", "")
             
+            # Get iteration parameters
+            target_quality_score = iteration.get("target_quality_score", 8.0)
+            review_count = iteration.get("review_count", 1)
+            rewrite_count = iteration.get("rewrite_count", 0)
+            
             logger.info(f"Review analysis - Quality score: {quality_score}, Compliance: {compliance_status}, Outcome: {review_outcome}")
+            logger.info(f"Iteration state - Review #{review_count}, Rewrite #{rewrite_count}, Target score: {target_quality_score}")
+            
+            # Adjust target score based on iteration count (be more lenient in later iterations)
+            adjusted_target = target_quality_score
+            if review_count > 2:
+                adjusted_target = max(6.0, target_quality_score - 1.0)  # Lower threshold for later reviews
+                logger.info(f"Adjusted target score to {adjusted_target} for review #{review_count}")
             
             # Check if rewrite is needed
             needs_rewrite = (
-                quality_score < 8.0 or 
+                quality_score < adjusted_target or 
                 compliance_status in ["needs_major_revision", "needs_minor_revision", "non_compliant"] or
                 review_outcome in ["needs_revision", "major_revision_required"]
             )
             
-            logger.info(f"Rewrite needed: {needs_rewrite}")
+            # Additional logic for consecutive failures
+            if needs_rewrite and review_count > 1:
+                # Check if this is a consecutive failure
+                iteration["consecutive_failures"] += 1
+                max_consecutive_failures = iteration.get("max_consecutive_failures", 2)
+                
+                if iteration["consecutive_failures"] >= max_consecutive_failures:
+                    logger.warning(f"Consecutive failures ({iteration['consecutive_failures']}) reached limit, forcing completion")
+                    needs_rewrite = False  # Force completion instead of continuing to rewrite
+            else:
+                # Reset consecutive failures counter if review passed
+                iteration["consecutive_failures"] = 0
+            
+            logger.info(f"Rewrite needed: {needs_rewrite} (consecutive failures: {iteration.get('consecutive_failures', 0)})")
             return needs_rewrite
             
         except Exception as e:
@@ -1095,6 +1164,9 @@ class CoordinatorAgent(BaseAgent):
             if not workflow:
                 return {"status": "not_found", "workflow_id": workflow_id}
             
+            # Get iteration status
+            iteration_status = self._get_iteration_status(workflow)
+            
             return {
                 "workflow_id": workflow_id,
                 "current_stage": workflow.current_stage,
@@ -1102,6 +1174,7 @@ class CoordinatorAgent(BaseAgent):
                 "overall_status": workflow.overall_status,
                 "topic": workflow.topic,
                 "start_time": workflow.start_time,
+                "iteration_status": iteration_status,
                 "stages": [
                     {
                         "name": stage.stage_name,
@@ -1117,6 +1190,57 @@ class CoordinatorAgent(BaseAgent):
             }
         except Exception as e:
             logger.error(f"Error getting workflow status: {e}")
+            return {"status": "error", "error": str(e)}
+            
+    def _get_iteration_status(self, workflow: PatentWorkflow) -> Dict[str, Any]:
+        """Get iteration status for the workflow"""
+        try:
+            iteration = workflow.results.get("iteration", {})
+            if not iteration:
+                return {"status": "not_started"}
+            
+            review_count = iteration.get("review_count", 0)
+            rewrite_count = iteration.get("rewrite_count", 0)
+            max_reviews = iteration.get("max_reviews", 3)
+            max_rewrites = iteration.get("max_rewrites", 3)
+            consecutive_failures = iteration.get("consecutive_failures", 0)
+            target_quality_score = iteration.get("target_quality_score", 8.0)
+            
+            # Determine iteration phase
+            if review_count == 0:
+                phase = "initial"
+            elif review_count > 0 and rewrite_count == 0:
+                phase = "first_review"
+            elif rewrite_count > 0:
+                phase = "rewrite_cycle"
+            else:
+                phase = "unknown"
+            
+            # Check if limits are approaching
+            review_limit_warning = review_count >= max_reviews * 0.8  # 80% of limit
+            rewrite_limit_warning = rewrite_count >= max_rewrites * 0.8
+            consecutive_failure_warning = consecutive_failures >= iteration.get("max_consecutive_failures", 2) * 0.8
+            
+            return {
+                "status": "active",
+                "phase": phase,
+                "review_count": review_count,
+                "rewrite_count": rewrite_count,
+                "max_reviews": max_reviews,
+                "max_rewrites": max_rewrites,
+                "consecutive_failures": consecutive_failures,
+                "target_quality_score": target_quality_score,
+                "warnings": {
+                    "review_limit_approaching": review_limit_warning,
+                    "rewrite_limit_approaching": rewrite_limit_warning,
+                    "consecutive_failure_approaching": consecutive_failure_warning
+                },
+                "remaining_reviews": max(0, max_reviews - review_count),
+                "remaining_rewrites": max(0, max_rewrites - rewrite_count)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting iteration status: {e}")
             return {"status": "error", "error": str(e)}
             
     async def get_all_agents_status(self) -> Dict[str, Any]:
