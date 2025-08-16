@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-测试searcher_agent
+简单测试单个智能体
 """
 
 import asyncio
@@ -19,33 +19,33 @@ from patent_agent_demo.agents.base_agent import TaskResult
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def test_searcher_agent():
-    """测试searcher智能体"""
+async def test_planner_agent():
+    """测试planner智能体"""
     try:
-        logger.info("🚀 开始测试 searcher_agent")
+        logger.info("🚀 开始测试 planner_agent")
         
         # 创建系统
         system = PatentAgentSystem(test_mode=False)
         await system.start()
         logger.info("✅ 系统启动成功")
         
-        # 获取searcher智能体
-        searcher = None
-        if hasattr(system, 'agents') and 'searcher_agent' in system.agents:
-            searcher = system.agents['searcher_agent']
-        elif hasattr(system, 'searcher_agent'):
-            searcher = getattr(system, 'searcher_agent')
+        # 获取planner智能体
+        planner = None
+        if hasattr(system, 'agents') and 'planner_agent' in system.agents:
+            planner = system.agents['planner_agent']
+        elif hasattr(system, 'planner_agent'):
+            planner = getattr(system, 'planner_agent')
         
-        if not searcher:
-            logger.error("❌ searcher_agent 不可用")
+        if not planner:
+            logger.error("❌ planner_agent 不可用")
             await system.stop()
             return False
         
-        logger.info("✅ searcher_agent 可用")
+        logger.info("✅ planner_agent 可用")
         
         # 测试数据
         task_data = {
-            "type": "prior_art_search",
+            "type": "patent_planning",
             "topic": "基于智能分层推理的多参数工具自适应调用系统",
             "description": "一种通过智能分层推理技术实现多参数工具自适应调用的系统，能够根据上下文和用户意图自动推断工具参数，提高大语言模型调用复杂工具的准确性和效率。"
         }
@@ -57,7 +57,7 @@ async def test_searcher_agent():
         try:
             # 设置5分钟超时
             result: TaskResult = await asyncio.wait_for(
-                searcher.execute_task(task_data), 
+                planner.execute_task(task_data), 
                 timeout=300
             )
             
@@ -66,7 +66,7 @@ async def test_searcher_agent():
             logger.info(f"⏱️ 执行时间: {execution_time:.2f}秒")
             
             if result.success:
-                logger.info("✅ searcher_agent 任务成功")
+                logger.info("✅ planner_agent 任务成功")
                 logger.info(f"   结果类型: {type(result.data)}")
                 if result.data:
                     if isinstance(result.data, dict):
@@ -90,11 +90,11 @@ async def test_searcher_agent():
                 
                 success = True
             else:
-                logger.error(f"❌ searcher_agent 任务失败: {result.error_message}")
+                logger.error(f"❌ planner_agent 任务失败: {result.error_message}")
                 success = False
                 
         except asyncio.TimeoutError:
-            logger.error("❌ searcher_agent 任务超时（5分钟）")
+            logger.error("❌ planner_agent 任务超时（5分钟）")
             success = False
         
         # 停止系统
@@ -104,7 +104,7 @@ async def test_searcher_agent():
         return success
         
     except Exception as e:
-        logger.error(f"❌ 测试 searcher_agent 时出错: {e}")
+        logger.error(f"❌ 测试 planner_agent 时出错: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -112,14 +112,14 @@ async def test_searcher_agent():
 async def main():
     """主函数"""
     try:
-        logger.info("🔍 开始测试 searcher_agent")
+        logger.info("🔍 开始测试 planner_agent")
         
-        success = await test_searcher_agent()
+        success = await test_planner_agent()
         
         if success:
-            logger.info("✅ searcher_agent 测试成功")
+            logger.info("✅ planner_agent 测试成功")
         else:
-            logger.error("❌ searcher_agent 测试失败")
+            logger.error("❌ planner_agent 测试失败")
         
     except Exception as e:
         logger.error(f"❌ 测试过程中出错: {e}")
