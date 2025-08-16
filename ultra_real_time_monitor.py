@@ -157,46 +157,68 @@ class UltraRealTimeMonitor:
     async def _check_workflow_status(self):
         """检查工作流状态"""
         try:
-            if not self.system or not self.workflow_id:
+            if not self.system:
                 return
                 
-            status_result = await self.system.get_workflow_status(self.workflow_id)
-            
-            if status_result.get("success"):
-                workflow_data = status_result.get("workflow", {})
-                
-                # Extract status information
-                if hasattr(workflow_data, 'overall_status'):
-                    overall_status = workflow_data.overall_status
-                    current_stage = getattr(workflow_data, 'current_stage', 0)
-                    total_stages = len(getattr(workflow_data, 'stages', []))
-                elif isinstance(workflow_data, dict):
-                    overall_status = workflow_data.get("overall_status", "unknown")
-                    current_stage = workflow_data.get("current_stage", 0)
-                    total_stages = len(workflow_data.get("stages", []))
+            # Check if coordinator is available
+            if self.system.coordinator:
+                # Check active workflows
+                active_workflows = getattr(self.system.coordinator, 'active_workflows', {})
+                if active_workflows:
+                    self.logger.info(f"📊 活跃工作流数量: {len(active_workflows)}")
+                    for workflow_id, workflow in active_workflows.items():
+                        self.logger.info(f"📋 工作流 {workflow_id}:")
+                        self.logger.info(f"   主题: {workflow.topic}")
+                        self.logger.info(f"   状态: {workflow.overall_status}")
+                        self.logger.info(f"   当前阶段: {workflow.current_stage}")
+                        if workflow.stages:
+                            current_stage = workflow.stages[workflow.current_stage]
+                            self.logger.info(f"   当前阶段状态: {current_stage.status}")
+                            self.logger.info(f"   当前阶段代理: {current_stage.agent_name}")
                 else:
-                    overall_status = "unknown"
-                    current_stage = 0
-                    total_stages = 0
+                    self.logger.warning("⚠️ 没有活跃的工作流")
+            else:
+                self.logger.warning("⚠️ 协调器不可用")
                 
-                # Check if status changed
-                new_status = {
-                    "timestamp": datetime.now().strftime("%H:%M:%S.%f")[:-3],
-                    "overall_status": overall_status,
-                    "current_stage": current_stage,
-                    "total_stages": total_stages,
-                    "progress": f"{current_stage}/{total_stages}" if total_stages > 0 else "0/0"
-                }
+            # Also check via get_workflow_status if workflow_id exists
+            if self.workflow_id:
+                status_result = await self.system.get_workflow_status(self.workflow_id)
                 
-                if new_status != self.last_status:
-                    self.last_status = new_status
-                    self.status_history.append(new_status)
+                if status_result.get("success"):
+                    workflow_data = status_result.get("workflow", {})
                     
-                    # Log status change with high visibility
-                    self.logger.info(f"🔥 状态更新: {overall_status} | 阶段: {current_stage}/{total_stages} | 时间: {new_status['timestamp']}")
+                    # Extract status information
+                    if hasattr(workflow_data, 'overall_status'):
+                        overall_status = workflow_data.overall_status
+                        current_stage = getattr(workflow_data, 'current_stage', 0)
+                        total_stages = len(getattr(workflow_data, 'stages', []))
+                    elif isinstance(workflow_data, dict):
+                        overall_status = workflow_data.get("overall_status", "unknown")
+                        current_stage = workflow_data.get("current_stage", 0)
+                        total_stages = len(workflow_data.get("stages", []))
+                    else:
+                        overall_status = "unknown"
+                        current_stage = 0
+                        total_stages = 0
                     
-                    # Save status to file
-                    await self._save_status_update(new_status)
+                    # Check if status changed
+                    new_status = {
+                        "timestamp": datetime.now().strftime("%H:%M:%S.%f")[:-3],
+                        "overall_status": overall_status,
+                        "current_stage": current_stage,
+                        "total_stages": total_stages,
+                        "progress": f"{current_stage}/{total_stages}" if total_stages > 0 else "0/0"
+                    }
+                    
+                    if new_status != self.last_status:
+                        self.last_status = new_status
+                        self.status_history.append(new_status)
+                        
+                        # Log status change with high visibility
+                        self.logger.info(f"🔥 状态更新: {overall_status} | 阶段: {current_stage}/{total_stages} | 时间: {new_status['timestamp']}")
+                        
+                        # Save status to file
+                        await self._save_status_update(new_status)
                     
         except Exception as e:
             self.logger.error(f"检查工作流状态失败: {e}")
