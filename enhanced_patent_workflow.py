@@ -484,50 +484,42 @@ class EnhancedPatentWorkflow:
 async def main():
     """主函数"""
     try:
-        # 创建增强工作流实例（使用测试模式）
-        workflow = EnhancedPatentWorkflow(test_mode=True)
+        # 创建增强工作流实例（使用真实模式）
+        workflow = EnhancedPatentWorkflow(test_mode=False)
         
         # 定义专利主题
         topic = "基于智能分层推理的多参数工具自适应调用系统"
-        description = """
-        一种基于智能分层推理的多参数工具自适应调用系统，解决现有技术中多参数工具调用成功率低的问题。
-        技术方案包括智能分层推理引擎、自适应参数收集策略、动态调用策略优化和智能错误诊断与恢复。
-        技术效果：调用成功率从30%提升至85%以上，减少参数收集时间60%，错误诊断准确率90%。
-        """
+        description = "一种通过智能分层推理技术实现多参数工具自适应调用的系统，能够根据上下文和用户意图自动推断工具参数，提高大语言模型调用复杂工具的准确性和效率。"
+        
+        print(f"开始专利撰写工作流...")
+        print(f"主题: {topic}")
+        print(f"描述: {description}")
+        print("=" * 80)
         
         # 启动工作流
-        start_result = await workflow.start_workflow(topic, description)
-        if not start_result["success"]:
-            logger.error(f"启动工作流失败: {start_result.get('error')}")
-            return
-            
-        # 监控工作流
-        monitor_result = await workflow.monitor_workflow()
-        if not monitor_result["success"]:
-            logger.error(f"监控工作流失败: {monitor_result.get('error')}")
-            return
-            
-        # 获取最终专利文档
-        patent_result = await workflow.get_final_patent()
-        if not patent_result["success"]:
-            logger.error(f"获取专利文档失败: {patent_result.get('error')}")
-            return
-            
-        # 生成Markdown文档
-        markdown_content = await workflow.generate_markdown_document(patent_result["patent_document"])
+        workflow_id = await workflow.start_workflow(topic, description)
         
-        # 保存到文件
-        output_file = f"enhanced_patent_{workflow.workflow_id}.md"
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write(markdown_content)
+        if workflow_id:
+            print(f"工作流启动成功，ID: {workflow_id}")
             
-        logger.info(f"✅ 专利文档已保存到: {output_file}")
-        
-        # 清理资源
-        await workflow.cleanup()
-        
+            # 监控工作流进度
+            await workflow.monitor_workflow(workflow_id)
+            
+            # 获取最终专利文档
+            patent_doc = await workflow.get_final_patent(workflow_id)
+            
+            if patent_doc:
+                print("\n" + "=" * 80)
+                print("专利撰写完成！")
+                print("=" * 80)
+                print(patent_doc)
+            else:
+                print("获取专利文档失败")
+        else:
+            print("工作流启动失败")
+            
     except Exception as e:
-        logger.error(f"❌ 主程序执行失败: {e}")
+        print(f"工作流执行出错: {e}")
         import traceback
         traceback.print_exc()
 
