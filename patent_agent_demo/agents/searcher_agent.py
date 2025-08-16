@@ -683,32 +683,32 @@ class SearcherAgent(BaseAgent):
                 # Create mock search results
                 mock_results = [
                     SearchResult(
+                        patent_id="US12345678",
                         title="相关专利1",
                         abstract="这是一个相关的现有技术专利",
+                        inventors=["张三", "李四"],
                         filing_date="2020-01-15",
                         publication_date="2021-07-20",
-                        patent_number="US12345678",
-                        inventors=["张三", "李四"],
-                        assignee="测试公司",
                         relevance_score=7.5,
-                        similarity_score=0.65,
-                        claims=["权利要求1", "权利要求2"],
-                        classification="G06F 17/00",
-                        legal_status="Granted"
+                        similarity_analysis={
+                            "overall_similarity": 0.65,
+                            "technical_similarity": 0.7,
+                            "functional_similarity": 0.6
+                        }
                     ),
                     SearchResult(
+                        patent_id="US87654321",
                         title="相关专利2",
                         abstract="另一个相关的现有技术专利",
+                        inventors=["王五", "赵六"],
                         filing_date="2019-03-10",
                         publication_date="2020-09-15",
-                        patent_number="US87654321",
-                        inventors=["王五", "赵六"],
-                        assignee="另一测试公司",
                         relevance_score=6.8,
-                        similarity_score=0.45,
-                        claims=["权利要求1"],
-                        classification="G06F 15/00",
-                        legal_status="Granted"
+                        similarity_analysis={
+                            "overall_similarity": 0.45,
+                            "technical_similarity": 0.5,
+                            "functional_similarity": 0.4
+                        }
                     )
                 ]
                 
