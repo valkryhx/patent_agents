@@ -545,6 +545,11 @@ class CoordinatorAgent(BaseAgent):
             stage.status = "completed"
             stage.end_time = time.time()
             stage.result = result
+            
+            # Initialize results if None
+            if workflow.results is None:
+                workflow.results = {}
+            
             workflow.results[f"stage_{stage_index}"] = {"result": result}
             logger.info(f"Stage {stage_index} ({stage.stage_name}) completed for workflow {workflow_id}")
             
