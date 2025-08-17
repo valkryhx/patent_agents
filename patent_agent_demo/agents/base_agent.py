@@ -254,7 +254,9 @@ class BaseAgent:
             
             if hasattr(self, '_handle_status_message_override') and self.__class__.__name__ != 'BaseAgent':
                 self.agent_logger.info(f"🔍 {self.name} 调用子类状态消息处理器")
+                self.agent_logger.info(f"🔍 {self.name} 准备调用 _handle_status_message_override")
                 try:
+                    self.agent_logger.info(f"🔍 {self.name} 开始调用 _handle_status_message_override")
                     await self._handle_status_message_override(message)
                     self.agent_logger.info(f"🔍 {self.name} 子类状态消息处理器调用完成")
                 except Exception as e:

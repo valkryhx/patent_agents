@@ -1,16 +1,11 @@
-2025-08-17 09:24:50 INFO agent.rewriter_agent: 🚀 rewriter_agent 智能体初始化开始
-2025-08-17 09:24:50 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
-2025-08-17 09:24:50 INFO agent.rewriter_agent:    测试模式: True
-2025-08-17 09:24:50 INFO agent.rewriter_agent:    状态: idle
-2025-08-17 09:24:50 INFO agent.rewriter_agent: 🧪 rewriter_agent 以测试模式初始化
-2025-08-17 09:24:51 INFO agent.rewriter_agent: 🔄 rewriter_agent 开始启动...
-2025-08-17 09:24:51 INFO agent.rewriter_agent: ✅ rewriter_agent 已注册到消息总线
-2025-08-17 09:24:51 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息处理循环开始
-2025-08-17 09:24:51 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1
-2025-08-17 09:24:51 INFO agent.rewriter_agent: ✅ rewriter_agent 启动成功，状态: idle
-2025-08-17 09:24:51 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
-2025-08-17 09:25:51 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 595
-2025-08-17 09:26:31 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 1000
-2025-08-17 09:26:51 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1190
-2025-08-17 09:27:51 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1786
-2025-08-17 09:28:12 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 09:31:04 INFO agent.rewriter_agent: 🚀 rewriter_agent 智能体初始化开始
+2025-08-17 09:31:04 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+2025-08-17 09:31:04 INFO agent.rewriter_agent:    测试模式: True
+2025-08-17 09:31:04 INFO agent.rewriter_agent:    状态: idle
+2025-08-17 09:31:04 INFO agent.rewriter_agent: 🧪 rewriter_agent 以测试模式初始化
+2025-08-17 09:31:05 INFO agent.rewriter_agent: 🔄 rewriter_agent 开始启动...
+2025-08-17 09:31:05 INFO agent.rewriter_agent: ✅ rewriter_agent 已注册到消息总线
+2025-08-17 09:31:05 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息处理循环开始
+2025-08-17 09:31:05 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 09:31:05 INFO agent.rewriter_agent: ✅ rewriter_agent 启动成功，状态: idle
+2025-08-17 09:31:05 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']

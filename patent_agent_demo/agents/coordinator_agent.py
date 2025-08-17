@@ -457,8 +457,8 @@ class CoordinatorAgent(BaseAgent):
         
     async def _handle_status_message_override(self, message):
         """Override status handler to catch completion events and advance workflow"""
-        print(f"🔍 ENTERING _handle_status_message_override for {self.name}")
         logger.info(f"🔍 ENTERING _handle_status_message_override for {self.name}")
+        
         try:
             content = message.content or {}
             task_id = content.get("task_id")
@@ -468,10 +468,9 @@ class CoordinatorAgent(BaseAgent):
             
             logger.info(f"STATUS RECV from={message.sender} status={status} success={success} task_id={task_id}")
             
-            # Track task completion/failure for _execute_workflow_stage waiting
+            # Track task completion/failure
             if task_id:
                 if status == "completed" or success is True:
-                    # Store the result in completed_tasks dictionary
                     self.completed_tasks[task_id] = result
                     logger.info(f"Task {task_id} marked as completed with result")
                 elif status == "failed" or success is False:
@@ -479,25 +478,20 @@ class CoordinatorAgent(BaseAgent):
                     logger.error(f"Task {task_id} marked as failed")
             
             # Check if this is a stage completion message
-            logger.info(f"DEBUG: Checking stage completion - task_id={task_id}, status={status}, success={success}")
-            logger.info(f"DEBUG: Conditions - task_id exists: {bool(task_id)}, '_stage_' in task_id: {'_stage_' in task_id if task_id else False}, status completed: {status == 'completed'}, success is True: {success is True}")
             if (task_id and "_stage_" in task_id and 
                 (status == "completed" or success is True)):
                 
                 try:
                     # Parse workflow_id and stage_index from task_id
-                    if "_stage_" in task_id:
-                        workflow_id, stage_index_str = task_id.split("_stage_")
-                        stage_index = int(stage_index_str)
-                        
-                        logger.info(f"STAGE COMPLETE parsed workflow={workflow_id} stage={stage_index}")
-                        
-                        # Handle stage completion with detailed logging
-                        logger.info(f"About to call _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
-                        await self._handle_stage_completion(workflow_id, stage_index, result)
-                        logger.info(f"Successfully completed _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
-                    else:
-                        logger.warning(f"Invalid task_id format: {task_id}")
+                    workflow_id, stage_index_str = task_id.split("_stage_")
+                    stage_index = int(stage_index_str)
+                    
+                    logger.info(f"STAGE COMPLETE parsed workflow={workflow_id} stage={stage_index}")
+                    
+                    # Handle stage completion
+                    logger.info(f"About to call _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
+                    await self._handle_stage_completion(workflow_id, stage_index, result)
+                    logger.info(f"Successfully completed _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
                         
                 except (ValueError, IndexError) as e:
                     logger.error(f"Error parsing task_id {task_id}: {e}")
@@ -506,11 +500,12 @@ class CoordinatorAgent(BaseAgent):
                     import traceback
                     logger.error(f"Traceback: {traceback.format_exc()}")
             else:
-                # Fallback to base for agent status updates
                 logger.info(f"Not a stage completion message: task_id={task_id}, status={status}, success={success}")
                 
         except Exception as e:
             logger.error(f"Coordinator status handling error: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
         finally:
             logger.info("✅ coordinator_agent 状态消息处理完成")
  
