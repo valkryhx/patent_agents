@@ -178,7 +178,13 @@ class BaseAgent:
                 await self._handle_coordination_message(message)
             elif message_type == MessageType.STATUS:
                 self.agent_logger.info(f"🔄 {self.name} 路由到状态处理器")
-                await self._handle_status_message(message)
+                try:
+                    await self._handle_status_message(message)
+                    self.agent_logger.info(f"✅ {self.name} 状态消息处理完成")
+                except Exception as e:
+                    self.agent_logger.error(f"❌ {self.name} 状态消息处理失败: {e}")
+                    self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
+                    raise
             elif message_type == MessageType.ERROR:
                 self.agent_logger.info(f"🔄 {self.name} 路由到错误处理器")
                 await self._handle_error_message(message)
@@ -240,6 +246,26 @@ class BaseAgent:
                 new_status = message.content.get("status")
                 if new_status:
                     self.status = AgentStatus(new_status)
+            
+            # Call subclass implementation if it exists
+            self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 类名: {self.__class__.__name__}")
+            self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 是否有_handle_status_message_override: {hasattr(self, '_handle_status_message_override')}")
+            self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 类名不是BaseAgent: {self.__class__.__name__ != 'BaseAgent'}")
+            
+            if hasattr(self, '_handle_status_message_override') and self.__class__.__name__ != 'BaseAgent':
+                self.agent_logger.info(f"🔍 {self.name} 调用子类状态消息处理器")
+                self.agent_logger.info(f"🔍 {self.name} 准备调用 _handle_status_message_override")
+                try:
+                    self.agent_logger.info(f"🔍 {self.name} 开始调用 _handle_status_message_override")
+                    await self._handle_status_message_override(message)
+                    self.agent_logger.info(f"🔍 {self.name} 子类状态消息处理器调用完成")
+                except Exception as e:
+                    self.agent_logger.error(f"🔍 {self.name} 子类状态消息处理器调用失败: {e}")
+                    import traceback
+                    self.agent_logger.error(f"🔍 {self.name} 子类状态消息处理器调用失败堆栈: {traceback.format_exc()}")
+                    raise
+            else:
+                self.agent_logger.info(f"🔍 {self.name} 使用基础状态消息处理器")
                     
         except Exception as e:
             logger.error(f"Error handling status message: {e}")
