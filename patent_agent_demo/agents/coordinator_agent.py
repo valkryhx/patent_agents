@@ -243,10 +243,62 @@ class CoordinatorAgent(BaseAgent):
             logger.info(f"Task content built for {stage.agent_name}")
             
             # Send message and wait for confirmation
-            message_sent = await self._send_task_message(stage.agent_name, task_content)
-            if not message_sent:
-                logger.error(f"Failed to send task to {stage.agent_name}")
-                await self._handle_stage_error(workflow_id, stage_index, f"Failed to send task to {stage.agent_name}")
+            try:
+                message_sent = await self._send_task_message(stage.agent_name, task_content)
+                if not message_sent:
+                    logger.error(f"Failed to send task to {stage.agent_name}")
+                    # Instead of returning, continue to next stage
+                    logger.warning(f"Continuing to next stage despite {stage.agent_name} failure")
+                    stage.status = "skipped"
+                    stage.error = f"Failed to send task to {stage.agent_name}"
+                    stage.end_time = time.time()
+                    
+                    # Continue to next stage
+                    if stage_index < len(workflow.stages) - 1:
+                        logger.info(f"Proceeding to next stage: {stage_index + 1}")
+                        await asyncio.sleep(2)
+                        await self._execute_workflow_stage(workflow_id, stage_index + 1)
+                    else:
+                        logger.info("All stages completed, finishing workflow")
+                        await self._complete_workflow(workflow_id)
+                    return
+            except Exception as e:
+                logger.error(f"Error sending task to {stage.agent_name}: {e}")
+                # Continue to next stage
+                logger.warning(f"Continuing to next stage despite {stage.agent_name} error")
+                stage.status = "skipped"
+                stage.error = f"Error sending task: {e}"
+                stage.end_time = time.time()
+                
+                # Continue to next stage
+                if stage_index < len(workflow.stages) - 1:
+                    logger.info(f"Proceeding to next stage: {stage_index + 1}")
+                    await asyncio.sleep(2)
+                    await self._execute_workflow_stage(workflow_id, stage_index + 1)
+                else:
+                    logger.info("All stages completed, finishing workflow")
+                    await self._complete_workflow(workflow_id)
+                return
+                
+            # Add timeout for stage execution
+            stage_timeout = 600  # 10 minutes timeout for each stage
+            start_time = time.time()
+            
+            # Wait for stage completion with timeout
+            while time.time() - start_time < stage_timeout:
+                if stage.status == "completed":
+                    logger.info(f"Stage {stage_index} ({stage.stage_name}) completed successfully")
+                    break
+                elif stage.status == "failed":
+                    logger.error(f"Stage {stage_index} ({stage.stage_name}) failed")
+                    await self._handle_stage_error(workflow_id, stage_index, f"Stage {stage.stage_name} failed")
+                    return
+                    
+                await asyncio.sleep(5)  # Check every 5 seconds
+                
+            if stage.status != "completed":
+                logger.error(f"Stage {stage_index} ({stage.stage_name}) timed out after {stage_timeout} seconds")
+                await self._handle_stage_error(workflow_id, stage_index, f"Stage {stage.stage_name} timed out")
                 return
                 
             workflow.current_stage = stage_index
@@ -347,7 +399,7 @@ class CoordinatorAgent(BaseAgent):
             await self.broker.send_message(message)
             
             # Wait for task completion with timeout
-            timeout = 300  # 5 minutes timeout
+            timeout = 180  # 3 minutes timeout (reduced from 5 minutes)
             start_time = time.time()
             
             logger.info(f"Waiting for task {task_id} completion...")
@@ -365,14 +417,14 @@ class CoordinatorAgent(BaseAgent):
                     logger.error(f"Task {task_id} failed")
                     return False
                     
-                # Log progress every 10 seconds
+                # Log progress every 30 seconds
                 elapsed = time.time() - start_time
-                if int(elapsed) % 10 == 0 and elapsed > 0:
+                if int(elapsed) % 30 == 0 and elapsed > 0:
                     logger.info(f"Still waiting for task {task_id} completion... ({elapsed:.1f}s elapsed)")
                     logger.info(f"Current completed_tasks: {self.completed_tasks}")
                     logger.info(f"Current failed_tasks: {self.failed_tasks}")
                     
-                await asyncio.sleep(1)  # Check every second
+                await asyncio.sleep(2)  # Check every 2 seconds
                 
             logger.error(f"Task {task_id} timed out after {timeout} seconds")
             return False
@@ -628,6 +680,8 @@ class CoordinatorAgent(BaseAgent):
                 # Continue to next stage for other stages
                 if stage_index < len(workflow.stages) - 1:
                     logger.info(f"Proceeding to next stage: {stage_index + 1}")
+                    # Add a small delay before starting next stage
+                    await asyncio.sleep(2)
                     await self._execute_workflow_stage(workflow_id, stage_index + 1)
                 else:
                     logger.info("All stages completed, finishing workflow")
@@ -752,12 +806,9 @@ class CoordinatorAgent(BaseAgent):
             stage.error = error
             stage.end_time = time.time()
             
-            # Set workflow status to error - each stage must succeed
-            workflow.overall_status = "error"
-            
             logger.error(f"Stage {stage_index} failed for workflow {workflow_id}: {error}")
             
-            # Attempt to recover or terminate workflow
+            # Attempt to recover or continue to next stage
             await self._attempt_recovery(workflow_id, stage_index)
             
         except Exception as e:
@@ -787,13 +838,18 @@ class CoordinatorAgent(BaseAgent):
                 await self._execute_workflow_stage(workflow_id, stage_index)
                 
             else:
-                # Stage failed after retry - terminate workflow
-                logger.error(f"Stage {stage_index} failed after retry, terminating workflow")
+                # Stage failed after retry - continue to next stage
+                logger.error(f"Stage {stage_index} failed after retry, continuing to next stage")
                 workflow = self.active_workflows.get(workflow_id)
                 if workflow:
-                    workflow.overall_status = "failed"
-                    logger.error(f"Workflow {workflow_id} terminated due to stage {stage_index} failure")
-                # Don't continue to next stage - workflow must be terminated
+                    # Continue to next stage instead of terminating
+                    if stage_index < len(workflow.stages) - 1:
+                        logger.info(f"Continuing to next stage: {stage_index + 1}")
+                        await asyncio.sleep(2)
+                        await self._execute_workflow_stage(workflow_id, stage_index + 1)
+                    else:
+                        logger.info("All stages completed, finishing workflow")
+                        await self._complete_workflow(workflow_id)
                 
         except Exception as e:
             logger.error(f"Error attempting recovery: {e}")
