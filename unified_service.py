@@ -4,7 +4,7 @@ Unified Patent Agent System - Single FastAPI Service
 Hosts coordinator and all agent services on one port with different URL paths
 """
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
@@ -42,6 +42,57 @@ app = FastAPI(
 
 # Initialize workflow manager (in-memory)
 workflow_manager = WorkflowManager()
+
+# WebSocket connection manager for real-time notifications
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+        self.workflow_subscribers: Dict[str, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, workflow_id: str = None):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        
+        if workflow_id:
+            if workflow_id not in self.workflow_subscribers:
+                self.workflow_subscribers[workflow_id] = []
+            self.workflow_subscribers[workflow_id].append(websocket)
+        
+        logger.info(f"🔌 WebSocket connected. Total connections: {len(self.active_connections)}")
+
+    def disconnect(self, websocket: WebSocket, workflow_id: str = None):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+        
+        if workflow_id and workflow_id in self.workflow_subscribers:
+            if websocket in self.workflow_subscribers[workflow_id]:
+                self.workflow_subscribers[workflow_id].remove(websocket)
+        
+        logger.info(f"🔌 WebSocket disconnected. Total connections: {len(self.active_connections)}")
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        try:
+            await websocket.send_text(message)
+        except Exception as e:
+            logger.error(f"Failed to send message: {e}")
+            self.disconnect(websocket)
+
+    async def broadcast_workflow_update(self, workflow_id: str, message: Dict[str, Any]):
+        """Broadcast workflow update to all subscribers"""
+        if workflow_id in self.workflow_subscribers:
+            disconnected = []
+            for websocket in self.workflow_subscribers[workflow_id]:
+                try:
+                    await websocket.send_json(message)
+                except Exception as e:
+                    logger.error(f"Failed to broadcast to websocket: {e}")
+                    disconnected.append(websocket)
+            
+            # Remove disconnected websockets
+            for websocket in disconnected:
+                self.disconnect(websocket, workflow_id)
+
+manager = ConnectionManager()
 
 # ============================================================================
 # PATENT-SPECIFIC API ENDPOINTS
@@ -408,6 +459,16 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                 
                 logger.info(f"🚀 Starting {stage} stage for workflow {workflow_id}")
                 
+                # Send real-time notification
+                await manager.broadcast_workflow_update(workflow_id, {
+                    "type": "stage_started",
+                    "workflow_id": workflow_id,
+                    "stage": stage,
+                    "status": "running",
+                    "timestamp": time.time(),
+                    "message": f"Stage {stage} started"
+                })
+                
                 # Execute stage based on test mode
                 if test_mode:
                     # Test mode - use mock execution
@@ -431,6 +492,17 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                     workflow["stages"][stage]["file_path"] = None
                 
                 logger.info(f"✅ {stage} stage completed for workflow {workflow_id}")
+                
+                # Send real-time notification
+                await manager.broadcast_workflow_update(workflow_id, {
+                    "type": "stage_completed",
+                    "workflow_id": workflow_id,
+                    "stage": stage,
+                    "status": "completed",
+                    "timestamp": time.time(),
+                    "message": f"Stage {stage} completed",
+                    "progress": f"{list(workflow['results'].keys()).index(stage) + 1}/{len(workflow['stages'])}"
+                })
                 
             except Exception as e:
                 logger.error(f"❌ {stage} stage failed for workflow {workflow_id}: {e}")
@@ -474,6 +546,17 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
             workflow["download_url"] = None
         
         logger.info(f"🎉 Patent workflow {workflow_id} completed successfully")
+        
+        # Send workflow completion notification
+        await manager.broadcast_workflow_update(workflow_id, {
+            "type": "workflow_completed",
+            "workflow_id": workflow_id,
+            "status": "completed",
+            "timestamp": time.time(),
+            "message": "Patent workflow completed successfully!",
+            "download_url": workflow.get("download_url"),
+            "patent_file_path": workflow.get("patent_file_path")
+        })
         
     except Exception as e:
         logger.error(f"❌ Patent workflow {workflow_id} failed: {e}")
@@ -683,6 +766,91 @@ async def delete_patent_workflow(workflow_id: str):
     except Exception as e:
         logger.error(f"Failed to delete patent workflow: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
+
+@app.websocket("/ws/workflow/{workflow_id}")
+async def websocket_workflow_updates(websocket: WebSocket, workflow_id: str):
+    """WebSocket endpoint for real-time workflow updates"""
+    try:
+        await manager.connect(websocket, workflow_id)
+        
+        # Send initial connection confirmation
+        await manager.send_personal_message(
+            json.dumps({
+                "type": "connection_established",
+                "workflow_id": workflow_id,
+                "message": "Connected to workflow updates",
+                "timestamp": time.time()
+            }),
+            websocket
+        )
+        
+        # Keep connection alive and handle messages
+        while True:
+            try:
+                # Wait for any message from client (ping/pong)
+                data = await websocket.receive_text()
+                if data == "ping":
+                    await manager.send_personal_message(
+                        json.dumps({
+                            "type": "pong",
+                            "timestamp": time.time()
+                        }),
+                        websocket
+                    )
+            except WebSocketDisconnect:
+                manager.disconnect(websocket, workflow_id)
+                break
+            except Exception as e:
+                logger.error(f"WebSocket error: {e}")
+                break
+                
+    except Exception as e:
+        logger.error(f"WebSocket connection failed: {e}")
+        manager.disconnect(websocket, workflow_id)
+
+@app.get("/workflow/{workflow_id}/progress")
+async def get_workflow_progress(workflow_id: str):
+    """Get real-time workflow progress"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        
+        # Calculate progress
+        total_stages = len(workflow["stages"])
+        completed_stages = len([s for s in workflow["stages"].values() if s["status"] == "completed"])
+        current_stage = workflow.get("current_stage", "unknown")
+        
+        progress = {
+            "workflow_id": workflow_id,
+            "topic": workflow.get("topic"),
+            "status": workflow.get("status"),
+            "current_stage": current_stage,
+            "progress": f"{completed_stages}/{total_stages}",
+            "percentage": round((completed_stages / total_stages) * 100, 1),
+            "completed_stages": completed_stages,
+            "total_stages": total_stages,
+            "started_at": workflow.get("created_at"),
+            "estimated_completion": None
+        }
+        
+        # Add estimated completion time for running workflows
+        if workflow["status"] == "running":
+            if completed_stages > 0:
+                # Estimate based on average time per stage
+                avg_time_per_stage = 2.0  # seconds in test mode
+                remaining_stages = total_stages - completed_stages
+                estimated_remaining = remaining_stages * avg_time_per_stage
+                progress["estimated_completion"] = f"~{estimated_remaining:.1f} seconds"
+        
+        return progress
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get workflow progress: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get workflow progress: {str(e)}")
 
 @app.get("/workflow/{workflow_id}/stages")
 async def get_workflow_stages(workflow_id: str):
@@ -2343,7 +2511,9 @@ if __name__ == "__main__":
     print("   - POST /coordinator/workflow/start - Start patent workflow")
     print("   - GET /coordinator/workflow/{workflow_id}/status - Get patent workflow status")
     print("   - GET /coordinator/workflow/{workflow_id}/results - Get patent workflow results")
+    print("   - GET /workflow/{workflow_id}/progress - Get real-time workflow progress")
     print("   - GET /workflow/{workflow_id}/stages - Get workflow stage files")
+    print("   - WS /ws/workflow/{workflow_id} - Real-time workflow updates (WebSocket)")
     print("   - GET /download/workflow/{workflow_id} - Download entire workflow directory (ZIP)")
     print("   - GET /download/patent/{workflow_id} - Download final patent file only")
     print("   - POST /coordinator/workflow/{workflow_id}/restart - Restart patent workflow")
