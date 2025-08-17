@@ -42,3 +42,6 @@
 2025-08-17 09:36:40 INFO agent.coordinator_agent: 🔍 coordinator_agent 开始调用 _handle_status_message_override
 2025-08-17 09:36:40 INFO agent.coordinator_agent: 🔍 coordinator_agent 子类状态消息处理器调用完成
 2025-08-17 09:36:40 INFO agent.coordinator_agent: ✅ coordinator_agent 状态消息处理完成
+2025-08-17 09:37:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 593
+2025-08-17 09:38:18 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 09:38:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1188

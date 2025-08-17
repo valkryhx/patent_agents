@@ -9,3 +9,6 @@
 2025-08-17 09:36:36 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1
 2025-08-17 09:36:36 INFO agent.searcher_agent: ✅ searcher_agent 启动成功，状态: idle
 2025-08-17 09:36:36 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 09:37:36 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 588
+2025-08-17 09:38:17 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 09:38:36 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1183

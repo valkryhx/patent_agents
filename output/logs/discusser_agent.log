@@ -9,3 +9,6 @@
 2025-08-17 09:36:37 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 1
 2025-08-17 09:36:37 INFO agent.discusser_agent: ✅ discusser_agent 启动成功，状态: idle
 2025-08-17 09:36:37 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+2025-08-17 09:37:37 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 597
+2025-08-17 09:38:17 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 09:38:37 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 1192
