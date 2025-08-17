@@ -103,3 +103,23 @@
 2025-08-17 08:22:07 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 6544
 2025-08-17 08:22:53 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 7000
 2025-08-17 08:23:07 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 7139
+2025-08-17 08:24:37 INFO agent.searcher_agent: 🚀 searcher_agent 智能体初始化开始
+2025-08-17 08:24:37 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 08:24:37 INFO agent.searcher_agent:    测试模式: True
+2025-08-17 08:24:37 INFO agent.searcher_agent:    状态: idle
+2025-08-17 08:24:37 INFO agent.searcher_agent: 🧪 searcher_agent 以测试模式初始化
+2025-08-17 08:24:37 INFO agent.searcher_agent: 🔄 searcher_agent 开始启动...
+2025-08-17 08:24:37 INFO agent.searcher_agent: ✅ searcher_agent 已注册到消息总线
+2025-08-17 08:24:37 INFO agent.searcher_agent: 🔄 searcher_agent 消息处理循环开始
+2025-08-17 08:24:37 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 08:24:37 INFO agent.searcher_agent: ✅ searcher_agent 启动成功，状态: idle
+2025-08-17 08:24:37 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 08:24:42 INFO agent.searcher_agent: 🔄 searcher_agent 开始停止...
+2025-08-17 08:24:42 INFO agent.searcher_agent: 📊 searcher_agent 状态更新为: offline
+2025-08-17 08:24:42 INFO agent.searcher_agent: ✅ searcher_agent 消息处理任务已取消
+2025-08-17 08:24:42 INFO agent.searcher_agent: ✅ searcher_agent 已从消息总线注销
+2025-08-17 08:24:42 INFO agent.searcher_agent: 📊 searcher_agent 性能统计:
+2025-08-17 08:24:42 INFO agent.searcher_agent:    完成任务: 0
+2025-08-17 08:24:42 INFO agent.searcher_agent:    失败任务: 0
+2025-08-17 08:24:42 INFO agent.searcher_agent:    平均执行时间: 0.00秒
+2025-08-17 08:24:42 INFO agent.searcher_agent:    总执行时间: 0.00秒
