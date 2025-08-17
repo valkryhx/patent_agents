@@ -319,3 +319,76 @@
 2025-08-17 05:48:32 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 3900
 2025-08-17 05:48:39 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4000
 2025-08-17 05:48:42 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4000
+2025-08-17 05:48:49 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4100
+2025-08-17 05:48:52 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4100
+2025-08-17 05:48:59 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4200
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4173
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4205
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4174
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4206
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4175
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4207
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4176
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4208
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4177
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4209
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4178
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4210
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4179
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4211
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4180
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4212
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4181
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4213
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4182
+2025-08-17 05:49:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4214
+2025-08-17 05:49:02 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4200
+2025-08-17 05:49:09 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4300
+2025-08-17 05:49:12 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4300
+2025-08-17 05:49:19 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4400
+2025-08-17 05:49:22 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4400
+2025-08-17 05:49:29 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4500
+2025-08-17 05:49:32 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4500
+2025-08-17 05:49:39 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4600
+2025-08-17 05:49:43 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4600
+2025-08-17 05:49:51 INFO agent.discusser_agent: 🚀 discusser_agent 智能体初始化开始
+2025-08-17 05:49:51 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+2025-08-17 05:49:51 INFO agent.discusser_agent:    测试模式: True
+2025-08-17 05:49:51 INFO agent.discusser_agent:    状态: idle
+2025-08-17 05:49:51 INFO agent.discusser_agent: 🧪 discusser_agent 以测试模式初始化
+2025-08-17 05:49:51 INFO agent.discusser_agent: 🔄 discusser_agent 开始启动...
+2025-08-17 05:49:51 INFO agent.discusser_agent: ✅ discusser_agent 已注册到消息总线
+2025-08-17 05:49:51 INFO agent.discusser_agent: 🔄 discusser_agent 消息处理循环开始
+2025-08-17 05:49:51 INFO agent.discusser_agent: ✅ discusser_agent 启动成功，状态: idle
+2025-08-17 05:49:51 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+2025-08-17 05:49:53 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4700
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 88
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4769
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 89
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4770
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 90
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4771
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 91
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4772
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 92
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4773
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 93
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4774
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 94
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4775
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 95
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4776
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 96
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 4777
+2025-08-17 05:50:00 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 97
+2025-08-17 05:50:01 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 100
+2025-08-17 05:50:03 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4800
+2025-08-17 05:50:11 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 200
+2025-08-17 05:50:13 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 4900
+2025-08-17 05:50:21 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 300
+2025-08-17 05:50:23 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 5000
+2025-08-17 05:50:31 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 400
+2025-08-17 05:50:33 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 5100
+2025-08-17 05:50:41 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 500
+2025-08-17 05:50:43 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 5200
+2025-08-17 05:50:51 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 600
