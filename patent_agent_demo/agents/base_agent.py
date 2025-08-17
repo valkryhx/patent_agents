@@ -98,6 +98,14 @@ class BaseAgent:
                 # Get message from broker for this specific agent
                 try:
                     message = await self.broker.get_message(self.name)
+                    if message:
+                        logger.info(f"🔔 Agent {self.name} received message: {message.type.value} from {message.sender}")
+                        logger.info(f"   消息ID: {message.id}")
+                        logger.info(f"   内容: {message.content}")
+                    else:
+                        # Log occasionally to show the loop is running
+                        if int(time.time()) % 10 == 0:  # Log every 10 seconds
+                            logger.debug(f"Agent {self.name} waiting for messages...")
                 except Exception as e:
                     logger.error(f"Error getting message for {self.name}: {e}")
                     import traceback
@@ -137,19 +145,30 @@ class BaseAgent:
     async def _process_message(self, message: Message):
         """Process an incoming message"""
         try:
+            logger.info(f"🔄 Agent {self.name} processing message: {message.type.value}")
+            logger.info(f"   消息ID: {message.id}")
+            logger.info(f"   发送者: {message.sender}")
+            logger.info(f"   内容: {message.content}")
+            
             message_type = message.type
             
             if message_type == MessageType.COORDINATION:
+                logger.info(f"🔄 Agent {self.name} routing to coordination handler")
                 await self._handle_coordination_message(message)
             elif message_type == MessageType.STATUS:
+                logger.info(f"🔄 Agent {self.name} routing to status handler")
                 await self._handle_status_message(message)
             elif message_type == MessageType.ERROR:
+                logger.info(f"🔄 Agent {self.name} routing to error handler")
                 await self._handle_error_message(message)
             else:
+                logger.info(f"🔄 Agent {self.name} routing to specific handler")
                 await self._handle_specific_message(message)
                 
         except Exception as e:
-            logger.error(f"Error processing message in {self.name}: {e}")
+            logger.error(f"🔄 Error processing message in {self.name}: {e}")
+            import traceback
+            logger.error(f"🔄 Traceback: {traceback.format_exc()}")
             
             # Send error response
             error_message = Message(
@@ -166,23 +185,26 @@ class BaseAgent:
     async def _handle_coordination_message(self, message: Message):
         """Handle coordination messages"""
         try:
-            logger.info(f"Agent {self.name} handling coordination message")
+            logger.info(f"🔧 Agent {self.name} handling coordination message")
+            logger.info(f"   消息内容: {message.content}")
+            
             task_data = message.content.get("task", {})
             task_type = task_data.get("type")
             
-            logger.info(f"Agent {self.name} task type: {task_type}, capabilities: {self.capabilities}")
+            logger.info(f"🔧 Agent {self.name} task type: {task_type}, capabilities: {self.capabilities}")
             
             if task_type in self.capabilities:
-                logger.info(f"Agent {self.name} executing task: {task_type}")
+                logger.info(f"🔧 Agent {self.name} executing task: {task_type}")
                 await self._execute_task(task_data)
-                logger.info(f"Agent {self.name} task execution completed")
+                logger.info(f"🔧 Agent {self.name} task execution completed")
             else:
-                logger.warning(f"Agent {self.name} cannot handle task type: {task_type}")
+                logger.warning(f"🔧 Agent {self.name} cannot handle task type: {task_type}")
+                logger.warning(f"   可用能力: {self.capabilities}")
                 
         except Exception as e:
-            logger.error(f"Error handling coordination message: {e}")
+            logger.error(f"🔧 Error handling coordination message: {e}")
             import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"🔧 Traceback: {traceback.format_exc()}")
             
     async def _handle_status_message(self, message: Message):
         """Handle status update messages"""

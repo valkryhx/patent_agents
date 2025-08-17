@@ -24,8 +24,8 @@ async def test_workflow_execution():
     try:
         logger.info("🚀 开始测试工作流程执行")
         
-        # 创建系统
-        system = PatentAgentSystem(test_mode=False)
+        # 创建系统（测试模式）
+        system = PatentAgentSystem(test_mode=True)
         await system.start()
         logger.info("✅ 系统启动成功")
         
