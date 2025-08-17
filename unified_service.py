@@ -20,9 +20,22 @@ import json
 from models import WorkflowRequest, WorkflowResponse, WorkflowStatus, WorkflowState, WorkflowStatusEnum, StageStatusEnum
 from workflow_manager import WorkflowManager
 
+# 导入GLM客户端
+try:
+    from glm_wrapper import get_glm_client
+    GLM_AVAILABLE = True
+except ImportError:
+    GLM_AVAILABLE = False
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# GLM客户端状态日志
+if GLM_AVAILABLE:
+    logger.info("✅ GLM客户端导入成功")
+else:
+    logger.warning("⚠️ 无法导入GLM客户端，将使用mock数据")
 
 # Test mode configuration - DEPRECATED: Now using workflow-specific test_mode
 # This global configuration is kept for backward compatibility but should not be used
@@ -478,6 +491,14 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                     # Real mode - call actual agent
                     stage_result = await execute_stage_with_agent(stage, topic, description, test_mode, workflow_id)
                 
+                # Check if stage execution failed
+                if isinstance(stage_result, dict) and stage_result.get("error"):
+                    logger.error(f"❌ {stage} stage execution failed: {stage_result}")
+                    workflow["stages"][stage]["status"] = "failed"
+                    workflow["stages"][stage]["error"] = stage_result.get("message", "Unknown error")
+                    workflow["results"][stage] = stage_result
+                    continue  # Skip to next stage instead of marking as completed
+                
                 workflow["stages"][stage]["status"] = "completed"
                 workflow["stages"][stage]["completed_at"] = time.time()
                 workflow["results"][stage] = stage_result
@@ -583,16 +604,18 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
         
         # Call agent endpoint
         async with httpx.AsyncClient() as client:
-            # Create complete TaskRequest payload with actual workflow_id
+            # Provide all required fields for TaskRequest model
+            # Ensure description is not None
+            safe_description = description if description else f"Patent for topic: {topic}"
             task_payload = {
                 "task_id": f"{workflow_id}_{stage}_{int(time.time())}",
                 "workflow_id": workflow_id,
                 "stage_name": stage,
                 "topic": topic,
-                "description": description,
+                "description": safe_description,
                 "test_mode": test_mode,
                 "previous_results": {},
-                "context": {"workflow_id": workflow_id, "isolation_level": "workflow_specific"}
+                "context": {}
             }
             
             response = await client.post(
@@ -610,11 +633,22 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
                     agent_result["test_mode"] = test_mode
                 return agent_result
             else:
-                return f"{stage} failed: {response.status_code}"
+                logger.error(f"Agent {agent} returned status {response.status_code}: {response.text}")
+                # Return a proper error structure instead of string
+                return {
+                    "error": True,
+                    "status_code": response.status_code,
+                    "message": f"{stage} failed: {response.status_code}",
+                    "details": response.text
+                }
                 
     except Exception as e:
         logger.error(f"Failed to execute {stage} stage: {e}")
-        return f"{stage} failed: {str(e)}"
+        return {
+            "error": True,
+            "exception": str(e),
+            "message": f"{stage} failed: {str(e)}"
+        }
 
 @app.post("/patent/generate", response_model=WorkflowResponse)
 async def generate_patent(request: WorkflowRequest, background_tasks: BackgroundTasks):
@@ -2282,8 +2316,22 @@ def calculate_compression_ratio(original_size: int, compressed_size: int) -> flo
 # ============================================================================
 
 async def analyze_patent_topic(topic: str, description: str) -> Dict[str, Any]:
-    """Analyze patent topic (mock implementation using old prompts)"""
+    """Analyze patent topic using GLM API or fallback to mock"""
     logger.info(f"🔍 Analyzing patent topic: {topic}")
+    
+    if GLM_AVAILABLE:
+        try:
+            logger.info("🚀 使用GLM API进行专利主题分析")
+            glm_client = get_glm_client()
+            result = glm_client.analyze_patent_topic(topic, description)
+            logger.info("✅ GLM API调用成功")
+            return result
+        except Exception as e:
+            logger.error(f"❌ GLM API调用失败: {e}")
+            logger.info("🔄 回退到mock数据")
+    
+    # Mock fallback
+    logger.info("📝 使用mock数据进行专利主题分析")
     return {
         "novelty_score": 8.5,
         "inventive_step_score": 7.8,
@@ -2291,12 +2339,12 @@ async def analyze_patent_topic(topic: str, description: str) -> Dict[str, Any]:
         "prior_art_analysis": [],
         "claim_analysis": {},
         "technical_merit": {},
-        "commercial_potential": "Medium to High",
-        "patentability_assessment": "Strong",
+        "commercial_potential": "中等到高",
+        "patentability_assessment": "强",
         "recommendations": [
-            "Improve claim specificity",
-            "Add more technical details",
-            "Consider design-around strategies"
+            "提高权利要求的具体性",
+            "添加更多技术细节",
+            "考虑规避设计策略"
         ]
     }
 
@@ -2409,21 +2457,35 @@ async def extract_keywords(topic: str, description: str) -> List[str]:
     ]
 
 async def conduct_prior_art_search(topic: str, keywords: List[str], previous_results: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Conduct comprehensive prior art search (mock implementation)"""
+    """Conduct comprehensive prior art search using GLM API or fallback to mock"""
     logger.info(f"🔍 Conducting prior art search for: {topic}")
+    
+    if GLM_AVAILABLE:
+        try:
+            logger.info("🚀 使用GLM API进行现有技术检索")
+            glm_client = get_glm_client()
+            result = glm_client.search_prior_art(topic, keywords)
+            logger.info("✅ GLM API调用成功")
+            return result
+        except Exception as e:
+            logger.error(f"❌ GLM API调用失败: {e}")
+            logger.info("🔄 回退到mock数据")
+    
+    # Mock fallback
+    logger.info("📝 使用mock数据进行现有技术检索")
     return [
         {
             "patent_id": "US1234567",
-            "title": "Intelligent Parameter Inference System",
-            "abstract": "A system for automatically inferring parameters for tool calls based on context and user intent",
+            "title": "智能参数推断系统",
+            "abstract": "基于上下文和用户意图自动推断工具调用参数的系统",
             "filing_date": "2022-01-15",
             "publication_date": "2023-07-20",
-            "assignee": "Tech Corp Inc",
+            "assignee": "科技公司",
             "relevance_score": 0.85,
             "similarity_analysis": {
-                "concept_overlap": "High",
-                "technical_similarity": "Medium",
-                "implementation_differences": "Significant"
+                "concept_overlap": "高",
+                "technical_similarity": "中等",
+                "implementation_differences": "显著"
             }
         }
     ]
