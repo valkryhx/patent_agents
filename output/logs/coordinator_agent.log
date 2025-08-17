@@ -144,3 +144,155 @@
 2025-08-17 05:43:31 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '2eaf9484-c50e-49ce-97d4-baa54ec17750'}
 2025-08-17 05:43:31 INFO agent.coordinator_agent: 📊 监控工作流
 2025-08-17 05:43:40 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 05:43:50 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 1100
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1197
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1198
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1199
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1200
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 1200
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1201
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1202
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1203
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1204
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1205
+2025-08-17 05:44:00 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 1206
+2025-08-17 05:44:01 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:01 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '2eaf9484-c50e-49ce-97d4-baa54ec17750'}
+2025-08-17 05:44:01 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:10 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 1300
+2025-08-17 05:44:20 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 1400
+2025-08-17 05:44:26 INFO agent.coordinator_agent: 📨 coordinator_agent 收到消息: status 来自 planner_agent
+2025-08-17 05:44:26 INFO agent.coordinator_agent:    消息ID: completion_760087f5-f6c7-438f-a197-58d5afc8d6d6
+2025-08-17 05:44:26 INFO agent.coordinator_agent:    内容: {'task_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74_stage_0', 'status': 'completed', 'result': {'strategy': PatentStrategy(topic='基于智能分层推理的多参数工具自适应调用系统', description='一种通过智能分层推理技术实现多参数工具自适应调用的系统，能够根据上下文和用户意图自动推断工具参数，提高大语言模型调用复杂工具的准确性和效率。 核心概念：基于智能分层推理的多参数工具自适应调用系统的核心技术', novelty_score=8.5, inventive_step_score=7.8, patentability_assessment='Strong', development_phases=[{'phase_name': 'Drafting & Review', 'duration_estimate': '3-4 weeks', 'key_deliverables': ['Patent application draft', 'Technical diagrams', 'Review feedback incorporated'], 'dependencies': ['Strategy Development'], 'resource_requirements': {'patent_attorneys': 2, 'technical_writers': 1, 'illustrators': 1}, 'success_criteria': ['Draft meets legal requirements', 'Technical accuracy verified', 'Stakeholder approval obtained']}, {'phase_name': 'Filing & Prosecution', 'duration_estimate': 'Ongoing', 'key_deliverables': ['Patent application filed', 'Office action responses', 'Patent granted'], 'dependencies': ['Drafting & Review'], 'resource_requirements': {'patent_attorneys': 1, 'paralegals': 1}, 'success_criteria': ['Application successfully filed', 'Office actions responded to', 'Patent granted or allowed']}], key_innovation_areas=[], competitive_analysis={'market_position': 'Emerging technology leader', 'competitive_advantages': ['Higher 8.5/10 novelty score', 'Strong 7.8/10 inventive step', 'Clear industrial applicability'], 'threat_level': 'Medium', 'response_strategy': 'Proactive patent protection and market positioning'}, risk_assessment={'risk_factors': {'prior_art_risks': {'probability': 'Medium', 'impact': 'High', 'mitigation': 'Comprehensive prior art search and analysis'}, 'competitive_filing_risks': {'probability': 'Medium', 'impact': 'Medium', 'mitigation': 'Accelerated filing strategy'}, 'technology_obsolescence': {'probability': 'Low', 'impact': 'Medium', 'mitigation': 'Focus on fundamental innovations'}, 'enforcement_challenges': {'probability': 'Medium', 'impact': 'High', 'mitigation': 'Strong claim structure and documentation'}}, 'competitive_analysis': {'market_position': 'Emerging technology leader', 'competitive_advantages': ['Higher 8.5/10 novelty score', 'Strong 7.8/10 inventive step', 'Clear industrial applicability'], 'threat_level': 'Medium', 'response_strategy': 'Proactive patent protection and market positioning'}, 'overall_risk_level': 'Medium', 'risk_mitigation_strategies': ['Comprehensive prior art analysis', 'Strong patent documentation', 'Strategic filing timeline', 'Ongoing competitive monitoring']}, timeline_estimate='Total development time: 3-6 months, Filing to grant: 6-18 months', resource_requirements={'human_resources': {'patent_attorneys': 2, 'researchers': 2, 'technical_experts': 1, 'technical_writers': 1, 'illustrators': 1, 'paralegals': 1, 'strategists': 1}, 'estimated_costs': {'legal_fees': '$15,000 - $25,000', 'filing_fees': '$1,000 - $4,000', 'technical_services': '$5,000 - $10,000', 'total_estimated': '$21,000 - $39,000'}, 'resource_allocation': 'Phased approach with peak during drafting phase'}, success_probability=0.6375), 'analysis': PatentAnalysis(novelty_score=8.5, inventive_step_score=7.8, industrial_applicability=True, prior_art_analysis=[], claim_analysis={}, technical_merit={}, commercial_potential='Medium to High', patentability_assessment='Strong', recommendations=['Improve claim specificity', 'Add more technical details']), 'recommendations': ['Improve claim specificity', 'Add more technical details']}, 'execution_time': 144.3332839012146, 'success': True}
+2025-08-17 05:44:26 INFO agent.coordinator_agent: 🔄 coordinator_agent 开始处理消息: status
+2025-08-17 05:44:26 INFO agent.coordinator_agent:    消息ID: completion_760087f5-f6c7-438f-a197-58d5afc8d6d6
+2025-08-17 05:44:26 INFO agent.coordinator_agent:    发送者: planner_agent
+2025-08-17 05:44:26 INFO agent.coordinator_agent:    内容: {'task_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74_stage_0', 'status': 'completed', 'result': {'strategy': PatentStrategy(topic='基于智能分层推理的多参数工具自适应调用系统', description='一种通过智能分层推理技术实现多参数工具自适应调用的系统，能够根据上下文和用户意图自动推断工具参数，提高大语言模型调用复杂工具的准确性和效率。 核心概念：基于智能分层推理的多参数工具自适应调用系统的核心技术', novelty_score=8.5, inventive_step_score=7.8, patentability_assessment='Strong', development_phases=[{'phase_name': 'Drafting & Review', 'duration_estimate': '3-4 weeks', 'key_deliverables': ['Patent application draft', 'Technical diagrams', 'Review feedback incorporated'], 'dependencies': ['Strategy Development'], 'resource_requirements': {'patent_attorneys': 2, 'technical_writers': 1, 'illustrators': 1}, 'success_criteria': ['Draft meets legal requirements', 'Technical accuracy verified', 'Stakeholder approval obtained']}, {'phase_name': 'Filing & Prosecution', 'duration_estimate': 'Ongoing', 'key_deliverables': ['Patent application filed', 'Office action responses', 'Patent granted'], 'dependencies': ['Drafting & Review'], 'resource_requirements': {'patent_attorneys': 1, 'paralegals': 1}, 'success_criteria': ['Application successfully filed', 'Office actions responded to', 'Patent granted or allowed']}], key_innovation_areas=[], competitive_analysis={'market_position': 'Emerging technology leader', 'competitive_advantages': ['Higher 8.5/10 novelty score', 'Strong 7.8/10 inventive step', 'Clear industrial applicability'], 'threat_level': 'Medium', 'response_strategy': 'Proactive patent protection and market positioning'}, risk_assessment={'risk_factors': {'prior_art_risks': {'probability': 'Medium', 'impact': 'High', 'mitigation': 'Comprehensive prior art search and analysis'}, 'competitive_filing_risks': {'probability': 'Medium', 'impact': 'Medium', 'mitigation': 'Accelerated filing strategy'}, 'technology_obsolescence': {'probability': 'Low', 'impact': 'Medium', 'mitigation': 'Focus on fundamental innovations'}, 'enforcement_challenges': {'probability': 'Medium', 'impact': 'High', 'mitigation': 'Strong claim structure and documentation'}}, 'competitive_analysis': {'market_position': 'Emerging technology leader', 'competitive_advantages': ['Higher 8.5/10 novelty score', 'Strong 7.8/10 inventive step', 'Clear industrial applicability'], 'threat_level': 'Medium', 'response_strategy': 'Proactive patent protection and market positioning'}, 'overall_risk_level': 'Medium', 'risk_mitigation_strategies': ['Comprehensive prior art analysis', 'Strong patent documentation', 'Strategic filing timeline', 'Ongoing competitive monitoring']}, timeline_estimate='Total development time: 3-6 months, Filing to grant: 6-18 months', resource_requirements={'human_resources': {'patent_attorneys': 2, 'researchers': 2, 'technical_experts': 1, 'technical_writers': 1, 'illustrators': 1, 'paralegals': 1, 'strategists': 1}, 'estimated_costs': {'legal_fees': '$15,000 - $25,000', 'filing_fees': '$1,000 - $4,000', 'technical_services': '$5,000 - $10,000', 'total_estimated': '$21,000 - $39,000'}, 'resource_allocation': 'Phased approach with peak during drafting phase'}, success_probability=0.6375), 'analysis': PatentAnalysis(novelty_score=8.5, inventive_step_score=7.8, industrial_applicability=True, prior_art_analysis=[], claim_analysis={}, technical_merit={}, commercial_potential='Medium to High', patentability_assessment='Strong', recommendations=['Improve claim specificity', 'Add more technical details']), 'recommendations': ['Improve claim specificity', 'Add more technical details']}, 'execution_time': 144.3332839012146, 'success': True}
+2025-08-17 05:44:26 INFO agent.coordinator_agent: 🔄 coordinator_agent 路由到状态处理器
+2025-08-17 05:44:28 INFO agent.coordinator_agent: ✅ 专利工作流启动成功
+2025-08-17 05:44:28 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:28 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:28 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:29 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:29 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:29 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:30 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:30 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:30 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:31 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:31 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:31 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:31 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:31 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '2eaf9484-c50e-49ce-97d4-baa54ec17750'}
+2025-08-17 05:44:31 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:32 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:32 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:32 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:33 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:33 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:33 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:34 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:34 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:34 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:35 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:35 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:35 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:36 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:36 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:36 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:37 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:37 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:37 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:38 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:38 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:38 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:39 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:39 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:39 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:40 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:40 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:40 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:41 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:41 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:41 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:42 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:42 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:42 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:43 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:43 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:43 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:44 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:44 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:44 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:45 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:45 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:45 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:46 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:46 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:46 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:47 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:47 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:47 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:48 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:48 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:48 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:49 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:49 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:49 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:50 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:50 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:50 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:51 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:51 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:51 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:52 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:52 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:52 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:53 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:53 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:53 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:54 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:54 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:54 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:55 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:55 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:55 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:56 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:56 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:56 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:57 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:57 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:57 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:58 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:58 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:58 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:44:59 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:44:59 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:44:59 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:00 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:00 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:00 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:01 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:01 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '2eaf9484-c50e-49ce-97d4-baa54ec17750'}
+2025-08-17 05:45:01 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:01 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:01 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:01 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:02 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:02 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:02 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:03 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:03 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:03 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:04 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:04 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:04 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:05 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:05 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:05 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:06 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:06 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:06 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:45:07 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:45:07 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:45:07 INFO agent.coordinator_agent: 📊 监控工作流
