@@ -14,6 +14,7 @@ import uuid
 import asyncio
 import logging
 import httpx # Added for patent-specific API calls
+import os
 
 from models import WorkflowRequest, WorkflowResponse, WorkflowStatus, WorkflowState, WorkflowStatusEnum, StageStatusEnum
 from workflow_manager import WorkflowManager
@@ -77,105 +78,132 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
     content.append(f"**工作流ID**: {list(results.keys())[0] if results else 'Unknown'}")
     content.append(f"")
     
-    # Planning stage
-    if "planning" in results:
-        planning = results["planning"].get("result", {})
-        content.append("## 1. 专利规划阶段")
-        content.append("")
-        if "strategy" in planning:
-            strategy = planning["strategy"]
-            content.append(f"### 策略分析")
-            content.append(f"- **新颖性评分**: {strategy.get('novelty_score', 'N/A')}")
-            content.append(f"- **创造性评分**: {strategy.get('inventive_step_score', 'N/A')}")
-            content.append(f"- **可专利性评估**: {strategy.get('patentability_assessment', 'N/A')}")
-            content.append("")
-            content.append(f"### 开发阶段")
-            for phase in strategy.get('development_phases', []):
-                content.append(f"- **{phase.get('phase_name', 'Unknown')}**: {phase.get('duration_estimate', 'N/A')}")
-            content.append("")
+    # Check if this is test mode (simple string results) or real mode (complex dict results)
+    is_test_mode = any(isinstance(result, str) for result in results.values())
     
-    # Search stage
-    if "search" in results:
-        search = results["search"].get("result", {})
-        content.append("## 2. 现有技术搜索")
+    if is_test_mode:
+        # Test mode - generate simple content from mock results
+        content.append("## 📝 测试模式专利内容")
         content.append("")
-        content.append(f"- **找到相关专利**: {search.get('patents_found', 0)} 件")
-        content.append(f"- **新颖性评分**: {search.get('novelty_score', 'N/A')}")
-        content.append(f"- **风险等级**: {search.get('risk_level', 'N/A')}")
+        content.append("**注意**: 这是测试模式生成的内容，用于验证工作流功能。")
         content.append("")
-        if "search_results" in search and "results" in search["search_results"]:
-            content.append("### 相关专利")
-            for patent in search["search_results"]["results"]:
-                content.append(f"- **{patent.get('title', 'Unknown')}** (ID: {patent.get('patent_id', 'N/A')})")
-                content.append(f"  - 相关性: {patent.get('relevance_score', 'N/A')}")
+        
+        for stage, result in results.items():
+            content.append(f"### {stage.title()} 阶段")
+            content.append(f"{result}")
             content.append("")
-    
-    # Discussion stage
-    if "discussion" in results:
-        discussion = results["discussion"].get("result", {})
-        content.append("## 3. 创新讨论")
+        
+        content.append("## 🔄 真实模式说明")
         content.append("")
-        if "innovations" in discussion:
-            content.append("### 创新点")
-            for innovation in discussion["innovations"]:
-                content.append(f"- {innovation}")
+        content.append("在真实模式下，每个阶段将包含详细的专利内容：")
+        content.append("- **规划阶段**: 策略分析、开发阶段规划")
+        content.append("- **搜索阶段**: 现有技术搜索结果、新颖性评分")
+        content.append("- **讨论阶段**: 创新点、技术洞察")
+        content.append("- **草稿阶段**: 专利标题、摘要、权利要求、详细描述")
+        content.append("- **审查阶段**: 质量评分、审查反馈")
+        content.append("- **重写阶段**: 改进后的专利内容")
+        
+    else:
+        # Real mode - generate detailed content from agent results
+        # Planning stage
+        if "planning" in results:
+            planning = results["planning"].get("result", {})
+            content.append("## 1. 专利规划阶段")
             content.append("")
-        if "technical_insights" in discussion:
-            content.append("### 技术洞察")
-            for insight in discussion["technical_insights"]:
-                content.append(f"- {insight}")
+            if "strategy" in planning:
+                strategy = planning["strategy"]
+                content.append(f"### 策略分析")
+                content.append(f"- **新颖性评分**: {strategy.get('novelty_score', 'N/A')}")
+                content.append(f"- **创造性评分**: {strategy.get('inventive_step_score', 'N/A')}")
+                content.append(f"- **可专利性评估**: {strategy.get('patentability_assessment', 'N/A')}")
+                content.append("")
+                content.append(f"### 开发阶段")
+                for phase in strategy.get('development_phases', []):
+                    content.append(f"- **{phase.get('phase_name', 'Unknown')}**: {phase.get('duration_estimate', 'N/A')}")
+                content.append("")
+        
+        # Search stage
+        if "search" in results:
+            search = results["search"].get("result", {})
+            content.append("## 2. 现有技术搜索")
             content.append("")
-    
-    # Drafting stage
-    if "drafting" in results:
-        drafting = results["drafting"].get("result", {})
-        content.append("## 4. 专利草稿")
-        content.append("")
-        content.append(f"### 专利标题")
-        content.append(f"{drafting.get('title', 'N/A')}")
-        content.append("")
-        content.append(f"### 专利摘要")
-        content.append(f"{drafting.get('abstract', 'N/A')}")
-        content.append("")
-        if "claims" in drafting:
-            content.append("### 权利要求")
-            for i, claim in enumerate(drafting["claims"], 1):
-                content.append(f"{i}. {claim}")
+            content.append(f"- **找到相关专利**: {search.get('patents_found', 0)} 件")
+            content.append(f"- **新颖性评分**: {search.get('novelty_score', 'N/A')}")
+            content.append(f"- **风险等级**: {search.get('risk_level', 'N/A')}")
             content.append("")
-        if "detailed_description" in drafting:
-            content.append("### 详细描述")
-            content.append(f"{drafting.get('detailed_description', 'N/A')}")
+            if "search_results" in search and "results" in search["search_results"]:
+                content.append("### 相关专利")
+                for patent in search["search_results"]["results"]:
+                    content.append(f"- **{patent.get('title', 'Unknown')}** (ID: {patent.get('patent_id', 'N/A')})")
+                    content.append(f"  - 相关性: {patent.get('relevance_score', 'N/A')}")
+                content.append("")
+        
+        # Discussion stage
+        if "discussion" in results:
+            discussion = results["discussion"].get("result", {})
+            content.append("## 3. 创新讨论")
             content.append("")
-    
-    # Review stage
-    if "review" in results:
-        review = results["review"].get("result", {})
-        content.append("## 5. 质量审查")
-        content.append("")
-        content.append(f"- **质量评分**: {review.get('quality_score', 'N/A')}")
-        content.append(f"- **一致性评分**: {review.get('consistency_score', 'N/A')}")
-        content.append("")
-        if "feedback" in review:
-            content.append("### 审查反馈")
-            for feedback in review["feedback"]:
-                content.append(f"- {feedback}")
+            if "innovations" in discussion:
+                content.append("### 创新点")
+                for innovation in discussion["innovations"]:
+                    content.append(f"- {innovation}")
+                content.append("")
+            if "technical_insights" in discussion:
+                content.append("### 技术洞察")
+                for insight in discussion["technical_insights"]:
+                    content.append(f"- {insight}")
+                content.append("")
+        
+        # Drafting stage
+        if "drafting" in results:
+            drafting = results["drafting"].get("result", {})
+            content.append("## 4. 专利草稿")
             content.append("")
-    
-    # Rewrite stage
-    if "rewrite" in results:
-        rewrite = results["rewrite"].get("result", {})
-        content.append("## 6. 最终专利")
-        content.append("")
-        content.append(f"### 改进后的专利标题")
-        content.append(f"{rewrite.get('title', 'N/A')}")
-        content.append("### 改进后的专利摘要")
-        content.append(f"{rewrite.get('abstract', 'N/A')}")
-        content.append("")
-        if "improvements" in rewrite:
-            content.append("### 主要改进")
-            for improvement in rewrite["improvements"]:
-                content.append(f"- {improvement}")
+            content.append(f"### 专利标题")
+            content.append(f"{drafting.get('title', 'N/A')}")
             content.append("")
+            content.append(f"### 专利摘要")
+            content.append(f"{drafting.get('abstract', 'N/A')}")
+            content.append("")
+            if "claims" in drafting:
+                content.append("### 权利要求")
+                for i, claim in enumerate(drafting["claims"], 1):
+                    content.append(f"{i}. {claim}")
+                content.append("")
+            if "detailed_description" in drafting:
+                content.append("### 详细描述")
+                content.append(f"{drafting.get('detailed_description', 'N/A')}")
+                content.append("")
+        
+        # Review stage
+        if "review" in results:
+            review = results["review"].get("result", {})
+            content.append("## 5. 质量审查")
+            content.append("")
+            content.append(f"- **质量评分**: {review.get('quality_score', 'N/A')}")
+            content.append(f"- **一致性评分**: {review.get('consistency_score', 'N/A')}")
+            content.append("")
+            if "feedback" in review:
+                content.append("### 审查反馈")
+                for feedback in review["feedback"]:
+                    content.append(f"- {feedback}")
+                content.append("")
+        
+        # Rewrite stage
+        if "rewrite" in results:
+            rewrite = results["rewrite"].get("result", {})
+            content.append("## 6. 最终专利")
+            content.append("")
+            content.append(f"### 改进后的专利标题")
+            content.append(f"{rewrite.get('title', 'N/A')}")
+            content.append("### 改进后的专利摘要")
+            content.append(f"{rewrite.get('abstract', 'N/A')}")
+            content.append("")
+            if "improvements" in rewrite:
+                content.append("### 主要改进")
+                for improvement in rewrite["improvements"]:
+                    content.append(f"- {improvement}")
+                content.append("")
     
     return "\n".join(content)
 
@@ -468,11 +496,21 @@ async def download_patent_file(workflow_id: str):
             raise HTTPException(status_code=404, detail="Patent file not found on disk")
         
         # Return file for download
-        return FileResponse(
-            path=patent_file_path,
-            filename=f"patent_{workflow_id}.md",
-            media_type="text/markdown"
-        )
+        try:
+            return FileResponse(
+                path=patent_file_path,
+                filename=f"patent_{workflow_id}.md",
+                media_type="text/markdown"
+            )
+        except Exception as file_error:
+            logger.error(f"FileResponse error: {file_error}")
+            # Fallback: return file content as text
+            with open(patent_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return JSONResponse(
+                content={"file_content": content, "filename": f"patent_{workflow_id}.md"},
+                headers={"Content-Disposition": f"attachment; filename=patent_{workflow_id}.md"}
+            )
         
     except HTTPException:
         raise
