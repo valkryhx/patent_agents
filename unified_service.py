@@ -138,7 +138,12 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
             
             if response.status_code == 200:
                 result = response.json()
-                return result.get("result", f"{stage} completed")
+                # Return the agent execution result, not the API response
+                agent_result = result.get("result", {})
+                # Ensure test_mode is correctly propagated
+                if isinstance(agent_result, dict) and "test_mode" in agent_result:
+                    agent_result["test_mode"] = test_mode
+                return agent_result
             else:
                 return f"{stage} failed: {response.status_code}"
                 
