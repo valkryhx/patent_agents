@@ -308,3 +308,6 @@
 2025-08-17 10:31:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 32720
 2025-08-17 10:32:05 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 33000
 2025-08-17 10:32:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 33315
+2025-08-17 10:33:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 33911
+2025-08-17 10:33:46 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 34000
+2025-08-17 10:34:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 34506

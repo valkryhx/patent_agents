@@ -148,3 +148,6 @@
 2025-08-17 10:31:37 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 32724
 2025-08-17 10:32:04 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 33000
 2025-08-17 10:32:37 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 33319
+2025-08-17 10:33:37 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 33915
+2025-08-17 10:33:45 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 34000
+2025-08-17 10:34:37 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 34510
