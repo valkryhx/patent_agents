@@ -1,0 +1,15 @@
+{
+  "workflow_id": "5f7b9d50-fa91-4084-9ef6-52c3b43dcd19",
+  "topic": "边缘计算环境下的实时数据处理与优化方法",
+  "created_at": "2025-08-17 18:55:26",
+  "stages": [
+    "planning",
+    "search",
+    "discussion",
+    "drafting",
+    "review",
+    "rewrite"
+  ],
+  "status": "completed",
+  "completed_at": "2025-08-17 18:55:38"
+}

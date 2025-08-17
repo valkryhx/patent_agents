@@ -4,7 +4,7 @@ Unified Patent Agent System - Single FastAPI Service
 Hosts coordinator and all agent services on one port with different URL paths
 """
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
@@ -43,6 +43,57 @@ app = FastAPI(
 # Initialize workflow manager (in-memory)
 workflow_manager = WorkflowManager()
 
+# WebSocket connection manager for real-time notifications
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+        self.workflow_subscribers: Dict[str, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, workflow_id: str = None):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        
+        if workflow_id:
+            if workflow_id not in self.workflow_subscribers:
+                self.workflow_subscribers[workflow_id] = []
+            self.workflow_subscribers[workflow_id].append(websocket)
+        
+        logger.info(f"🔌 WebSocket connected. Total connections: {len(self.active_connections)}")
+
+    def disconnect(self, websocket: WebSocket, workflow_id: str = None):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+        
+        if workflow_id and workflow_id in self.workflow_subscribers:
+            if websocket in self.workflow_subscribers[workflow_id]:
+                self.workflow_subscribers[workflow_id].remove(websocket)
+        
+        logger.info(f"🔌 WebSocket disconnected. Total connections: {len(self.active_connections)}")
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        try:
+            await websocket.send_text(message)
+        except Exception as e:
+            logger.error(f"Failed to send message: {e}")
+            self.disconnect(websocket)
+
+    async def broadcast_workflow_update(self, workflow_id: str, message: Dict[str, Any]):
+        """Broadcast workflow update to all subscribers"""
+        if workflow_id in self.workflow_subscribers:
+            disconnected = []
+            for websocket in self.workflow_subscribers[workflow_id]:
+                try:
+                    await websocket.send_json(message)
+                except Exception as e:
+                    logger.error(f"Failed to broadcast to websocket: {e}")
+                    disconnected.append(websocket)
+            
+            # Remove disconnected websockets
+            for websocket in disconnected:
+                self.disconnect(websocket, workflow_id)
+
+manager = ConnectionManager()
+
 # ============================================================================
 # PATENT-SPECIFIC API ENDPOINTS
 # ============================================================================
@@ -65,11 +116,23 @@ async def create_workflow_directory(workflow_id: str, topic: str) -> str:
             "workflow_id": workflow_id,
             "topic": topic,
             "created_at": time.strftime('%Y-%m-%d %H:%M:%S'),
-            "stages": ["planning", "search", "discussion", "drafting", "review", "rewrite"]
+            "stages": ["planning", "search", "discussion", "drafting", "review", "rewrite"],
+            "status": "created"
         }
         
         with open(f"{dir_path}/metadata.json", 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=2)
+        
+        # Create workflow metadata file for tracking all files
+        workflow_metadata = {
+            "workflow_id": workflow_id,
+            "topic": topic,
+            "created_at": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "files": {}
+        }
+        
+        with open(f"{dir_path}/workflow_metadata.json", 'w', encoding='utf-8') as f:
+            json.dump(workflow_metadata, f, ensure_ascii=False, indent=2)
         
         logger.info(f"📁 Created workflow directory: {dir_path}")
         return dir_path
@@ -102,8 +165,9 @@ async def save_stage_result(workflow_id: str, topic: str, stage: str, result: An
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(stage_content)
         
-        # Update stage index
+        # Update stage index and workflow metadata
         await update_stage_index(dir_path, stage, filename, timestamp)
+        await update_workflow_metadata(dir_path, stage, filename, timestamp)
         
         logger.info(f"💾 Saved {stage} stage result: {file_path}")
         return file_path
@@ -155,7 +219,7 @@ async def update_stage_index(dir_path: str, stage: str, filename: str, timestamp
             with open(index_file, 'r', encoding='utf-8') as f:
                 index = json.load(f)
         else:
-            index = {"stages": {}}
+            index = {"stages": {}, "final_patent": None}
         
         # Update stage information
         index["stages"][stage] = {
@@ -171,24 +235,62 @@ async def update_stage_index(dir_path: str, stage: str, filename: str, timestamp
     except Exception as e:
         logger.error(f"Failed to update stage index: {e}")
 
+async def update_workflow_metadata(dir_path: str, file_type: str, filename: str, timestamp: int):
+    """Update workflow metadata file"""
+    try:
+        metadata_file = f"{dir_path}/workflow_metadata.json"
+        
+        # Load existing metadata or create new one
+        if os.path.exists(metadata_file):
+            with open(metadata_file, 'r', encoding='utf-8') as f:
+                metadata = json.load(f)
+        else:
+            metadata = {"files": {}}
+        
+        # Update file information
+        metadata["files"][file_type] = {
+            "filename": filename,
+            "timestamp": timestamp,
+            "generated_at": time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Save updated metadata
+        with open(metadata_file, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
+            
+    except Exception as e:
+        logger.error(f"Failed to update workflow metadata: {e}")
+
 async def save_patent_to_file(workflow_id: str, topic: str, results: Dict[str, Any]) -> str:
-    """Save patent results to a file and return the file path"""
+    """Save final patent document to workflow directory"""
     try:
         # Create patent content
         patent_content = generate_patent_content(topic, results)
         
-        # Create filename
-        timestamp = int(time.time())
-        filename = f"patent_{workflow_id}_{timestamp}.md"
-        file_path = f"patent_files/{filename}"
+        # Get workflow directory path
+        safe_topic = "".join(c for c in topic if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        safe_topic = safe_topic.replace(' ', '_')[:50]
+        dir_name = f"{workflow_id}_{safe_topic}"
+        dir_path = f"workflow_stages/{dir_name}"
         
-        # Save to file
+        # Create directory if it doesn't exist
+        os.makedirs(dir_path, exist_ok=True)
+        
+        # Save final patent document to workflow directory
+        timestamp = int(time.time())
+        filename = f"final_patent_{timestamp}.md"
+        file_path = f"{dir_path}/{filename}"
+        
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(patent_content)
         
+        # Update metadata to include final patent
+        await update_workflow_metadata(dir_path, "final_patent", filename, timestamp)
+        
+        logger.info(f"💾 Final patent saved to workflow directory: {file_path}")
         return file_path
     except Exception as e:
-        logger.error(f"Failed to save patent to file: {e}")
+        logger.error(f"Failed to save final patent: {e}")
         raise
 
 def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
@@ -357,6 +459,16 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                 
                 logger.info(f"🚀 Starting {stage} stage for workflow {workflow_id}")
                 
+                # Send real-time notification
+                await manager.broadcast_workflow_update(workflow_id, {
+                    "type": "stage_started",
+                    "workflow_id": workflow_id,
+                    "stage": stage,
+                    "status": "running",
+                    "timestamp": time.time(),
+                    "message": f"Stage {stage} started"
+                })
+                
                 # Execute stage based on test mode
                 if test_mode:
                     # Test mode - use mock execution
@@ -381,6 +493,17 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                 
                 logger.info(f"✅ {stage} stage completed for workflow {workflow_id}")
                 
+                # Send real-time notification
+                await manager.broadcast_workflow_update(workflow_id, {
+                    "type": "stage_completed",
+                    "workflow_id": workflow_id,
+                    "stage": stage,
+                    "status": "completed",
+                    "timestamp": time.time(),
+                    "message": f"Stage {stage} completed",
+                    "progress": f"{list(workflow['results'].keys()).index(stage) + 1}/{len(workflow['stages'])}"
+                })
+                
             except Exception as e:
                 logger.error(f"❌ {stage} stage failed for workflow {workflow_id}: {e}")
                 workflow["stages"][stage]["status"] = "failed"
@@ -392,18 +515,48 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
         workflow["status"] = "completed"
         workflow["completed_at"] = time.time()
         
-        # Save patent to file
+        # Update workflow metadata status
+        try:
+            safe_topic = "".join(c for c in topic if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_topic = safe_topic.replace(' ', '_')[:50]
+            dir_name = f"{workflow_id}_{safe_topic}"
+            dir_path = f"workflow_stages/{dir_name}"
+            
+            # Update metadata status
+            metadata_file = f"{dir_path}/metadata.json"
+            if os.path.exists(metadata_file):
+                with open(metadata_file, 'r', encoding='utf-8') as f:
+                    metadata = json.load(f)
+                metadata["status"] = "completed"
+                metadata["completed_at"] = time.strftime('%Y-%m-%d %H:%M:%S')
+                with open(metadata_file, 'w', encoding='utf-8') as f:
+                    json.dump(metadata, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logger.error(f"Failed to update workflow metadata status: {e}")
+        
+        # Save final patent document to workflow directory
         try:
             patent_file_path = await save_patent_to_file(workflow_id, topic, workflow["results"])
             workflow["patent_file_path"] = patent_file_path
-            workflow["download_url"] = f"/download/patent/{workflow_id}"
-            logger.info(f"💾 Patent saved to file: {patent_file_path}")
+            workflow["download_url"] = f"/download/workflow/{workflow_id}"
+            logger.info(f"💾 Final patent saved to workflow directory: {patent_file_path}")
         except Exception as e:
-            logger.error(f"❌ Failed to save patent to file: {e}")
+            logger.error(f"❌ Failed to save final patent: {e}")
             workflow["patent_file_path"] = None
             workflow["download_url"] = None
         
         logger.info(f"🎉 Patent workflow {workflow_id} completed successfully")
+        
+        # Send workflow completion notification
+        await manager.broadcast_workflow_update(workflow_id, {
+            "type": "workflow_completed",
+            "workflow_id": workflow_id,
+            "status": "completed",
+            "timestamp": time.time(),
+            "message": "Patent workflow completed successfully!",
+            "download_url": workflow.get("download_url"),
+            "patent_file_path": workflow.get("patent_file_path")
+        })
         
     except Exception as e:
         logger.error(f"❌ Patent workflow {workflow_id} failed: {e}")
@@ -614,6 +767,91 @@ async def delete_patent_workflow(workflow_id: str):
         logger.error(f"Failed to delete patent workflow: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
 
+@app.websocket("/ws/workflow/{workflow_id}")
+async def websocket_workflow_updates(websocket: WebSocket, workflow_id: str):
+    """WebSocket endpoint for real-time workflow updates"""
+    try:
+        await manager.connect(websocket, workflow_id)
+        
+        # Send initial connection confirmation
+        await manager.send_personal_message(
+            json.dumps({
+                "type": "connection_established",
+                "workflow_id": workflow_id,
+                "message": "Connected to workflow updates",
+                "timestamp": time.time()
+            }),
+            websocket
+        )
+        
+        # Keep connection alive and handle messages
+        while True:
+            try:
+                # Wait for any message from client (ping/pong)
+                data = await websocket.receive_text()
+                if data == "ping":
+                    await manager.send_personal_message(
+                        json.dumps({
+                            "type": "pong",
+                            "timestamp": time.time()
+                        }),
+                        websocket
+                    )
+            except WebSocketDisconnect:
+                manager.disconnect(websocket, workflow_id)
+                break
+            except Exception as e:
+                logger.error(f"WebSocket error: {e}")
+                break
+                
+    except Exception as e:
+        logger.error(f"WebSocket connection failed: {e}")
+        manager.disconnect(websocket, workflow_id)
+
+@app.get("/workflow/{workflow_id}/progress")
+async def get_workflow_progress(workflow_id: str):
+    """Get real-time workflow progress"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        
+        # Calculate progress
+        total_stages = len(workflow["stages"])
+        completed_stages = len([s for s in workflow["stages"].values() if s["status"] == "completed"])
+        current_stage = workflow.get("current_stage", "unknown")
+        
+        progress = {
+            "workflow_id": workflow_id,
+            "topic": workflow.get("topic"),
+            "status": workflow.get("status"),
+            "current_stage": current_stage,
+            "progress": f"{completed_stages}/{total_stages}",
+            "percentage": round((completed_stages / total_stages) * 100, 1),
+            "completed_stages": completed_stages,
+            "total_stages": total_stages,
+            "started_at": workflow.get("created_at"),
+            "estimated_completion": None
+        }
+        
+        # Add estimated completion time for running workflows
+        if workflow["status"] == "running":
+            if completed_stages > 0:
+                # Estimate based on average time per stage
+                avg_time_per_stage = 2.0  # seconds in test mode
+                remaining_stages = total_stages - completed_stages
+                estimated_remaining = remaining_stages * avg_time_per_stage
+                progress["estimated_completion"] = f"~{estimated_remaining:.1f} seconds"
+        
+        return progress
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get workflow progress: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get workflow progress: {str(e)}")
+
 @app.get("/workflow/{workflow_id}/stages")
 async def get_workflow_stages(workflow_id: str):
     """Get all stage files for a workflow"""
@@ -670,9 +908,51 @@ async def get_workflow_stages(workflow_id: str):
         logger.error(f"Failed to get workflow stages: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get workflow stages: {str(e)}")
 
+@app.get("/download/workflow/{workflow_id}")
+async def download_workflow_directory(workflow_id: str):
+    """Download entire workflow directory as a zip file"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        workflow_dir = workflow.get("workflow_directory")
+        
+        if not workflow_dir or not os.path.exists(workflow_dir):
+            raise HTTPException(status_code=404, detail="Workflow directory not found")
+        
+        # Create zip file of the entire workflow directory
+        import zipfile
+        import tempfile
+        
+        # Create temporary zip file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as tmp_zip:
+            with zipfile.ZipFile(tmp_zip.name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                # Walk through the workflow directory
+                for root, dirs, files in os.walk(workflow_dir):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        # Calculate relative path for zip
+                        arcname = os.path.relpath(file_path, workflow_dir)
+                        zipf.write(file_path, arcname)
+            
+            # Return zip file for download
+            return FileResponse(
+                path=tmp_zip.name,
+                filename=f"workflow_{workflow_id}.zip",
+                media_type="application/zip",
+                headers={"Content-Disposition": f"attachment; filename=workflow_{workflow_id}.zip"}
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download workflow directory: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to download workflow directory: {str(e)}")
+
 @app.get("/download/patent/{workflow_id}")
 async def download_patent_file(workflow_id: str):
-    """Download patent file for a completed workflow"""
+    """Download final patent file for a completed workflow"""
     try:
         if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
             raise HTTPException(status_code=404, detail="Patent workflow not found")
@@ -693,7 +973,7 @@ async def download_patent_file(workflow_id: str):
         try:
             return FileResponse(
                 path=patent_file_path,
-                filename=f"patent_{workflow_id}.md",
+                filename=f"final_patent_{workflow_id}.md",
                 media_type="text/markdown"
             )
         except Exception as file_error:
@@ -702,8 +982,8 @@ async def download_patent_file(workflow_id: str):
             with open(patent_file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             return JSONResponse(
-                content={"file_content": content, "filename": f"patent_{workflow_id}.md"},
-                headers={"Content-Disposition": f"attachment; filename=patent_{workflow_id}.md"}
+                content={"file_content": content, "filename": f"final_patent_{workflow_id}.md"},
+                headers={"Content-Disposition": f"attachment; filename=final_patent_{workflow_id}.md"}
             )
         
     except HTTPException:
@@ -2231,8 +2511,11 @@ if __name__ == "__main__":
     print("   - POST /coordinator/workflow/start - Start patent workflow")
     print("   - GET /coordinator/workflow/{workflow_id}/status - Get patent workflow status")
     print("   - GET /coordinator/workflow/{workflow_id}/results - Get patent workflow results")
+    print("   - GET /workflow/{workflow_id}/progress - Get real-time workflow progress")
     print("   - GET /workflow/{workflow_id}/stages - Get workflow stage files")
-    print("   - GET /download/patent/{workflow_id} - Download patent file")
+    print("   - WS /ws/workflow/{workflow_id} - Real-time workflow updates (WebSocket)")
+    print("   - GET /download/workflow/{workflow_id} - Download entire workflow directory (ZIP)")
+    print("   - GET /download/patent/{workflow_id} - Download final patent file only")
     print("   - POST /coordinator/workflow/{workflow_id}/restart - Restart patent workflow")
     print("   - DELETE /coordinator/workflow/{workflow_id} - Delete patent workflow")
     print("   - GET /coordinator/workflows - List all patent workflows")
