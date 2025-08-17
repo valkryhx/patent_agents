@@ -1391,3 +1391,48 @@
 2025-08-17 05:50:52 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
 2025-08-17 05:50:52 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
 2025-08-17 05:50:52 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:53 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:53 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:50:53 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:54 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:54 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:50:54 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:55 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:55 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:50:55 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:56 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:56 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:50:56 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:56 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:56 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '3ae7e5bd-7c0d-45d0-b948-c0540f9f2928'}
+2025-08-17 05:50:56 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:57 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:57 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:50:57 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:58 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:58 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:50:58 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:50:59 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:50:59 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:50:59 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:51:00 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:51:00 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:51:00 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:51:01 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:51:01 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:51:01 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:51:02 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:51:02 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:51:02 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:51:03 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:51:03 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:51:03 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:51:04 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:51:04 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:51:04 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:51:05 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:51:05 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:51:05 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:51:06 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:51:06 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '4d46b8a3-0cf0-4d36-821a-1452ebc71d74'}
+2025-08-17 05:51:06 INFO agent.coordinator_agent: 📊 监控工作流
