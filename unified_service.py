@@ -604,16 +604,18 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
         
         # Call agent endpoint
         async with httpx.AsyncClient() as client:
-            # Create complete TaskRequest payload with actual workflow_id
+            # Provide all required fields for TaskRequest model
+            # Ensure description is not None
+            safe_description = description if description else f"Patent for topic: {topic}"
             task_payload = {
                 "task_id": f"{workflow_id}_{stage}_{int(time.time())}",
                 "workflow_id": workflow_id,
                 "stage_name": stage,
                 "topic": topic,
-                "description": description,
+                "description": safe_description,
                 "test_mode": test_mode,
                 "previous_results": {},
-                "context": {"workflow_id": workflow_id, "isolation_level": "workflow_specific"}
+                "context": {}
             }
             
             response = await client.post(
