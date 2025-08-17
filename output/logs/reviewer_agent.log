@@ -10,3 +10,7 @@
 2025-08-17 07:48:34 INFO agent.reviewer_agent: ✅ reviewer_agent 启动成功，状态: idle
 2025-08-17 07:48:34 INFO agent.reviewer_agent:    能力: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
 2025-08-17 07:49:34 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 596
+2025-08-17 07:50:14 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 07:50:34 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 1191
+2025-08-17 07:51:34 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 1787
+2025-08-17 07:51:55 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息循环活跃 - 循环次数: 2000
