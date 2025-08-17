@@ -12,3 +12,5 @@
 2025-08-17 09:37:36 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 588
 2025-08-17 09:38:17 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1000
 2025-08-17 09:38:36 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1183
+2025-08-17 09:39:36 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1779
+2025-08-17 09:39:58 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2000

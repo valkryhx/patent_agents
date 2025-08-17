@@ -12,3 +12,5 @@
 2025-08-17 09:37:37 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 596
 2025-08-17 09:38:17 INFO agent.writer_agent: 🔄 writer_agent 消息循环活跃 - 循环次数: 1000
 2025-08-17 09:38:37 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 1191
+2025-08-17 09:39:37 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 1787
+2025-08-17 09:39:58 INFO agent.writer_agent: 🔄 writer_agent 消息循环活跃 - 循环次数: 2000
