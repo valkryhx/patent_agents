@@ -20,14 +20,14 @@ from models import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Agent service URLs
+# Agent service URLs (all on same port with different paths)
 AGENT_SERVICES = {
-    "planning": "http://localhost:8001",
-    "search": "http://localhost:8002", 
-    "discussion": "http://localhost:8003",
-    "drafting": "http://localhost:8004",
-    "review": "http://localhost:8005",
-    "rewrite": "http://localhost:8006"
+    "planning": "http://localhost:8000/agents/planner",
+    "search": "http://localhost:8000/agents/searcher", 
+    "discussion": "http://localhost:8000/agents/discussion",
+    "drafting": "http://localhost:8000/agents/writer",
+    "review": "http://localhost:8000/agents/reviewer",
+    "rewrite": "http://localhost:8000/agents/rewriter"
 }
 
 class WorkflowManager:
