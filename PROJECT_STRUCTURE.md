@@ -3,9 +3,12 @@
 ## 项目概述
 这是一个基于FastAPI的多智能体专利撰写系统，包含协调器服务和多个专业智能体服务。**所有功能都整合在`unified_service.py`中，避免了端口冲突和架构问题。**
 
+> 📖 **详细说明请查看 [README.md](README.md)** - 包含完整的项目介绍、API接口调用方法和预期结果
+
 ## 核心目录结构
 
 ### 根目录
+- `README.md` - **项目主页，包含完整的功能介绍、API调用方法和预期结果**
 - `unified_service.py` - **主要的统一服务文件，包含协调器、所有智能体服务和专利相关API接口**
 - `workflow_manager.py` - 工作流管理器
 - `models.py` - 数据模型定义
@@ -84,6 +87,8 @@ python3 unified_service.py
 - `main.py` 包含错误的架构假设
 - 所有功能都已整合到 `unified_service.py`
 
+> 🚀 **详细启动说明和API调用方法请查看 [README.md](README.md)**
+
 ## 测试
 
 所有测试代码已整理到 `test/` 目录中，包括：
@@ -108,3 +113,19 @@ python3 unified_service.py
 - **简化部署**：不需要启动多个服务
 - **内部通信**：智能体间通信更高效
 - **测试模式**：统一的测试模式控制
+
+## 📚 文档导航
+
+### 主要文档
+- **[README.md](README.md)** - 项目主页，包含完整功能介绍和API调用方法
+- **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - 项目结构详细说明 (本文档)
+- **[API_INTERFACE_TESTING.md](API_INTERFACE_TESTING.md)** - API接口测试文档和结果
+
+### 开发文档
+- **[CLEANUP_SUMMARY.md](CLEANUP_SUMMARY.md)** - 代码清理过程总结
+- **[FINAL_CLEANUP_SUMMARY.md](FINAL_CLEANUP_SUMMARY.md)** - 最终清理总结
+
+### 快速开始
+1. 阅读 [README.md](README.md) 了解项目功能和API使用方法
+2. 查看 [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) 了解项目结构
+3. 参考 [API_INTERFACE_TESTING.md](API_INTERFACE_TESTING.md) 进行接口测试
