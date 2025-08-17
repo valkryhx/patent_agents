@@ -571,8 +571,22 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
-    # Check if compressed context is available
-    compressed_context = previous_results.get("compression_1", {}).get("result", {}).get("compressed_context", {})
+    # Check if compressed context is available (look for any compression result)
+    compressed_context = None
+    for key, value in previous_results.items():
+        if key.startswith("compression_before_"):
+            compressed_context = value.get("result", {}).get("compressed_context", {})
+            if compressed_context:
+                break
+    
+    # Initialize variables
+    core_strategy = {}
+    key_insights = []
+    critical_findings = []
+    unified_theme = topic
+    search_results = {}
+    discussion_insights = {}
+    planning_strategy = {}  # Initialize planning_strategy
     
     if compressed_context:
         logger.info(f"🗜️ Using compressed context for drafting")
@@ -597,7 +611,7 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
     # Build unified patent content
     core_innovation_areas = core_strategy.get("key_innovation_areas", [])
     novelty_score = core_strategy.get("novelty_score", 8.5)
-    search_findings = []  # Will be empty if using compressed context
+    search_findings = search_results.get("results", []) if search_results else []
     discussion_innovations = key_insights
     
     logger.info(f"📋 Using unified strategy: {core_innovation_areas}")
@@ -626,7 +640,7 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         "detailed_description": f"Detailed technical description of the {topic} system incorporating {', '.join(core_innovation_areas) if core_innovation_areas else 'advanced features'}...",
         "technical_diagrams": ["Figure 1: System Architecture", "Figure 2: Process Flow"],
         "unified_content": {
-            "core_strategy": planning_strategy,
+            "core_strategy": core_strategy,
             "search_context": search_results,
             "discussion_insights": discussion_insights,
             "novelty_score": novelty_score,
@@ -652,8 +666,13 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
-    # Check if compressed context is available
-    compressed_context = previous_results.get("compression_2", {}).get("result", {}).get("compressed_context", {})
+    # Check if compressed context is available (look for any compression result)
+    compressed_context = None
+    for key, value in previous_results.items():
+        if key.startswith("compression_before_"):
+            compressed_context = value.get("result", {}).get("compressed_context", {})
+            if compressed_context:
+                break
     
     if compressed_context:
         logger.info(f"🗜️ Using compressed context for review")
@@ -734,18 +753,54 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
-    # Extract all unified content for final polish
-    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
-    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
-    discussion_insights = previous_results.get("discussion", {}).get("result", {})
-    writer_draft = previous_results.get("drafting", {}).get("result", {})
-    review_feedback = previous_results.get("review", {}).get("result", {})
+    # Initialize variables
+    core_strategy = {}
+    key_insights = []
+    critical_findings = []
+    unified_theme = topic
+    search_results = {}
+    discussion_insights = {}
+    planning_strategy = {}  # Initialize planning_strategy
+    writer_draft = {}
+    review_feedback = {}
+    
+    # Check if compressed context is available (look for any compression result)
+    compressed_context = None
+    for key, value in previous_results.items():
+        if key.startswith("compression_before_"):
+            compressed_context = value.get("result", {}).get("compressed_context", {})
+            if compressed_context:
+                break
+    
+    if compressed_context:
+        logger.info(f"🗜️ Using compressed context for rewrite")
+        # Use compressed context
+        core_strategy = compressed_context.get("core_strategy", {})
+        key_insights = compressed_context.get("key_insights", [])
+        critical_findings = compressed_context.get("critical_findings", [])
+        unified_theme = compressed_context.get("unified_theme", topic)
+        writer_draft = previous_results.get("drafting", {}).get("result", {})
+        review_feedback = previous_results.get("review", {}).get("result", {})
+    else:
+        logger.info(f"📋 Using full context for rewrite")
+        # Extract all unified content for final polish
+        planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
+        search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+        discussion_insights = previous_results.get("discussion", {}).get("result", {})
+        writer_draft = previous_results.get("drafting", {}).get("result", {})
+        review_feedback = previous_results.get("review", {}).get("result", {})
+        
+        # Build rewrite context
+        core_strategy = planning_strategy
+        key_insights = []
+        critical_findings = []
+        unified_theme = topic
     
     # Build final unified content
-    core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
-    novelty_score = planning_strategy.get("novelty_score", 8.5)
-    search_findings = search_results.get("results", [])
-    review_recommendations = review_feedback.get("recommendations", [])
+    core_innovation_areas = core_strategy.get("key_innovation_areas", [])
+    novelty_score = core_strategy.get("novelty_score", 8.5)
+    search_findings = critical_findings
+    review_recommendations = review_feedback.get("recommendations", []) if review_feedback else []
     
     logger.info(f"📋 Final polish using unified strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating review feedback: {len(review_recommendations)} recommendations")
@@ -776,7 +831,7 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
             f"Improved abstract description aligned with unified strategy"
         ],
         "unified_content_summary": {
-            "core_strategy": planning_strategy,
+            "core_strategy": core_strategy,
             "search_integration": search_results,
             "discussion_insights": discussion_insights,
             "review_incorporation": review_feedback,

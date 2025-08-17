@@ -66,7 +66,7 @@ class WorkflowState(BaseModel):
     status: WorkflowStatusEnum = Field(default=WorkflowStatusEnum.PENDING, description="Workflow status")
     current_stage: int = Field(default=0, description="Current stage index")
     stages: List[str] = Field(default=[
-        "planning", "search", "discussion", "compression_1", "drafting", "compression_2", "review", "rewrite"
+        "planning", "search", "discussion", "drafting", "review", "rewrite"
     ], description="Stage names")
     stage_results: Dict[str, Any] = Field(default_factory=dict, description="Stage results")
     stage_statuses: Dict[str, StageStatusEnum] = Field(default_factory=dict, description="Stage statuses")

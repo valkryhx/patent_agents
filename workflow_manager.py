@@ -25,11 +25,10 @@ AGENT_SERVICES = {
     "planning": "http://localhost:8000/agents/planner",
     "search": "http://localhost:8000/agents/searcher", 
     "discussion": "http://localhost:8000/agents/discussion",
-    "compression_1": "http://localhost:8000/agents/compressor",  # After discussion
     "drafting": "http://localhost:8000/agents/writer",
-    "compression_2": "http://localhost:8000/agents/compressor",  # After drafting
     "review": "http://localhost:8000/agents/reviewer",
-    "rewrite": "http://localhost:8000/agents/rewriter"
+    "rewrite": "http://localhost:8000/agents/rewriter",
+    "compressor": "http://localhost:8000/agents/compressor"  # Optional compression agent
 }
 
 class WorkflowManager:
@@ -84,12 +83,19 @@ class WorkflowManager:
                     workflow.stage_times[stage_name] = {"start": time.time()}
                     workflow.updated_at = time.time()
                     
-                    # Handle compression stages specially
-                    if stage_name.startswith("compression_"):
-                        result = await self._assign_compression_task(workflow_id, stage_name, workflow)
-                    else:
-                        # Assign task to agent service
-                        result = await self._assign_task_to_agent(workflow_id, stage_name, workflow)
+                    # Check if compression is needed before this stage
+                    if self._should_compress_context(stage_name, workflow):
+                        logger.info(f"🗜️ Context size large, triggering optional compression before {stage_name}")
+                        try:
+                            compression_result = await self._assign_compression_task(workflow_id, f"compression_before_{stage_name}", workflow)
+                            # Store compression result for later use
+                            workflow.stage_results[f"compression_before_{stage_name}"] = compression_result
+                            logger.info(f"✅ Compression completed successfully before {stage_name}")
+                        except Exception as e:
+                            logger.warning(f"⚠️ Compression failed before {stage_name}, continuing with full context: {str(e)}")
+                    
+                    # Assign task to agent service
+                    result = await self._assign_task_to_agent(workflow_id, stage_name, workflow)
                     
                     # Update stage result
                     workflow.stage_results[stage_name] = result
@@ -121,7 +127,7 @@ class WorkflowManager:
     async def _assign_compression_task(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
         """Assign compression task to compression agent"""
         try:
-            agent_url = AGENT_SERVICES.get("compression_1")  # Use compression agent URL
+            agent_url = AGENT_SERVICES.get("compressor")  # Use compression agent URL
             
             # Determine compression context based on stage
             compression_context = self._prepare_compression_context(stage_name, workflow)
@@ -161,30 +167,65 @@ class WorkflowManager:
             logger.error(f"❌ Failed to assign compression task: {str(e)}")
             raise
     
+    def _should_compress_context(self, stage_name: str, workflow: WorkflowState) -> bool:
+        """Intelligently decide if compression is needed before a stage"""
+        # Calculate current context size
+        context_size = len(str(workflow.stage_results))
+        
+        # Define compression thresholds
+        COMPRESSION_THRESHOLDS = {
+            "drafting": 8000,  # Compress before drafting if context > 8KB
+            "review": 12000,   # Compress before review if context > 12KB
+            "rewrite": 15000   # Compress before rewrite if context > 15KB
+        }
+        
+        threshold = COMPRESSION_THRESHOLDS.get(stage_name, float('inf'))
+        
+        if context_size > threshold:
+            logger.info(f"📊 Context size {context_size} exceeds threshold {threshold} for {stage_name}")
+            return True
+        
+        return False
+    
     def _prepare_compression_context(self, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
         """Prepare compression context based on stage"""
-        if stage_name == "compression_1":
-            # Compress after discussion - focus on planning, search, discussion
+        # Extract stage name from compression stage name
+        target_stage = stage_name.replace("compression_before_", "")
+        
+        if target_stage == "drafting":
+            # Compress before drafting - focus on planning, search, discussion
             return {
                 "compression_target": "early_stages",
                 "stages_to_compress": ["planning", "search", "discussion"],
                 "compression_purpose": "prepare_for_drafting",
-                "preserve_elements": ["core_strategy", "key_insights", "critical_findings"]
+                "preserve_elements": ["core_strategy", "key_insights", "critical_findings"],
+                "target_stage": target_stage
             }
-        elif stage_name == "compression_2":
-            # Compress after drafting - focus on all previous stages
+        elif target_stage == "review":
+            # Compress before review - focus on all previous stages
             return {
                 "compression_target": "all_stages",
-                "stages_to_compress": ["planning", "search", "discussion", "compression_1", "drafting"],
+                "stages_to_compress": ["planning", "search", "discussion", "drafting"],
                 "compression_purpose": "prepare_for_review",
-                "preserve_elements": ["core_strategy", "key_insights", "critical_findings", "draft_summary"]
+                "preserve_elements": ["core_strategy", "key_insights", "critical_findings", "draft_summary"],
+                "target_stage": target_stage
+            }
+        elif target_stage == "rewrite":
+            # Compress before rewrite - focus on all previous stages
+            return {
+                "compression_target": "all_stages",
+                "stages_to_compress": ["planning", "search", "discussion", "drafting", "review"],
+                "compression_purpose": "prepare_for_rewrite",
+                "preserve_elements": ["core_strategy", "key_insights", "critical_findings", "draft_summary", "review_feedback"],
+                "target_stage": target_stage
             }
         else:
             return {
                 "compression_target": "unknown",
                 "stages_to_compress": [],
                 "compression_purpose": "general",
-                "preserve_elements": []
+                "preserve_elements": [],
+                "target_stage": target_stage
             }
     
     async def _assign_task_to_agent(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
