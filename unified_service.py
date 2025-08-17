@@ -22,12 +22,13 @@ from workflow_manager import WorkflowManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Test mode configuration
+# Test mode configuration - DEPRECATED: Now using workflow-specific test_mode
+# This global configuration is kept for backward compatibility but should not be used
 TEST_MODE = {
-    "enabled": True,
-    "mock_delay": 1.0,  # seconds
-    "mock_results": True,
-    "skip_llm_calls": True
+    "enabled": False,  # Default to real mode
+    "mock_delay": 0.5,  # seconds
+    "mock_results": False,
+    "skip_llm_calls": False
 }
 
 # Initialize FastAPI app
@@ -369,21 +370,23 @@ async def health_check():
 
 @app.get("/test-mode")
 async def get_test_mode():
-    """Get test mode configuration"""
+    """Get test mode configuration - DEPRECATED: Use workflow-specific test_mode instead"""
     return {
         "test_mode": TEST_MODE,
-        "description": "Test mode configuration for the unified service"
+        "description": "DEPRECATED: Global test mode configuration. Use workflow-specific test_mode parameter instead.",
+        "warning": "This global configuration is deprecated. Test mode is now controlled per workflow."
     }
 
 @app.post("/test-mode")
 async def set_test_mode(test_config: Dict[str, Any]):
-    """Set test mode configuration"""
+    """Set test mode configuration - DEPRECATED: Use workflow-specific test_mode instead"""
     global TEST_MODE
     TEST_MODE.update(test_config)
-    logger.info(f"🔧 Test mode updated: {TEST_MODE}")
+    logger.warning(f"⚠️ DEPRECATED: Global test mode updated: {TEST_MODE}. Use workflow-specific test_mode instead.")
     return {
-        "message": "Test mode configuration updated",
-        "test_mode": TEST_MODE
+        "message": "DEPRECATED: Global test mode configuration updated. Use workflow-specific test_mode instead.",
+        "test_mode": TEST_MODE,
+        "warning": "This global configuration is deprecated. Test mode is now controlled per workflow."
     }
 
 # Coordinator endpoints
@@ -1751,8 +1754,8 @@ async def generate_recommendations(search_results: List[Dict[str, Any]], analysi
 
 if __name__ == "__main__":
     print("🚀 Starting Unified Patent Agent System v2.0.0...")
-    print(f"🔧 Test mode: {'ENABLED' if TEST_MODE['enabled'] else 'DISABLED'}")
-    print(f"⏱️ Test delay: {TEST_MODE['mock_delay']}s")
+    print("🔧 Test mode: DEPRECATED - Now using workflow-specific test_mode")
+    print("⏱️ Test delay: Configurable per workflow")
     print("📡 Single service will be available at: http://localhost:8000")
     print("📚 API docs will be available at: http://localhost:8000/docs")
     print("🤖 All agents available at:")
