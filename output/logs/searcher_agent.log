@@ -1,32 +1,45 @@
-2025-08-17 05:34:37 INFO agent.searcher_agent: 🚀 searcher_agent 智能体初始化开始
-2025-08-17 05:34:37 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
-2025-08-17 05:34:37 INFO agent.searcher_agent:    测试模式: True
-2025-08-17 05:34:37 INFO agent.searcher_agent:    状态: idle
-2025-08-17 05:34:37 INFO agent.searcher_agent: 🧪 searcher_agent 以测试模式初始化
-2025-08-17 05:34:37 INFO agent.searcher_agent: 🔄 searcher_agent 开始停止...
-2025-08-17 05:34:37 INFO agent.searcher_agent: 📊 searcher_agent 状态更新为: offline
-2025-08-17 05:34:37 INFO agent.searcher_agent: ✅ searcher_agent 已从消息总线注销
-2025-08-17 05:34:37 INFO agent.searcher_agent: 📊 searcher_agent 性能统计:
-2025-08-17 05:34:37 INFO agent.searcher_agent:    完成任务: 0
-2025-08-17 05:34:37 INFO agent.searcher_agent:    失败任务: 0
-2025-08-17 05:34:37 INFO agent.searcher_agent:    平均执行时间: 0.00秒
-2025-08-17 05:34:37 INFO agent.searcher_agent:    总执行时间: 0.00秒
-2025-08-17 05:34:47 INFO agent.searcher_agent: 🚀 searcher_agent 智能体初始化开始
-2025-08-17 05:34:47 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
-2025-08-17 05:34:47 INFO agent.searcher_agent:    测试模式: True
-2025-08-17 05:34:47 INFO agent.searcher_agent:    状态: idle
-2025-08-17 05:34:47 INFO agent.searcher_agent: 🧪 searcher_agent 以测试模式初始化
-2025-08-17 05:34:47 INFO agent.searcher_agent: 🔄 searcher_agent 开始启动...
-2025-08-17 05:34:47 INFO agent.searcher_agent: ✅ searcher_agent 已注册到消息总线
-2025-08-17 05:34:47 INFO agent.searcher_agent: 🔄 searcher_agent 消息处理循环开始
-2025-08-17 05:34:48 INFO agent.searcher_agent: ✅ searcher_agent 启动成功，状态: idle
-2025-08-17 05:34:48 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
-2025-08-17 05:34:55 INFO agent.searcher_agent: 🔄 searcher_agent 开始停止...
-2025-08-17 05:34:55 INFO agent.searcher_agent: 📊 searcher_agent 状态更新为: offline
-2025-08-17 05:34:55 INFO agent.searcher_agent: ✅ searcher_agent 消息处理任务已取消
-2025-08-17 05:34:55 INFO agent.searcher_agent: ✅ searcher_agent 已从消息总线注销
-2025-08-17 05:34:55 INFO agent.searcher_agent: 📊 searcher_agent 性能统计:
-2025-08-17 05:34:55 INFO agent.searcher_agent:    完成任务: 0
-2025-08-17 05:34:55 INFO agent.searcher_agent:    失败任务: 0
-2025-08-17 05:34:55 INFO agent.searcher_agent:    平均执行时间: 0.00秒
-2025-08-17 05:34:55 INFO agent.searcher_agent:    总执行时间: 0.00秒
+2025-08-17 06:41:53 INFO agent.searcher_agent: 🚀 searcher_agent 智能体初始化开始
+2025-08-17 06:41:53 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 06:41:53 INFO agent.searcher_agent:    测试模式: True
+2025-08-17 06:41:53 INFO agent.searcher_agent:    状态: idle
+2025-08-17 06:41:53 INFO agent.searcher_agent: 🧪 searcher_agent 以测试模式初始化
+2025-08-17 06:41:53 INFO agent.searcher_agent: 🔄 searcher_agent 开始启动...
+2025-08-17 06:41:53 INFO agent.searcher_agent: ✅ searcher_agent 已注册到消息总线
+2025-08-17 06:41:53 INFO agent.searcher_agent: 🔄 searcher_agent 消息处理循环开始
+2025-08-17 06:41:53 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 06:41:53 INFO agent.searcher_agent: ✅ searcher_agent 启动成功，状态: idle
+2025-08-17 06:41:53 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 06:41:59 INFO agent.searcher_agent: 📨 searcher_agent 收到消息: coordination 来自 coordinator_agent
+2025-08-17 06:41:59 INFO agent.searcher_agent:    消息ID: c1160854-ff08-4392-9555-c29d49a128d3
+2025-08-17 06:41:59 INFO agent.searcher_agent:    内容: {'task': {'id': 'test_workflow_a5d90dd9_stage_1', 'type': 'prior_art_search', 'workflow_id': 'test_workflow_a5d90dd9', 'stage_index': 1, 'topic': 'Test Patent', 'description': 'Test workflow for coordinator', 'previous_results': {'stage_0': {'result': {'test': 'planner_result'}}, 'iteration': {'review_count': 0, 'rewrite_count': 0, 'max_reviews': 3, 'max_rewrites': 3, 'target_quality_score': 8.0, 'consecutive_failures': 0, 'max_consecutive_failures': 2}}, 'context': {}}}
+2025-08-17 06:41:59 INFO agent.searcher_agent: 🔄 searcher_agent 开始处理消息: coordination
+2025-08-17 06:41:59 INFO agent.searcher_agent:    消息ID: c1160854-ff08-4392-9555-c29d49a128d3
+2025-08-17 06:41:59 INFO agent.searcher_agent:    发送者: coordinator_agent
+2025-08-17 06:41:59 INFO agent.searcher_agent:    内容: {'task': {'id': 'test_workflow_a5d90dd9_stage_1', 'type': 'prior_art_search', 'workflow_id': 'test_workflow_a5d90dd9', 'stage_index': 1, 'topic': 'Test Patent', 'description': 'Test workflow for coordinator', 'previous_results': {'stage_0': {'result': {'test': 'planner_result'}}, 'iteration': {'review_count': 0, 'rewrite_count': 0, 'max_reviews': 3, 'max_rewrites': 3, 'target_quality_score': 8.0, 'consecutive_failures': 0, 'max_consecutive_failures': 2}}, 'context': {}}}
+2025-08-17 06:41:59 INFO agent.searcher_agent: 🔄 searcher_agent 路由到协调处理器
+2025-08-17 06:41:59 INFO agent.searcher_agent: 🔧 searcher_agent 处理协调消息
+2025-08-17 06:41:59 INFO agent.searcher_agent:    消息内容: {'task': {'id': 'test_workflow_a5d90dd9_stage_1', 'type': 'prior_art_search', 'workflow_id': 'test_workflow_a5d90dd9', 'stage_index': 1, 'topic': 'Test Patent', 'description': 'Test workflow for coordinator', 'previous_results': {'stage_0': {'result': {'test': 'planner_result'}}, 'iteration': {'review_count': 0, 'rewrite_count': 0, 'max_reviews': 3, 'max_rewrites': 3, 'target_quality_score': 8.0, 'consecutive_failures': 0, 'max_consecutive_failures': 2}}, 'context': {}}}
+2025-08-17 06:41:59 INFO agent.searcher_agent: 🔧 searcher_agent 任务类型: prior_art_search
+2025-08-17 06:41:59 INFO agent.searcher_agent:    可用能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 06:41:59 INFO agent.searcher_agent: ✅ searcher_agent 开始执行任务: prior_art_search
+2025-08-17 06:41:59 INFO agent.searcher_agent: 🚀 searcher_agent 开始执行任务
+2025-08-17 06:41:59 INFO agent.searcher_agent:    任务ID: test_workflow_a5d90dd9_stage_1
+2025-08-17 06:41:59 INFO agent.searcher_agent:    任务类型: prior_art_search
+2025-08-17 06:41:59 INFO agent.searcher_agent:    任务数据: {'id': 'test_workflow_a5d90dd9_stage_1', 'type': 'prior_art_search', 'workflow_id': 'test_workflow_a5d90dd9', 'stage_index': 1, 'topic': 'Test Patent', 'description': 'Test workflow for coordinator', 'previous_results': {'stage_0': {'result': {'test': 'planner_result'}}, 'iteration': {'review_count': 0, 'rewrite_count': 0, 'max_reviews': 3, 'max_rewrites': 3, 'target_quality_score': 8.0, 'consecutive_failures': 0, 'max_consecutive_failures': 2}}, 'context': {}}
+2025-08-17 06:41:59 INFO agent.searcher_agent: 📋 searcher_agent 无上下文数据
+2025-08-17 06:41:59 INFO agent.searcher_agent: 🧪 searcher_agent 使用测试模式执行
+2025-08-17 06:41:59 INFO agent.searcher_agent: 📊 searcher_agent 性能统计更新 - 完成任务: 1
+2025-08-17 06:41:59 INFO agent.searcher_agent: ✅ searcher_agent 任务执行成功
+2025-08-17 06:41:59 INFO agent.searcher_agent:    执行时间: 0.00秒
+2025-08-17 06:41:59 INFO agent.searcher_agent:    结果数据: {'search_report': SearchReport(query=SearchQuery(topic='Test Patent', keywords=['人工智能', '机器学习', '数据处理'], date_range='2019-2024', jurisdiction='US', max_results=50, search_filters={}), results=[SearchResult(patent_id='US12345678', title='相关专利1', abstract='这是一个相关的现有技术专利', inventors=['张三', '李四'], filing_date='2020-01-15', publication_date='2021-07-20', relevance_score=7.5, similarity_analysis={'overall_similarity': 0.65, 'technical_similarity': 0.7, 'functional_similarity': 0.6}), SearchResult(patent_id='US87654321', title='相关专利2', abstract='另一个相关的现有技术专利', inventors=['王五', '赵六'], filing_date='2019-03-10', publication_date='2020-09-15', relevance_score=6.8, similarity_analysis={'overall_similarity': 0.45, 'technical_similarity': 0.5, 'functional_similarity': 0.4})], analysis={'total_results': 2, 'relevance_distribution': {'high': 1, 'medium': 1, 'low': 0}, 'technology_areas': ['人工智能', '机器学习', '数据处理'], 'key_competitors': ['测试公司', '另一测试公司'], 'trends': ['技术发展趋势1', '技术发展趋势2'], 'risk_factors': {'prior_art_risks': {'level': 'Medium', 'description': '存在相关现有技术'}, 'competitive_filing_risks': {'level': 'Low', 'description': '竞争风险较低'}}, 'overall_risk_level': 'Medium'}, recommendations=['建议1: 加强技术创新点', '建议2: 扩大权利要求范围'], risk_assessment={'prior_art_risks': {'level': 'Medium', 'description': '存在相关现有技术'}, 'competitive_filing_risks': {'level': 'Low', 'description': '竞争风险较低'}}, novelty_score=7.2), 'results': [SearchResult(patent_id='US12345678', title='相关专利1', abstract='这是一个相关的现有技术专利', inventors=['张三', '李四'], filing_date='2020-01-15', publication_date='2021-07-20', relevance_score=7.5, similarity_analysis={'overall_similarity': 0.65, 'technical_similarity': 0.7, 'functional_similarity': 0.6}), SearchResult(patent_id='US87654321', title='相关专利2', abstract='另一个相关的现有技术专利', inventors=['王五', '赵六'], filing_date='2019-03-10', publication_date='2020-09-15', relevance_score=6.8, similarity_analysis={'overall_similarity': 0.45, 'technical_similarity': 0.5, 'functional_similarity': 0.4})], 'analysis': {'total_results': 2, 'relevance_distribution': {'high': 1, 'medium': 1, 'low': 0}, 'technology_areas': ['人工智能', '机器学习', '数据处理'], 'key_competitors': ['测试公司', '另一测试公司'], 'trends': ['技术发展趋势1', '技术发展趋势2'], 'risk_factors': {'prior_art_risks': {'level': 'Medium', 'description': '存在相关现有技术'}, 'competitive_filing_risks': {'level': 'Low', 'description': '竞争风险较低'}}, 'overall_risk_level': 'Medium'}, 'recommendations': ['建议1: 加强技术创新点', '建议2: 扩大权利要求范围'], 'novelty_score': 7.2}
+2025-08-17 06:42:00 INFO agent.searcher_agent: 📤 searcher_agent 发送完成消息到协调器
+2025-08-17 06:42:00 INFO agent.searcher_agent: ✅ searcher_agent 任务执行完成: prior_art_search
+2025-08-17 06:42:01 INFO agent.searcher_agent: 🔄 searcher_agent 开始停止...
+2025-08-17 06:42:01 INFO agent.searcher_agent: 📊 searcher_agent 状态更新为: offline
+2025-08-17 06:42:01 INFO agent.searcher_agent: ✅ searcher_agent 消息处理任务已取消
+2025-08-17 06:42:01 INFO agent.searcher_agent: ✅ searcher_agent 已从消息总线注销
+2025-08-17 06:42:01 INFO agent.searcher_agent: 📊 searcher_agent 性能统计:
+2025-08-17 06:42:01 INFO agent.searcher_agent:    完成任务: 1
+2025-08-17 06:42:01 INFO agent.searcher_agent:    失败任务: 0
+2025-08-17 06:42:01 INFO agent.searcher_agent:    平均执行时间: 0.00秒
+2025-08-17 06:42:01 INFO agent.searcher_agent:    总执行时间: 0.00秒

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Ultra Real-Time Workflow Monitor
-超实时工作流监控系统 - 无需外部依赖，实时监控工作流进度
+Ultra Real-Time Workflow Monitor - Log-Based Only
+超实时工作流监控系统 - 仅基于日志文件监控，不向协调器发送任何任务
 """
 
 import asyncio
@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'patent_agent_demo'))
 from patent_agent_demo.patent_agent_system import PatentAgentSystem
 
 class UltraRealTimeMonitor:
-    """超实时工作流监控器"""
+    """超实时工作流监控器 - 仅基于日志文件"""
     
     def __init__(self, workflow_id: str = None):
         self.workflow_id = workflow_id
@@ -38,7 +38,6 @@ class UltraRealTimeMonitor:
         self.last_status = None
         self.status_history = []
         self.file_changes = []
-        self.system = None
         self.last_file_sizes = {}
         self.last_file_hashes = {}
         self.last_modified = {}
@@ -60,14 +59,12 @@ class UltraRealTimeMonitor:
         self.logger = logging.getLogger(__name__)
         
     async def start_monitoring(self, topic: str, description: str):
-        """启动超实时监控"""
+        """启动超实时监控 - 仅基于日志文件"""
         try:
-            self.logger.info("🚀 启动超实时工作流监控系统")
+            self.logger.info("🚀 启动超实时工作流监控系统 - 仅基于日志文件")
+            self.logger.info("📋 监控策略: 仅通过日志文件监控，不向协调器发送任何任务")
             self.start_time = time.time()
             self.monitoring = True
-            
-            # Start workflow
-            await self._start_workflow(topic, description)
             
             # Start file monitoring thread
             self._start_file_monitoring_thread()
@@ -93,137 +90,169 @@ class UltraRealTimeMonitor:
         self.monitor_thread.start()
         self.logger.info("✅ 文件监控线程启动成功")
         
-    async def _start_workflow(self, topic: str, description: str):
-        """启动工作流"""
-        try:
-            self.logger.info("🔧 启动专利撰写工作流")
-            self.logger.info(f"主题: {topic}")
-            self.logger.info(f"描述: {description}")
-            
-            # Initialize system
-            self.system = PatentAgentSystem(test_mode=False)
-            await self.system.start()
-            
-            # Start workflow
-            self.workflow_id = await self.system.execute_workflow(
-                topic=topic,
-                description=description,
-                workflow_type="enhanced"
-            )
-            
-            self.logger.info(f"✅ 工作流启动成功 - ID: {self.workflow_id}")
-            
-        except Exception as e:
-            self.logger.error(f"工作流启动失败: {e}")
-            raise
-            
     async def _ultra_monitor_loop(self):
-        """超实时监控循环"""
+        """超实时监控主循环 - 仅基于日志文件"""
         try:
-            self.logger.info("📊 开始超实时监控循环")
+            self.logger.info("🔄 开始超实时监控循环")
             
             while self.monitoring:
-                current_time = time.time()
-                
-                # Monitor workflow status (every 1 second)
-                if current_time - getattr(self, '_last_status_check', 0) >= 1:
-                    await self._check_workflow_status()
-                    self._last_status_check = current_time
-                
-                # Monitor system resources (every 3 seconds)
-                if current_time - getattr(self, '_last_resource_check', 0) >= 3:
-                    await self._check_system_resources()
-                    self._last_resource_check = current_time
-                
-                # Monitor output files (every 0.5 seconds)
-                if current_time - getattr(self, '_last_output_check', 0) >= 0.5:
+                try:
+                    # 检查智能体日志文件
+                    await self._check_agent_logs()
+                    
+                    # 检查输出文件
                     await self._check_output_files()
-                    self._last_output_check = current_time
-                
-                # Periodic status report (every 60 seconds)
-                if current_time - getattr(self, '_last_periodic_report', 0) >= 60:
-                    await self._generate_periodic_report()
-                    self._last_periodic_report = current_time
-                
-                # Check for workflow completion
-                if self._is_workflow_completed():
-                    self.logger.info("✅ 工作流完成")
-                    break
-                
-                # Ultra short sleep for maximum responsiveness
-                await asyncio.sleep(0.2)  # 200ms intervals
-                
+                    
+                    # 检查系统资源
+                    await self._check_system_resources()
+                    
+                    # 检查工作流状态（基于日志文件）
+                    await self._check_workflow_status_from_logs()
+                    
+                    # 等待下一次检查
+                    await asyncio.sleep(1)  # 每秒检查一次
+                    
+                except Exception as e:
+                    self.logger.error(f"监控循环错误: {e}")
+                    await asyncio.sleep(5)  # 出错时等待5秒
+                    
         except Exception as e:
-            self.logger.error(f"监控循环错误: {e}")
+            self.logger.error(f"监控循环失败: {e}")
             
-    async def _check_workflow_status(self):
-        """检查工作流状态"""
+    async def _check_agent_logs(self):
+        """检查智能体日志文件"""
         try:
-            if not self.system:
+            logs_dir = os.path.join(self.output_dir, "logs")
+            if not os.path.exists(logs_dir):
                 return
                 
-            # Check if coordinator is available
-            if self.system.coordinator:
-                # Check active workflows
-                active_workflows = getattr(self.system.coordinator, 'active_workflows', {})
-                if active_workflows:
-                    self.logger.info(f"📊 活跃工作流数量: {len(active_workflows)}")
-                    for workflow_id, workflow in active_workflows.items():
-                        self.logger.info(f"📋 工作流 {workflow_id}:")
-                        self.logger.info(f"   主题: {workflow.topic}")
-                        self.logger.info(f"   状态: {workflow.overall_status}")
-                        self.logger.info(f"   当前阶段: {workflow.current_stage}")
-                        if workflow.stages:
-                            current_stage = workflow.stages[workflow.current_stage]
-                            self.logger.info(f"   当前阶段状态: {current_stage.status}")
-                            self.logger.info(f"   当前阶段代理: {current_stage.agent_name}")
-                else:
-                    self.logger.warning("⚠️ 没有活跃的工作流")
-            else:
-                self.logger.warning("⚠️ 协调器不可用")
-                
-            # Also check via get_workflow_status if workflow_id exists
-            if self.workflow_id:
-                status_result = await self.system.get_workflow_status(self.workflow_id)
-                
-                if status_result.get("success"):
-                    workflow_data = status_result.get("workflow", {})
-                    
-                    # Extract status information
-                    if hasattr(workflow_data, 'overall_status'):
-                        overall_status = workflow_data.overall_status
-                        current_stage = getattr(workflow_data, 'current_stage', 0)
-                        total_stages = len(getattr(workflow_data, 'stages', []))
-                    elif isinstance(workflow_data, dict):
-                        overall_status = workflow_data.get("overall_status", "unknown")
-                        current_stage = workflow_data.get("current_stage", 0)
-                        total_stages = len(workflow_data.get("stages", []))
-                    else:
-                        overall_status = "unknown"
-                        current_stage = 0
-                        total_stages = 0
-                    
-                    # Check if status changed
-                    new_status = {
-                        "timestamp": datetime.now().strftime("%H:%M:%S.%f")[:-3],
-                        "overall_status": overall_status,
-                        "current_stage": current_stage,
-                        "total_stages": total_stages,
-                        "progress": f"{current_stage}/{total_stages}" if total_stages > 0 else "0/0"
-                    }
-                    
-                    if new_status != self.last_status:
-                        self.last_status = new_status
-                        self.status_history.append(new_status)
+            # Check each agent log file
+            agent_logs = [
+                "coordinator_agent.log",
+                "planner_agent.log", 
+                "searcher_agent.log",
+                "discusser_agent.log",
+                "writer_agent.log",
+                "reviewer_agent.log",
+                "rewriter_agent.log"
+            ]
+            
+            for log_file in agent_logs:
+                log_path = os.path.join(logs_dir, log_file)
+                if os.path.exists(log_path):
+                    try:
+                        file_stat = os.stat(log_path)
+                        file_size = file_stat.st_size
+                        file_mtime = file_stat.st_mtime
                         
-                        # Log status change with high visibility
-                        self.logger.info(f"🔥 状态更新: {overall_status} | 阶段: {current_stage}/{total_stages} | 时间: {new_status['timestamp']}")
+                        # Check if log file changed
+                        file_key = log_path
+                        if file_key not in self.last_modified or self.last_modified[file_key] != file_mtime:
+                            self.last_modified[file_key] = file_mtime
+                            
+                            # Read last few lines of the log
+                            try:
+                                with open(log_path, 'r', encoding='utf-8') as f:
+                                    lines = f.readlines()
+                                    if lines:
+                                        last_line = lines[-1].strip()
+                                        # Only log important events (not heartbeat messages)
+                                        if any(keyword in last_line for keyword in ["✅", "❌", "⚠️", "🎯", "🚀", "📤", "📋"]):
+                                            agent_name = log_file.replace("_agent.log", "")
+                                            self.logger.info(f"🤖 {agent_name}: {last_line}")
+                                            
+                            except Exception as e:
+                                pass  # Skip unreadable log files
+                                
+                    except Exception as e:
+                        pass  # Skip files with errors
                         
-                        # Save status to file
-                        await self._save_status_update(new_status)
+        except Exception as e:
+            self.logger.error(f"检查智能体日志失败: {e}")
+            
+    async def _check_workflow_status_from_logs(self):
+        """从日志文件检查工作流状态"""
+        try:
+            logs_dir = os.path.join(self.output_dir, "logs")
+            if not os.path.exists(logs_dir):
+                return
+                
+            # 检查协调器日志中的工作流状态
+            coordinator_log = os.path.join(logs_dir, "coordinator_agent.log")
+            if os.path.exists(coordinator_log):
+                try:
+                    with open(coordinator_log, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                        # 检查最后100行
+                        recent_lines = lines[-100:] if len(lines) > 100 else lines
+                        
+                        # 分析工作流状态
+                        workflow_status = self._analyze_workflow_status_from_logs(recent_lines)
+                        
+                        if workflow_status != self.last_status:
+                            self.last_status = workflow_status
+                            self.status_history.append(workflow_status)
+                            self.logger.info(f"🔥 工作流状态更新: {workflow_status}")
+                            
+                except Exception as e:
+                    pass  # Skip unreadable log files
                     
         except Exception as e:
-            self.logger.error(f"检查工作流状态失败: {e}")
+            self.logger.error(f"从日志检查工作流状态失败: {e}")
+            
+    def _analyze_workflow_status_from_logs(self, log_lines: List[str]) -> Dict[str, Any]:
+        """从日志行分析工作流状态"""
+        try:
+            status = {
+                "timestamp": datetime.now().strftime("%H:%M:%S.%f")[:-3],
+                "overall_status": "running",
+                "current_stage": 0,
+                "total_stages": 7,  # 默认7个阶段
+                "progress": "0/7"
+            }
+            
+            # 分析日志内容
+            for line in log_lines:
+                line = line.strip()
+                
+                # 检查阶段完成情况
+                if "✅ 阶段完成" in line or "🎯 阶段" in line:
+                    if "planner" in line.lower():
+                        status["current_stage"] = max(status["current_stage"], 1)
+                    elif "searcher" in line.lower():
+                        status["current_stage"] = max(status["current_stage"], 2)
+                    elif "discusser" in line.lower():
+                        status["current_stage"] = max(status["current_stage"], 3)
+                    elif "writer" in line.lower():
+                        status["current_stage"] = max(status["current_stage"], 4)
+                    elif "reviewer" in line.lower():
+                        status["current_stage"] = max(status["current_stage"], 5)
+                    elif "rewriter" in line.lower():
+                        status["current_stage"] = max(status["current_stage"], 6)
+                        
+                # 检查工作流完成
+                if "🎉 工作流完成" in line or "✅ 工作流完成" in line:
+                    status["overall_status"] = "completed"
+                    status["current_stage"] = 7
+                    
+                # 检查工作流失败
+                if "❌ 工作流失败" in line or "error" in line.lower():
+                    status["overall_status"] = "failed"
+                    
+            # 更新进度
+            status["progress"] = f"{status['current_stage']}/{status['total_stages']}"
+            
+            return status
+            
+        except Exception as e:
+            return {
+                "timestamp": datetime.now().strftime("%H:%M:%S.%f")[:-3],
+                "overall_status": "unknown",
+                "current_stage": 0,
+                "total_stages": 7,
+                "progress": "0/7",
+                "error": str(e)
+            }
             
     async def _check_system_resources(self):
         """检查系统资源"""
@@ -246,8 +275,9 @@ class UltraRealTimeMonitor:
                 "process_memory_mb": round(process_memory, 2)
             }
             
-            # Log resource usage
-            self.logger.info(f"💻 资源使用: CPU {cpu_percent}% | 内存 {memory.percent}% | 进程内存 {process_memory:.1f}MB")
+            # Log resource usage (less frequent)
+            if int(time.time()) % 30 == 0:  # 每30秒记录一次
+                self.logger.info(f"💻 资源使用: CPU {cpu_percent}% | 内存 {memory.percent}% | 进程内存 {process_memory:.1f}MB")
             
         except ImportError:
             # Fallback without psutil
@@ -267,10 +297,12 @@ class UltraRealTimeMonitor:
                         
                 if total_mem > 0:
                     memory_percent = ((total_mem - free_mem) / total_mem) * 100
-                    self.logger.info(f"💻 内存使用: {memory_percent:.1f}%")
+                    if int(time.time()) % 30 == 0:  # 每30秒记录一次
+                        self.logger.info(f"💻 内存使用: {memory_percent:.1f}%")
                     
             except Exception as e:
-                self.logger.info(f"💻 系统资源监控: 基础模式")
+                if int(time.time()) % 30 == 0:  # 每30秒记录一次
+                    self.logger.info(f"💻 系统资源监控: 基础模式")
                 
         except Exception as e:
             self.logger.error(f"检查系统资源失败: {e}")
@@ -278,292 +310,173 @@ class UltraRealTimeMonitor:
     async def _check_output_files(self):
         """检查输出文件"""
         try:
-            # Check for new patent files
-            patent_files = list(Path(self.monitor_dir).glob("enhanced_patent_*.md"))
-            
-            for file_path in patent_files:
-                file_stat = file_path.stat()
-                file_size = file_stat.st_size
-                file_mtime = file_stat.st_mtime
-                
-                # Check if this is a new or updated file
-                file_key = str(file_path)
-                if file_key not in self.last_modified or self.last_modified[file_key] != file_mtime:
-                    self.last_modified[file_key] = file_mtime
+            # Check for new output files
+            output_files = []
+            if os.path.exists(self.output_dir):
+                for file in os.listdir(self.output_dir):
+                    if file.endswith('.md') or file.endswith('.txt') or file.endswith('.json'):
+                        file_path = os.path.join(self.output_dir, file)
+                        output_files.append(file_path)
+                        
+            # Check for changes in existing files
+            for file_path in output_files:
+                try:
+                    file_stat = os.stat(file_path)
+                    file_size = file_stat.st_size
+                    file_mtime = file_stat.st_mtime
                     
-                    # Read file content
-                    try:
-                        with open(file_path, 'r', encoding='utf-8') as f:
-                            content = f.read()
-                            
-                        output_info = {
+                    # Check if file changed
+                    file_key = file_path
+                    if file_key not in self.last_modified or self.last_modified[file_key] != file_mtime:
+                        self.last_modified[file_key] = file_mtime
+                        
+                        # Get file size change
+                        old_size = self.last_file_sizes.get(file_key, 0)
+                        size_change = file_size - old_size
+                        self.last_file_sizes[file_key] = file_size
+                        
+                        # Log file change
+                        file_name = os.path.basename(file_path)
+                        self.logger.info(f"📄 文件更新: {file_name} | 大小变化: {size_change:+d} bytes | 总大小: {file_size} bytes")
+                        
+                        # Record file change
+                        self.file_changes.append({
                             "timestamp": datetime.now().strftime("%H:%M:%S.%f")[:-3],
-                            "file": file_path.name,
-                            "size": file_size,
-                            "content_length": len(content),
-                            "content_preview": content[:200] + "..." if len(content) > 200 else content
-                        }
+                            "file": file_name,
+                            "size_change": size_change,
+                            "total_size": file_size
+                        })
                         
-                        self.logger.info(f"📄 输出文件更新: {file_path.name} ({file_size} bytes) - {output_info['timestamp']}")
-                        
-                        # Save output info
-                        await self._save_output_update(output_info)
-                        
-                    except Exception as e:
-                        self.logger.error(f"读取文件失败 {file_path}: {e}")
-                        
+                except Exception as e:
+                    pass  # Skip files with errors
+                    
         except Exception as e:
             self.logger.error(f"检查输出文件失败: {e}")
             
     def _check_all_files(self):
-        """检查所有相关文件的变化"""
+        """检查所有相关文件"""
         try:
-            # Check for various file types
-            file_patterns = [
-                "*.md", "*.log", "*.json", "*.txt", "*.py"
-            ]
-            
-            for pattern in file_patterns:
-                files = glob.glob(os.path.join(self.monitor_dir, pattern))
-                
-                for file_path in files:
-                    try:
-                        if os.path.exists(file_path):
-                            file_size = os.path.getsize(file_path)
-                            file_mtime = os.path.getmtime(file_path)
+            # Check log files
+            logs_dir = os.path.join(self.output_dir, "logs")
+            if os.path.exists(logs_dir):
+                for log_file in os.listdir(logs_dir):
+                    if log_file.endswith('.log'):
+                        log_path = os.path.join(logs_dir, log_file)
+                        try:
+                            file_stat = os.stat(log_path)
+                            file_size = file_stat.st_size
+                            file_mtime = file_stat.st_mtime
                             
-                            # Check if file changed
-                            file_key = file_path
-                            if file_key not in self.last_file_sizes or self.last_file_sizes[file_key] != file_size:
-                                self.last_file_sizes[file_key] = file_size
+                            # Check if log file changed
+                            file_key = log_path
+                            if file_key not in self.last_modified or self.last_modified[file_key] != file_mtime:
+                                self.last_modified[file_key] = file_mtime
                                 
-                                # Calculate file hash for content change detection
+                                # Read last line of the log
                                 try:
-                                    with open(file_path, 'rb') as f:
-                                        file_hash = hashlib.md5(f.read()).hexdigest()[:8]
-                                        
-                                    if file_key not in self.last_file_hashes or self.last_file_hashes[file_key] != file_hash:
-                                        self.last_file_hashes[file_key] = file_hash
-                                        
-                                        # Log significant changes
-                                        if file_size > 100:  # Only log files larger than 100 bytes
-                                            rel_path = os.path.relpath(file_path, self.monitor_dir)
-                                            current_time = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                                            
-                                            change_info = {
-                                                "timestamp": current_time,
-                                                "file": rel_path,
-                                                "size": file_size,
-                                                "hash": file_hash
-                                            }
-                                            
-                                            self.file_changes.append(change_info)
-                                            
-                                            # Log important file changes
-                                            if "enhanced_patent" in rel_path or "workflow" in rel_path:
-                                                self.logger.info(f"📝 重要文件变化: {rel_path} ({file_size} bytes) - {current_time}")
+                                    with open(log_path, 'r', encoding='utf-8') as f:
+                                        lines = f.readlines()
+                                        if lines:
+                                            last_line = lines[-1].strip()
+                                            # Only log important events
+                                            if any(keyword in last_line for keyword in ["✅", "❌", "⚠️", "🎯", "🚀", "📤", "📋"]):
+                                                agent_name = log_file.replace("_agent.log", "")
+                                                self.logger.info(f"🤖 {agent_name}: {last_line}")
                                                 
                                 except Exception as e:
-                                    pass  # Skip files that can't be read
+                                    pass  # Skip unreadable log files
                                     
-                    except Exception as e:
-                        pass  # Skip files with errors
-                        
+                        except Exception as e:
+                            pass  # Skip files with errors
+                            
         except Exception as e:
-            pass  # Don't let file monitoring errors stop the main loop
+            pass  # Silent error handling for file monitoring
             
-    def _is_workflow_completed(self) -> bool:
-        """检查工作流是否完成"""
-        if not self.last_status:
-            return False
-            
-        return self.last_status["overall_status"] in ["completed", "finished", "success"]
-        
     async def _save_status_update(self, status: Dict[str, Any]):
-        """保存状态更新"""
+        """保存状态更新到文件"""
         try:
-            status_file = os.path.join(self.output_dir, f"ultra_status_{self.workflow_id}.json")
+            status_file = os.path.join(self.output_dir, "workflow_status.json")
             
-            # Load existing status or create new
+            # Load existing status history
+            status_history = []
             if os.path.exists(status_file):
-                with open(status_file, 'r', encoding='utf-8') as f:
-                    status_data = json.load(f)
-            else:
-                status_data = {"workflow_id": self.workflow_id, "status_history": []}
-                
+                try:
+                    with open(status_file, 'r', encoding='utf-8') as f:
+                        status_history = json.load(f)
+                except Exception as e:
+                    self.logger.warning(f"读取状态文件失败: {e}")
+                    
             # Add new status
-            status_data["status_history"].append(status)
-            status_data["last_update"] = status["timestamp"]
+            status_history.append(status)
             
-            # Save to file
+            # Keep only last 100 status updates
+            if len(status_history) > 100:
+                status_history = status_history[-100:]
+                
+            # Save updated status history
             with open(status_file, 'w', encoding='utf-8') as f:
-                json.dump(status_data, f, ensure_ascii=False, indent=2)
+                json.dump(status_history, f, ensure_ascii=False, indent=2)
                 
         except Exception as e:
             self.logger.error(f"保存状态更新失败: {e}")
             
-    async def _save_output_update(self, output_info: Dict[str, Any]):
-        """保存输出更新"""
-        try:
-            output_file = os.path.join(self.output_dir, f"ultra_output_{self.workflow_id}.json")
-            
-            # Load existing output or create new
-            if os.path.exists(output_file):
-                with open(output_file, 'r', encoding='utf-8') as f:
-                    output_data = json.load(f)
-            else:
-                output_data = {"workflow_id": self.workflow_id, "outputs": []}
-                
-            # Add new output
-            output_data["outputs"].append(output_info)
-            output_data["last_update"] = output_info["timestamp"]
-            
-            # Save to file
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(output_data, f, ensure_ascii=False, indent=2)
-                
-        except Exception as e:
-            self.logger.error(f"保存输出更新失败: {e}")
-            
-    async def _generate_periodic_report(self):
-        """生成周期性状态报告"""
-        try:
-            current_time = datetime.now().strftime("%H:%M:%S")
-            elapsed_time = time.time() - self.start_time if self.start_time else 0
-            
-            # Calculate progress
-            progress_info = "未知"
-            if self.last_status:
-                progress_info = f"{self.last_status['overall_status']} | 阶段: {self.last_status['progress']}"
-            
-            # Count recent file changes
-            recent_changes = len([c for c in self.file_changes if time.time() - self._parse_timestamp(c.get('timestamp', '0')) < 60])
-            
-            # Count status updates
-            recent_status_updates = len([s for s in self.status_history if time.time() - self._parse_timestamp(s.get('timestamp', '0')) < 60])
-            
-            # Generate report
-            report = f"""
-{'='*80}
-📊 周期性状态报告 - {current_time}
-{'='*80}
-⏱️  运行时间: {elapsed_time:.1f} 秒
-🆔  工作流ID: {self.workflow_id or '未启动'}
-📈  当前状态: {progress_info}
-📝  状态更新: {len(self.status_history)} 次 (最近1分钟: {recent_status_updates} 次)
-📄  文件变化: {len(self.file_changes)} 次 (最近1分钟: {recent_changes} 次)
-🔄  监控状态: {'运行中' if self.monitoring else '已停止'}
-{'='*80}
-"""
-            
-            # Log the report
-            self.logger.info(report)
-            
-            # Save periodic report
-            report_data = {
-                "timestamp": current_time,
-                "elapsed_time": elapsed_time,
-                "workflow_id": self.workflow_id,
-                "current_status": progress_info,
-                "total_status_updates": len(self.status_history),
-                "recent_status_updates": recent_status_updates,
-                "total_file_changes": len(self.file_changes),
-                "recent_file_changes": recent_changes,
-                "monitoring_active": self.monitoring
-            }
-            
-            report_file = os.path.join(self.output_dir, f"periodic_report_{self.workflow_id}.json")
-            with open(report_file, 'w', encoding='utf-8') as f:
-                json.dump(report_data, f, ensure_ascii=False, indent=2)
-                
-        except Exception as e:
-            self.logger.error(f"生成周期性报告失败: {e}")
-            
-    def _parse_timestamp(self, timestamp_str: str) -> float:
-        """解析时间戳字符串"""
-        try:
-            # Parse timestamp in format HH:MM:SS.mmm
-            if '.' in timestamp_str:
-                time_part, ms_part = timestamp_str.split('.')
-                hours, minutes, seconds = map(int, time_part.split(':'))
-                milliseconds = int(ms_part)
-                return hours * 3600 + minutes * 60 + seconds + milliseconds / 1000
-            else:
-                hours, minutes, seconds = map(int, timestamp_str.split(':'))
-                return hours * 3600 + minutes * 60 + seconds
-        except:
-            return 0
-            
-    async def stop_monitoring(self):
+    def stop_monitoring(self):
         """停止监控"""
-        try:
-            self.logger.info("🛑 停止超实时监控")
-            self.monitoring = False
+        self.logger.info("🛑 停止超实时监控")
+        self.monitoring = False
+        
+        if self.monitor_thread and self.monitor_thread.is_alive():
+            self.monitor_thread.join(timeout=5)
             
-            # Stop system
-            if self.system:
-                await self.system.stop()
-                
-            # Generate final report
-            await self._generate_final_report()
-            
-        except Exception as e:
-            self.logger.error(f"停止监控失败: {e}")
-            
-    async def _generate_final_report(self):
-        """生成最终报告"""
-        try:
-            report = {
-                "workflow_id": self.workflow_id,
-                "start_time": self.start_time,
-                "end_time": time.time(),
-                "duration": time.time() - self.start_time if self.start_time else 0,
+        # Save final status
+        if self.status_history:
+            final_status = {
+                "timestamp": datetime.now().strftime("%H:%M:%S.%f")[:-3],
+                "monitoring_duration": time.time() - self.start_time if self.start_time else 0,
                 "total_status_updates": len(self.status_history),
                 "total_file_changes": len(self.file_changes),
-                "final_status": self.last_status,
-                "status_history": self.status_history[-20:],  # Last 20 updates
-                "file_changes": self.file_changes[-50:]  # Last 50 changes
+                "final_status": self.status_history[-1] if self.status_history else None
             }
             
-            report_file = os.path.join(self.output_dir, f"ultra_report_{self.workflow_id}.json")
-            with open(report_file, 'w', encoding='utf-8') as f:
-                json.dump(report, f, ensure_ascii=False, indent=2)
+            try:
+                final_status_file = os.path.join(self.output_dir, "monitoring_summary.json")
+                with open(final_status_file, 'w', encoding='utf-8') as f:
+                    json.dump(final_status, f, ensure_ascii=False, indent=2)
+                self.logger.info("✅ 监控摘要已保存")
+            except Exception as e:
+                self.logger.error(f"保存监控摘要失败: {e}")
                 
-            self.logger.info(f"📊 超实时监控报告已生成: {report_file}")
-            
-        except Exception as e:
-            self.logger.error(f"生成最终报告失败: {e}")
+    def get_monitoring_summary(self) -> Dict[str, Any]:
+        """获取监控摘要"""
+        return {
+            "monitoring_duration": time.time() - self.start_time if self.start_time else 0,
+            "total_status_updates": len(self.status_history),
+            "total_file_changes": len(self.file_changes),
+            "current_status": self.last_status,
+            "file_changes": self.file_changes[-10:] if self.file_changes else [],  # Last 10 changes
+            "status_history": self.status_history[-10:] if self.status_history else []  # Last 10 status updates
+        }
 
 async def main():
     """主函数"""
     try:
-        # 定义专利主题
-        topic = "基于智能分层推理的多参数工具自适应调用系统"
-        description = "一种通过智能分层推理技术实现多参数工具自适应调用的系统，能够根据上下文和用户意图自动推断工具参数，提高大语言模型调用复杂工具的准确性和效率。"
-        
-        print("=" * 80)
-        print("🚀 启动超实时工作流监控系统")
-        print("=" * 80)
-        print(f"主题: {topic}")
-        print(f"描述: {description}")
-        print("=" * 80)
-        print("📊 监控间隔: 状态检查 1秒 | 资源检查 3秒 | 文件检查 0.5秒")
-        print("=" * 80)
-        
         # 创建监控器
         monitor = UltraRealTimeMonitor()
+        
+        # 设置主题和描述
+        topic = "智能多参数工具调用系统"
+        description = "一种基于智能分层推理的多参数工具自适应调用系统，通过分层推理和自适应机制提高调用准确性"
         
         # 启动监控
         await monitor.start_monitoring(topic, description)
         
     except KeyboardInterrupt:
-        print("\n🛑 用户中断，正在停止监控...")
-        if 'monitor' in locals():
-            await monitor.stop_monitoring()
+        print("\n🛑 用户中断监控")
     except Exception as e:
-        print(f"❌ 监控系统错误: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"❌ 监控失败: {e}")
+    finally:
+        if 'monitor' in locals():
+            monitor.stop_monitoring()
 
 if __name__ == "__main__":
     asyncio.run(main())

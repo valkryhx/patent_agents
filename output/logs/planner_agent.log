@@ -1,43 +1,20 @@
-2025-08-17 05:34:37 INFO agent.planner_agent: 🚀 planner_agent 智能体初始化开始
-2025-08-17 05:34:37 INFO agent.planner_agent:    能力: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
-2025-08-17 05:34:37 INFO agent.planner_agent:    测试模式: True
-2025-08-17 05:34:37 INFO agent.planner_agent:    状态: idle
-2025-08-17 05:34:37 INFO agent.planner_agent: 🧪 planner_agent 以测试模式初始化
-2025-08-17 05:34:37 INFO agent.planner_agent: 🔄 planner_agent 开始启动...
-2025-08-17 05:34:37 INFO agent.planner_agent: ✅ planner_agent 已注册到消息总线
-2025-08-17 05:34:37 INFO agent.planner_agent: 🔄 planner_agent 消息处理循环开始
-2025-08-17 05:34:37 ERROR agent.planner_agent: ❌ planner_agent 启动失败: type object 'AgentStatus' has no attribute 'ONLINE'
-2025-08-17 05:34:37 ERROR agent.planner_agent:    错误详情: Traceback (most recent call last):
-  File "/workspace/patent_agent_demo/agents/base_agent.py", line 76, in start
-    self.status = AgentStatus.ONLINE
-                  ^^^^^^^^^^^^^^^^^^
-AttributeError: type object 'AgentStatus' has no attribute 'ONLINE'. Did you mean: 'OFFLINE'?
-
-2025-08-17 05:34:37 INFO agent.planner_agent: 🔄 planner_agent 开始停止...
-2025-08-17 05:34:37 INFO agent.planner_agent: 📊 planner_agent 状态更新为: offline
-2025-08-17 05:34:37 INFO agent.planner_agent: ✅ planner_agent 消息处理任务已取消
-2025-08-17 05:34:37 INFO agent.planner_agent: ✅ planner_agent 已从消息总线注销
-2025-08-17 05:34:37 INFO agent.planner_agent: 📊 planner_agent 性能统计:
-2025-08-17 05:34:37 INFO agent.planner_agent:    完成任务: 0
-2025-08-17 05:34:37 INFO agent.planner_agent:    失败任务: 0
-2025-08-17 05:34:37 INFO agent.planner_agent:    平均执行时间: 0.00秒
-2025-08-17 05:34:37 INFO agent.planner_agent:    总执行时间: 0.00秒
-2025-08-17 05:34:47 INFO agent.planner_agent: 🚀 planner_agent 智能体初始化开始
-2025-08-17 05:34:47 INFO agent.planner_agent:    能力: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
-2025-08-17 05:34:47 INFO agent.planner_agent:    测试模式: True
-2025-08-17 05:34:47 INFO agent.planner_agent:    状态: idle
-2025-08-17 05:34:47 INFO agent.planner_agent: 🧪 planner_agent 以测试模式初始化
-2025-08-17 05:34:47 INFO agent.planner_agent: 🔄 planner_agent 开始启动...
-2025-08-17 05:34:47 INFO agent.planner_agent: ✅ planner_agent 已注册到消息总线
-2025-08-17 05:34:47 INFO agent.planner_agent: 🔄 planner_agent 消息处理循环开始
-2025-08-17 05:34:47 INFO agent.planner_agent: ✅ planner_agent 启动成功，状态: idle
-2025-08-17 05:34:47 INFO agent.planner_agent:    能力: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
-2025-08-17 05:34:55 INFO agent.planner_agent: 🔄 planner_agent 开始停止...
-2025-08-17 05:34:55 INFO agent.planner_agent: 📊 planner_agent 状态更新为: offline
-2025-08-17 05:34:55 INFO agent.planner_agent: ✅ planner_agent 消息处理任务已取消
-2025-08-17 05:34:55 INFO agent.planner_agent: ✅ planner_agent 已从消息总线注销
-2025-08-17 05:34:55 INFO agent.planner_agent: 📊 planner_agent 性能统计:
-2025-08-17 05:34:55 INFO agent.planner_agent:    完成任务: 0
-2025-08-17 05:34:55 INFO agent.planner_agent:    失败任务: 0
-2025-08-17 05:34:55 INFO agent.planner_agent:    平均执行时间: 0.00秒
-2025-08-17 05:34:55 INFO agent.planner_agent:    总执行时间: 0.00秒
+2025-08-17 06:41:53 INFO agent.planner_agent: 🚀 planner_agent 智能体初始化开始
+2025-08-17 06:41:53 INFO agent.planner_agent:    能力: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-17 06:41:53 INFO agent.planner_agent:    测试模式: True
+2025-08-17 06:41:53 INFO agent.planner_agent:    状态: idle
+2025-08-17 06:41:53 INFO agent.planner_agent: 🧪 planner_agent 以测试模式初始化
+2025-08-17 06:41:53 INFO agent.planner_agent: 🔄 planner_agent 开始启动...
+2025-08-17 06:41:53 INFO agent.planner_agent: ✅ planner_agent 已注册到消息总线
+2025-08-17 06:41:53 INFO agent.planner_agent: 🔄 planner_agent 消息处理循环开始
+2025-08-17 06:41:53 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 06:41:53 INFO agent.planner_agent: ✅ planner_agent 启动成功，状态: idle
+2025-08-17 06:41:53 INFO agent.planner_agent:    能力: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+2025-08-17 06:42:01 INFO agent.planner_agent: 🔄 planner_agent 开始停止...
+2025-08-17 06:42:01 INFO agent.planner_agent: 📊 planner_agent 状态更新为: offline
+2025-08-17 06:42:01 INFO agent.planner_agent: ✅ planner_agent 消息处理任务已取消
+2025-08-17 06:42:01 INFO agent.planner_agent: ✅ planner_agent 已从消息总线注销
+2025-08-17 06:42:01 INFO agent.planner_agent: 📊 planner_agent 性能统计:
+2025-08-17 06:42:01 INFO agent.planner_agent:    完成任务: 0
+2025-08-17 06:42:01 INFO agent.planner_agent:    失败任务: 0
+2025-08-17 06:42:01 INFO agent.planner_agent:    平均执行时间: 0.00秒
+2025-08-17 06:42:01 INFO agent.planner_agent:    总执行时间: 0.00秒

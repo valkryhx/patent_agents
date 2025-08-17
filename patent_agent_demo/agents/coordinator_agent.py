@@ -77,9 +77,10 @@ class CoordinatorAgent(BaseAgent):
             if task_type == "start_patent_workflow":
                 self.agent_logger.info(f"🚀 开始专利工作流")
                 return await self._start_patent_workflow(task_data)
-            elif task_type == "monitor_workflow":
-                self.agent_logger.info(f"📊 监控工作流")
-                return await self._monitor_workflow(task_data)
+            # 删除监控任务处理，协调器不应该执行监控任务
+            # elif task_type == "monitor_workflow":
+            #     self.agent_logger.info(f"📊 监控工作流")
+            #     return await self._monitor_workflow(task_data)
             elif task_type == "handle_workflow_completion":
                 self.agent_logger.info(f"✅ 处理工作流完成")
                 return await self._handle_workflow_completion(task_data)
@@ -1042,65 +1043,66 @@ class CoordinatorAgent(BaseAgent):
                 "confidence_score": 0.85
             }
             
-    async def _monitor_workflow(self, task_data: Dict[str, Any]) -> TaskResult:
-        """Monitor active workflows"""
-        try:
-            workflow_id = task_data.get("workflow_id")
-            
-            if workflow_id:
-                # Monitor specific workflow
-                workflow = self.active_workflows.get(workflow_id)
-                if workflow:
-                    return TaskResult(
-                        success=True,
-                        data={
-                            "workflow": workflow,
-                            "current_stage": workflow.stages[workflow.current_stage] if workflow.stages else None,
-                            "progress": f"{workflow.current_stage + 1}/{len(workflow.stages)}"
-                        }
-                    )
-                else:
-                    # Check if it's completed and stored
-                    if workflow_id in self.completed_workflows:
-                        return TaskResult(
-                            success=True,
-                            data={
-                                "workflow": {"workflow_id": workflow_id, "overall_status": "completed"},
-                                "final_results": self.completed_workflows.get(workflow_id)
-                            }
-                        )
-                    return TaskResult(
-                        success=False,
-                        data={},
-                        error_message=f"Workflow {workflow_id} not found"
-                    )
-            else:
-                # Monitor all workflows
-                workflows_summary = []
-                for wf_id, workflow in self.active_workflows.items():
-                    workflows_summary.append({
-                        "workflow_id": wf_id,
-                        "topic": workflow.topic,
-                        "status": workflow.overall_status,
-                        "current_stage": workflow.current_stage,
-                        "progress": f"{workflow.current_stage + 1}/{len(workflow.stages)}"
-                    })
-                    
-                return TaskResult(
-                    success=True,
-                    data={
-                        "active_workflows": workflows_summary,
-                        "total_workflows": len(workflows_summary)
-                    }
-                )
-                
-        except Exception as e:
-            logger.error(f"Error monitoring workflow: {e}")
-            return TaskResult(
-                success=False,
-                data={},
-                error_message=str(e)
-            )
+    # 删除监控工作流方法，协调器不应该执行监控任务
+    # async def _monitor_workflow(self, task_data: Dict[str, Any]) -> TaskResult:
+    #     """Monitor active workflows"""
+    #     try:
+    #         workflow_id = task_data.get("workflow_id")
+    #         
+    #         if workflow_id:
+    #             # Monitor specific workflow
+    #             workflow = self.active_workflows.get(workflow_id)
+    #             try:
+    #                 return TaskResult(
+    #                     success=True,
+    #                     data={
+    #                         "workflow": workflow,
+    #                         "current_stage": workflow.stages[workflow.current_stage] if workflow.stages else None,
+    #                         "progress": f"{workflow.current_stage + 1}/{len(workflow.stages)}"
+    #                     }
+    #                 )
+    #             else:
+    #                 # Check if it's completed and stored
+    #                 if workflow_id in self.completed_workflows:
+    #                     return TaskResult(
+    #                         success=True,
+    #                         data={
+    #                             "workflow": {"workflow_id": workflow_id, "overall_status": "completed"},
+    #                             "final_results": self.completed_workflows.get(workflow_id)
+    #                         }
+    #                     )
+    #                 return TaskResult(
+    #                     success=False,
+    #                     data={},
+    #                     error_message=f"Workflow {workflow_id} not found"
+    #                 )
+    #         else:
+    #             # Monitor all workflows
+    #             workflows_summary = []
+    #             for wf_id, workflow in self.active_workflows.items():
+    #                 workflows_summary.append({
+    #                         "workflow_id": wf_id,
+    #                         "topic": workflow.topic,
+    #                         "status": workflow.overall_status,
+    #                         "current_stage": workflow.current_stage,
+    #                         "progress": f"{workflow.current_stage + 1}/{len(workflow.stages)}"
+    #                     })
+    #                     
+    #             return TaskResult(
+    #                 success=True,
+    #                 data={
+    #                     "active_workflows": workflows_summary,
+    #                     "total_workflows": len(workflows_summary)
+    #                 }
+    #             )
+    #             
+    #     except Exception as e:
+    #         logger.error(f"Error monitoring workflow: {e}")
+    #         return TaskResult(
+    #             success=False,
+    #                 data={},
+    #                 error_message=str(e)
+    #             )
             
     async def _handle_workflow_completion(self, task_data: Dict[str, Any]) -> TaskResult:
         """Handle workflow completion notifications"""

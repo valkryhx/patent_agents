@@ -102,68 +102,30 @@ class EnhancedPatentWorkflow:
             last_status = None
             
             while True:
-                # 获取工作流状态
-                try:
-                    status_result = await self.system.get_workflow_status(self.workflow_id)
-                    workflow_data = status_result.get("workflow", {})
-                    
-                    # Handle both dictionary and object cases
-                    if hasattr(workflow_data, 'overall_status'):
-                        overall_status = workflow_data.overall_status
-                    elif isinstance(workflow_data, dict):
-                        overall_status = workflow_data.get("overall_status", "unknown")
-                    else:
-                        overall_status = "unknown"
-                        
-                    # Get current stage info
-                    current_stage = None
-                    if hasattr(workflow_data, 'current_stage'):
-                        current_stage = workflow_data.current_stage
-                    elif isinstance(workflow_data, dict):
-                        current_stage = workflow_data.get("current_stage", 0)
-                        
-                    # Get stages info
-                    stages = []
-                    if hasattr(workflow_data, 'stages'):
-                        stages = workflow_data.stages
-                    elif isinstance(workflow_data, dict):
-                        stages = workflow_data.get("stages", [])
-                        
-                except Exception as e:
-                    logger.error(f"获取工作流状态失败: {e}")
-                    import traceback
-                    traceback.print_exc()
-                    break
+                # 不再调用get_workflow_status，避免向协调器发送监控任务
+                # 改为通过日志文件监控工作流状态
+                logger.info(f"📊 通过日志文件监控工作流状态")
+                
+                # 检查是否完成
+                # 这里可以通过检查输出文件来判断工作流是否完成
+                output_files = []
+                if os.path.exists("output"):
+                    output_files = [f for f in os.listdir("output") if f.endswith('.md')]
+                
+                if len(output_files) > 0:
+                    logger.info(f"📄 发现输出文件: {len(output_files)} 个")
+                    # 如果有输出文件，认为工作流可能已完成
+                    overall_status = "completed"
+                else:
+                    overall_status = "running"
                 
                 # Log status changes
                 if overall_status != last_status:
                     logger.info(f"📈 工作流状态变化: {last_status} -> {overall_status}")
                     last_status = overall_status
                 
-                logger.info(f"📈 工作流状态: {overall_status}, 当前阶段: {current_stage}")
+                logger.info(f"📈 工作流状态: {overall_status}")
                 
-                # Log stage details
-                if stages and current_stage is not None and current_stage < len(stages):
-                    stage = stages[current_stage]
-                    if hasattr(stage, 'status'):
-                        stage_status = stage.status
-                        stage_name = stage.stage_name
-                        logger.info(f"📋 当前阶段: {stage_name} - {stage_status}")
-                        
-                        # If stage is running for too long, log more details
-                        if stage_status == 'running' and hasattr(stage, 'start_time') and stage.start_time:
-                            elapsed = time.time() - stage.start_time
-                            if elapsed > 300:  # 5 minutes
-                                logger.warning(f"⚠️ 阶段 {stage_name} 运行时间过长: {elapsed:.1f}秒")
-                
-                # 获取上下文摘要
-                try:
-                    context_summary = await context_manager.get_context_summary(self.workflow_id)
-                    if context_summary:
-                        logger.info(f"📋 上下文摘要: {context_summary.get('theme', {}).get('primary_title')}")
-                except Exception as e:
-                    logger.warning(f"获取上下文摘要失败: {e}")
-                    
                 # 检查是否完成
                 if overall_status == "completed":
                     logger.info("🎉 工作流完成！")
@@ -203,20 +165,18 @@ class EnhancedPatentWorkflow:
                 
             logger.info(f"📄 获取最终专利文档: {self.workflow_id}")
             
-            # 获取工作流状态
-            try:
-                status_result = await self.system.get_workflow_status(self.workflow_id)
-                workflow_data = status_result.get("workflow", {})
-                
-                # Handle both dictionary and object cases
-                if hasattr(workflow_data, 'results'):
-                    results = workflow_data.results
-                elif isinstance(workflow_data, dict):
-                    results = workflow_data.get("results", {})
-                else:
-                    results = {}
-            except Exception as e:
-                raise RuntimeError(f"获取工作流状态失败: {e}")
+            # 不再调用get_workflow_status，直接从输出文件获取结果
+            results = {}
+            if os.path.exists("output"):
+                output_files = [f for f in os.listdir("output") if f.endswith('.md')]
+                for file in output_files:
+                    file_path = os.path.join("output", file)
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            results[file] = content
+                    except Exception as e:
+                        logger.warning(f"读取输出文件失败 {file}: {e}")
             
             # 构建完整的专利文档
             patent_document = await self._build_patent_document(results)
