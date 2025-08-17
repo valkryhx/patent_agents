@@ -488,21 +488,32 @@ class CoordinatorAgent(BaseAgent):
                         
                         logger.info(f"STAGE COMPLETE parsed workflow={workflow_id} stage={stage_index}")
                         
-                        # Handle stage completion
+                        # Handle stage completion with detailed logging
+                        logger.info(f"About to call _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
                         await self._handle_stage_completion(workflow_id, stage_index, result)
+                        logger.info(f"Successfully completed _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
                     else:
                         logger.warning(f"Invalid task_id format: {task_id}")
                         
                 except (ValueError, IndexError) as e:
                     logger.error(f"Error parsing task_id {task_id}: {e}")
+                except Exception as e:
+                    logger.error(f"Error in _handle_stage_completion for task_id {task_id}: {e}")
+                    import traceback
+                    logger.error(f"Traceback: {traceback.format_exc()}")
             else:
                 # Fallback to base for agent status updates
-                pass
+                logger.info(f"Not a stage completion message: task_id={task_id}, status={status}, success={success}")
                 
         except Exception as e:
             logger.error(f"Coordinator status handling error: {e}")
             # Fallback to base handler
             await super()._handle_status_message(message)
+        else:
+            # Call base handler for normal status updates
+            await super()._handle_status_message(message)
+        finally:
+            logger.info("✅ coordinator_agent 状态消息处理完成")
  
     async def _handle_error_message(self, message: Message):
         """Handle error messages and track failed tasks"""
@@ -573,8 +584,11 @@ class CoordinatorAgent(BaseAgent):
             workflow.results[f"stage_{stage_index}"] = {"result": result}
             logger.info(f"Stage {stage_index} ({stage.stage_name}) completed for workflow {workflow_id}")
             
-            # Validate and update context based on stage result
-            await self._validate_and_update_context(workflow_id, stage_index, result, stage.stage_name)
+            # Validate and update context based on stage result (simplified to avoid blocking)
+            try:
+                await self._validate_and_update_context(workflow_id, stage_index, result, stage.stage_name)
+            except Exception as e:
+                logger.warning(f"Context validation failed for stage {stage_index}, continuing: {e}")
             
             # Initialize iteration tracking if not exists
             if "iteration" not in workflow.results:
@@ -650,7 +664,25 @@ class CoordinatorAgent(BaseAgent):
                     logger.info(f"Proceeding to next stage: {stage_index + 1}")
                     # Add a small delay before starting next stage
                     await asyncio.sleep(2)
-                    await self._execute_workflow_stage(workflow_id, stage_index + 1)
+                    # Directly send task to next agent instead of using _execute_workflow_stage
+                    next_stage = workflow.stages[stage_index + 1]
+                    agent_name = next_stage.agent_name
+                    
+                    logger.info(f"Sending task to {agent_name} for stage {stage_index + 1}")
+                    
+                    # Create task data
+                    task_data = {
+                        "id": f"{workflow_id}_stage_{stage_index + 1}",
+                        "type": next_stage.stage_name.lower().replace(" ", "_"),
+                        "workflow_id": workflow_id,
+                        "stage_index": stage_index + 1,
+                        "topic": workflow.topic,
+                        "description": workflow.description,
+                        "context": await context_manager.get_context_for_agent(workflow_id, agent_name)
+                    }
+                    
+                    # Send task to next agent
+                    await self._send_task_to_agent(agent_name, task_data)
                 else:
                     logger.info("All stages completed, finishing workflow")
                     await self._complete_workflow(workflow_id)
@@ -1137,7 +1169,7 @@ class CoordinatorAgent(BaseAgent):
                 if output_text:
                     logger.info(f"Extracted output text for validation: {output_text[:100]}...")
                     
-                    # Validate output against context
+                    # Validate output against context (simplified to avoid blocking)
                     try:
                         validation_result = await context_manager.validate_agent_output(
                             workflow_id, f"stage_{stage_index}", output_text, output_type
@@ -1146,7 +1178,7 @@ class CoordinatorAgent(BaseAgent):
                         if not validation_result["is_consistent"]:
                             logger.warning(f"Context consistency issues in {stage_name}: {validation_result['issues']}")
 
-                            # Add context item for the issues
+                            # Add context item for the issues (simplified)
                             try:
                                 await context_manager.add_context_item(workflow_id, ContextItem(
                                     context_type=ContextType.THEME_DEFINITION,
@@ -1164,7 +1196,7 @@ class CoordinatorAgent(BaseAgent):
                     except Exception as e:
                         logger.warning(f"Context validation failed: {e}, continuing without validation")
 
-                    # Extract and add new context items based on stage result
+                    # Extract and add new context items based on stage result (simplified)
                     try:
                         await self._extract_context_from_result(workflow_id, stage_index, result, stage_name)
                         logger.info(f"Context extraction completed for {stage_name}")
@@ -1175,8 +1207,8 @@ class CoordinatorAgent(BaseAgent):
                     logger.info(f"No output text extracted for {stage_name}, skipping validation")
 
             except Exception as e:
-                logger.error(f"Error validating and updating context: {e}")
-                # Don't block the workflow, just log the error
+                logger.warning(f"Error validating and updating context: {e}")
+                # Don't block the workflow, just log the error and continue
 
     def _extract_output_text(self, result: Dict[str, Any], stage_name: str) -> str:
         """Extract output text for validation"""
