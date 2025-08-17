@@ -196,3 +196,73 @@
 2025-08-17 05:45:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1833
 2025-08-17 05:45:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1834
 2025-08-17 05:45:07 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1900
+2025-08-17 05:45:17 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 05:45:27 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2100
+2025-08-17 05:45:33 INFO agent.searcher_agent: 📊 searcher_agent 性能统计更新 - 完成任务: 1
+2025-08-17 05:45:33 INFO agent.searcher_agent: ✅ searcher_agent 任务执行成功
+2025-08-17 05:45:33 INFO agent.searcher_agent:    执行时间: 63.50秒
+2025-08-17 05:45:33 INFO agent.searcher_agent:    结果数据: {'search_report': SearchReport(query=SearchQuery(topic='基于智能分层推理的多参数工具自适应调用系统', keywords=['智能分层推理', '多参数工具', '自适应调用', '上下文理解', '用户意图识别', '大语言模型', '工具调用', '参数推断', '推理机制', '工具选择', '参数优化', '智能系统', '自动化调用', '效率提升', '准确性提高'], date_range='last_10_years', jurisdiction='global', max_results=50, search_filters={'patent_types': ['utility', 'design'], 'status': ['granted', 'pending'], 'language': 'english'}), results=[SearchResult(patent_id='US12345678', title='Example US Patent', abstract='This is an example US patent related to the search topic...', inventors=['John Doe', 'Jane Smith'], filing_date='2020-01-01', publication_date='2021-01-01', relevance_score=8.5, similarity_analysis={'overlap': '25%', 'differences': 'Key differences noted'}), SearchResult(patent_id='US98765432', title='Google Patents Example', abstract='Example from Google Patents database...', inventors=['Tech Innovator', 'Digital Pioneer'], filing_date='2020-08-30', publication_date='2021-02-28', relevance_score=8.1, similarity_analysis={'overlap': '22%', 'differences': 'Modern approach'}), SearchResult(patent_id='EP34567890', title='European Patent Example', abstract='Example European patent with similar technology...', inventors=['Hans Mueller', 'Marie Dubois'], filing_date='2020-03-20', publication_date='2021-03-20', relevance_score=7.8, similarity_analysis={'overlap': '20%', 'differences': 'Regional variations'}), SearchResult(patent_id='US87654321', title='Another US Patent Example', abstract='Another example patent with different approach...', inventors=['Bob Johnson', 'Alice Brown'], filing_date='2019-06-15', publication_date='2020-06-15', relevance_score=7.2, similarity_analysis={'overlap': '15%', 'differences': 'Significant differences'}), SearchResult(patent_id='WO2021/123456', title='International Patent Application', abstract='International patent application covering similar concepts...', inventors=['Global Inventor', 'International Team'], filing_date='2021-01-10', publication_date='2021-07-15', relevance_score=6.9, similarity_analysis={'overlap': '18%', 'differences': 'International perspective'}), SearchResult(patent_id='DDG_DEFAULT', title='DuckDuckGo Search Result', abstract='Free web search completed for: 基于智能分层推理的多参数工具自适应调用系统', inventors=['Various'], filing_date='N/A', publication_date='N/A', relevance_score=6.5, similarity_analysis={'overlap': 'Free search', 'differences': 'Limited results available'})], analysis={'total_patents': 6, 'year_distribution': {'2020': 3, '2019': 1, '2021': 1, 'N/A': 1}, 'top_inventors': [('John Doe', 1), ('Jane Smith', 1), ('Tech Innovator', 1), ('Digital Pioneer', 1), ('Hans Mueller', 1)], 'average_relevance': 7.5, 'relevance_distribution': {'high': 2, 'medium': 4, 'low': 0}, 'key_technology_areas': ['# Key Technology Areas for Multi-parameter Tool Adaptive Invocation System Based on Intelligent Hierarchical Reasoning\n\nBased on the patent topic "基于智能分层推理的多参数工具自适应调用系统" (Multi-parameter Tool Adaptive Invocation System Based on Intelligent Hierarchical Reasoning)', 'here are the main technology areas that these patents likely cover:\n\n1. **Intelligent Reasoning Systems**: Technologies that enable machines to make decisions and inferences based on complex inputs and hierarchical logic structures.\n\n2. **Hierarchical Processing Architectures**: Frameworks that organize information and processing in layers or levels', 'allowing for structured decision-making and parameter prioritization.\n\n3. **Multi-parameter Management**: Systems designed to handle', 'process', 'and optimize multiple input parameters simultaneously', 'ensuring efficient resource allocation.\n\n4. **Tool Integration Frameworks**: Technologies that enable seamless connection and invocation of various tools or services based on system requirements and parameter analysis.\n\n5. **Adaptive Computing Systems**: Self-adjusting computational systems that can modify their behavior and resource allocation based on changing conditions and parameter values.\n\n6. **API Management and Orchestration**: Technologies for managing application programming interfaces and coordinating tool calls in an intelligent', 'context-aware manner.\n\n7. **Decision Support Systems**: Intelligent systems that provide recommendations or automated decisions based on hierarchical reasoning of multiple parameters.\n\nThese technology areas work together to create a system that can intelligently select and invoke appropriate tools based on complex'], 'geographic_distribution': {'US': 3, 'EP': 1, 'WO': 1}}, recommendations=['Consider searching non-patent literature (NPL)', 'Review recent patent applications for emerging trends'], risk_assessment={'risk_factors': {'novelty_risk': {'level': 'Low', 'description': 'Limited relevant prior art', 'mitigation': 'Continue with patent development'}, 'timing_risk': {'level': 'Low', 'description': 'Limited recent activity', 'mitigation': 'Standard filing timeline acceptable'}}, 'overall_risk_level': 'Low', 'risk_summary': 'Low risk level with 2 risk factors identified'}, novelty_score=8.2), 'prior_art_count': 6, 'novelty_score': 8.2, 'risk_level': 'Low'}
+2025-08-17 05:45:33 INFO agent.searcher_agent: 📤 searcher_agent 发送完成消息到协调器
+2025-08-17 05:45:33 INFO agent.searcher_agent: ✅ searcher_agent 任务执行完成: prior_art_search
+2025-08-17 05:45:33 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1500
+2025-08-17 05:45:37 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2200
+2025-08-17 05:45:43 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1600
+2025-08-17 05:45:47 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2300
+2025-08-17 05:45:53 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1700
+2025-08-17 05:45:57 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2400
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1763
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2421
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1764
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2422
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1765
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2423
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1766
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2424
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1767
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2425
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1768
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2426
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1769
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2427
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1770
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2428
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1771
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2429
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1772
+2025-08-17 05:46:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2430
+2025-08-17 05:46:03 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1800
+2025-08-17 05:46:08 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2500
+2025-08-17 05:46:13 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1900
+2025-08-17 05:46:18 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2600
+2025-08-17 05:46:24 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 05:46:28 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2700
+2025-08-17 05:46:34 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2100
+2025-08-17 05:46:38 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2800
+2025-08-17 05:46:44 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2200
+2025-08-17 05:46:48 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2900
+2025-08-17 05:46:54 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2300
+2025-08-17 05:46:58 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 3000
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3016
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2358
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3017
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2359
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3018
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2360
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3019
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2361
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3020
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2362
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3021
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2363
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3022
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2364
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3023
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2365
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3024
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2366
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3025
+2025-08-17 05:47:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2367
+2025-08-17 05:47:04 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2400
+2025-08-17 05:47:08 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 3100
+2025-08-17 05:47:14 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 2500
+2025-08-17 05:47:18 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 3200
