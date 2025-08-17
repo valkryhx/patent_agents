@@ -118,9 +118,21 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
         
         # Call agent endpoint
         async with httpx.AsyncClient() as client:
+            # Create complete TaskRequest payload
+            task_payload = {
+                "task_id": f"{stage}_{int(time.time())}",
+                "workflow_id": "unknown",  # Will be updated by agent
+                "stage_name": stage,
+                "topic": topic,
+                "description": description,
+                "test_mode": test_mode,
+                "previous_results": {},
+                "context": {}
+            }
+            
             response = await client.post(
                 f"http://localhost:8000/agents/{agent}/execute",
-                json={"topic": topic, "description": description, "test_mode": test_mode},
+                json=task_payload,
                 timeout=30.0
             )
             
