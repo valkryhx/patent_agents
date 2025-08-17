@@ -240,6 +240,10 @@ class BaseAgent:
                 new_status = message.content.get("status")
                 if new_status:
                     self.status = AgentStatus(new_status)
+            
+            # Call subclass implementation if it exists
+            if hasattr(self, '_handle_status_message') and self.__class__._handle_status_message != BaseAgent._handle_status_message:
+                await self._handle_status_message(message)
                     
         except Exception as e:
             logger.error(f"Error handling status message: {e}")
