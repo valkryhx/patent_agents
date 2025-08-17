@@ -457,6 +457,8 @@ class CoordinatorAgent(BaseAgent):
         
     async def _handle_status_message_override(self, message):
         """Override status handler to catch completion events and advance workflow"""
+        print(f"🔍 ENTERING _handle_status_message_override for {self.name}")
+        logger.info(f"🔍 ENTERING _handle_status_message_override for {self.name}")
         try:
             content = message.content or {}
             task_id = content.get("task_id")
@@ -477,6 +479,8 @@ class CoordinatorAgent(BaseAgent):
                     logger.error(f"Task {task_id} marked as failed")
             
             # Check if this is a stage completion message
+            logger.info(f"DEBUG: Checking stage completion - task_id={task_id}, status={status}, success={success}")
+            logger.info(f"DEBUG: Conditions - task_id exists: {bool(task_id)}, '_stage_' in task_id: {'_stage_' in task_id if task_id else False}, status completed: {status == 'completed'}, success is True: {success is True}")
             if (task_id and "_stage_" in task_id and 
                 (status == "completed" or success is True)):
                 
