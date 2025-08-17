@@ -73,7 +73,7 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                     stage_result = f"Mock {stage} completed for topic: {topic}"
                 else:
                     # Real mode - call actual agent
-                    stage_result = await execute_stage_with_agent(stage, topic, description, test_mode)
+                    stage_result = await execute_stage_with_agent(stage, topic, description, test_mode, workflow_id)
                 
                 workflow["stages"][stage]["status"] = "completed"
                 workflow["stages"][stage]["completed_at"] = time.time()
@@ -99,7 +99,7 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
             app.state.workflows[workflow_id]["status"] = "failed"
             app.state.workflows[workflow_id]["error"] = str(e)
 
-async def execute_stage_with_agent(stage: str, topic: str, description: str, test_mode: bool = False):
+async def execute_stage_with_agent(stage: str, topic: str, description: str, test_mode: bool = False, workflow_id: str = None):
     """Execute a stage using the appropriate agent"""
     try:
         # Map stages to agent endpoints
@@ -118,16 +118,16 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
         
         # Call agent endpoint
         async with httpx.AsyncClient() as client:
-            # Create complete TaskRequest payload
+            # Create complete TaskRequest payload with actual workflow_id
             task_payload = {
-                "task_id": f"{stage}_{int(time.time())}",
-                "workflow_id": "unknown",  # Will be updated by agent
+                "task_id": f"{workflow_id}_{stage}_{int(time.time())}",
+                "workflow_id": workflow_id,
                 "stage_name": stage,
                 "topic": topic,
                 "description": description,
                 "test_mode": test_mode,
                 "previous_results": {},
-                "context": {}
+                "context": {"workflow_id": workflow_id, "isolation_level": "workflow_specific"}
             }
             
             response = await client.post(
