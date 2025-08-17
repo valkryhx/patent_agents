@@ -341,7 +341,7 @@ async def root():
     return {
         "message": "Unified Patent Agent System v2.0.0", 
         "status": "running",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Root endpoint always shows real mode
         "services": {
             "coordinator": "/coordinator/*",
             "agents": {
@@ -361,7 +361,7 @@ async def health_check():
     return {
         "status": "healthy",
         "version": "2.0.0",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "active_workflows": len(workflow_manager.workflows),
         "services": ["coordinator", "planner", "searcher", "discussion", "writer", "reviewer", "rewriter"],
         "timestamp": time.time()
@@ -391,9 +391,9 @@ async def set_test_mode(test_config: Dict[str, Any]):
 async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundTasks):
     """Start a new patent workflow"""
     try:
-        logger.info(f"🚀 Starting patent workflow in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode")
+        logger.info(f"🚀 Starting patent workflow in {'TEST' if request.test_mode else 'REAL'} mode")
         logger.info(f"📝 Topic: {request.topic}")
-        logger.info(f"🔧 Test mode enabled: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode enabled: {request.test_mode}")
         
         # Only support patent workflows
         if request.workflow_type != "patent":
@@ -501,7 +501,7 @@ async def get_workflow_results(workflow_id: str):
         
         # Use regular workflow manager
         results = workflow_manager.get_workflow_results(workflow_id)
-        return {"workflow_id": workflow_id, "results": results, "test_mode": TEST_MODE["enabled"]}
+        return {"workflow_id": workflow_id, "results": results, "test_mode": workflow.get("test_mode", False)}
     except KeyError:
         raise HTTPException(status_code=404, detail="Workflow not found")
     except Exception as e:
@@ -560,7 +560,7 @@ async def list_workflows():
             "workflows": patent_workflows, 
             "patent_workflows": patent_workflows,
             "total_workflows": len(patent_workflows),
-            "test_mode": TEST_MODE["enabled"]
+            "test_mode": False  # List endpoint always shows real mode
         }
     except Exception as e:
         logger.error(f"Failed to list patent workflows: {e}")
@@ -616,7 +616,7 @@ async def planner_health():
     return {
         "status": "healthy",
         "service": "planner_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["patent_planning", "strategy_development", "risk_assessment", "timeline_planning"],
         "timestamp": time.time()
     }
@@ -626,7 +626,7 @@ async def planner_execute(request: TaskRequest):
     """Execute planner agent task"""
     try:
         logger.info(f"📋 Planner Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_planner_task(request)
         return TaskResponse(
@@ -647,7 +647,7 @@ async def searcher_health():
     return {
         "status": "healthy",
         "service": "searcher_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["prior_art_search", "patent_analysis", "competitive_research", "novelty_assessment"],
         "timestamp": time.time()
     }
@@ -657,7 +657,7 @@ async def searcher_execute(request: TaskRequest):
     """Execute searcher agent task"""
     try:
         logger.info(f"🔍 Searcher Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_searcher_task(request)
         return TaskResponse(
