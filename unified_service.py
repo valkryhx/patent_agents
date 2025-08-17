@@ -15,6 +15,7 @@ import asyncio
 import logging
 import httpx # Added for patent-specific API calls
 import os
+import json
 
 from models import WorkflowRequest, WorkflowResponse, WorkflowStatus, WorkflowState, WorkflowStatusEnum, StageStatusEnum
 from workflow_manager import WorkflowManager
@@ -45,6 +46,130 @@ workflow_manager = WorkflowManager()
 # ============================================================================
 # PATENT-SPECIFIC API ENDPOINTS
 # ============================================================================
+
+async def create_workflow_directory(workflow_id: str, topic: str) -> str:
+    """Create a directory for storing individual stage results"""
+    try:
+        # Create workflow-specific directory
+        safe_topic = "".join(c for c in topic if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        safe_topic = safe_topic.replace(' ', '_')[:50]  # Limit length and replace spaces
+        
+        dir_name = f"{workflow_id}_{safe_topic}"
+        dir_path = f"workflow_stages/{dir_name}"
+        
+        # Create directory if it doesn't exist
+        os.makedirs(dir_path, exist_ok=True)
+        
+        # Create a metadata file
+        metadata = {
+            "workflow_id": workflow_id,
+            "topic": topic,
+            "created_at": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "stages": ["planning", "search", "discussion", "drafting", "review", "rewrite"]
+        }
+        
+        with open(f"{dir_path}/metadata.json", 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
+        
+        logger.info(f"📁 Created workflow directory: {dir_path}")
+        return dir_path
+        
+    except Exception as e:
+        logger.error(f"Failed to create workflow directory: {e}")
+        raise
+
+async def save_stage_result(workflow_id: str, topic: str, stage: str, result: Any, test_mode: bool = False) -> str:
+    """Save individual stage result to file"""
+    try:
+        # Get or create workflow directory
+        safe_topic = "".join(c for c in topic if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        safe_topic = safe_topic.replace(' ', '_')[:50]
+        dir_name = f"{workflow_id}_{safe_topic}"
+        dir_path = f"workflow_stages/{dir_name}"
+        
+        # Create directory if it doesn't exist
+        os.makedirs(dir_path, exist_ok=True)
+        
+        # Create stage result file
+        timestamp = int(time.time())
+        filename = f"{stage}_{timestamp}.md"
+        file_path = f"{dir_path}/{filename}"
+        
+        # Generate stage content
+        stage_content = generate_stage_content(stage, result, test_mode)
+        
+        # Save to file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(stage_content)
+        
+        # Update stage index
+        await update_stage_index(dir_path, stage, filename, timestamp)
+        
+        logger.info(f"💾 Saved {stage} stage result: {file_path}")
+        return file_path
+        
+    except Exception as e:
+        logger.error(f"Failed to save {stage} stage result: {e}")
+        raise
+
+def generate_stage_content(stage: str, result: Any, test_mode: bool = False) -> str:
+    """Generate content for individual stage result"""
+    content = []
+    
+    # Header
+    content.append(f"# {stage.title()} 阶段结果")
+    content.append(f"")
+    content.append(f"**阶段**: {stage}")
+    content.append(f"**生成时间**: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    content.append(f"**模式**: {'测试模式' if test_mode else '真实模式'}")
+    content.append(f"")
+    
+    if test_mode:
+        # Test mode content
+        content.append("## 📝 测试模式结果")
+        content.append("")
+        content.append(f"{result}")
+        content.append("")
+        content.append("**注意**: 这是测试模式生成的内容，用于验证功能。")
+    else:
+        # Real mode content
+        content.append("## 🔍 详细结果")
+        content.append("")
+        if isinstance(result, dict):
+            for key, value in result.items():
+                content.append(f"### {key}")
+                content.append(f"{value}")
+                content.append("")
+        else:
+            content.append(f"{result}")
+    
+    return "\n".join(content)
+
+async def update_stage_index(dir_path: str, stage: str, filename: str, timestamp: int):
+    """Update stage index file"""
+    try:
+        index_file = f"{dir_path}/stage_index.json"
+        
+        # Load existing index or create new one
+        if os.path.exists(index_file):
+            with open(index_file, 'r', encoding='utf-8') as f:
+                index = json.load(f)
+        else:
+            index = {"stages": {}}
+        
+        # Update stage information
+        index["stages"][stage] = {
+            "filename": filename,
+            "timestamp": timestamp,
+            "generated_at": time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Save updated index
+        with open(index_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
+            
+    except Exception as e:
+        logger.error(f"Failed to update stage index: {e}")
 
 async def save_patent_to_file(workflow_id: str, topic: str, results: Dict[str, Any]) -> str:
     """Save patent results to a file and return the file path"""
@@ -217,6 +342,10 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
         workflow = app.state.workflows[workflow_id]
         workflow["status"] = "running"
         
+        # Create workflow directory for stage results
+        workflow_dir = await create_workflow_directory(workflow_id, topic)
+        workflow["workflow_directory"] = workflow_dir
+        
         # Execute each stage
         stages = ["planning", "search", "discussion", "drafting", "review", "rewrite"]
         
@@ -240,6 +369,15 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                 workflow["stages"][stage]["status"] = "completed"
                 workflow["stages"][stage]["completed_at"] = time.time()
                 workflow["results"][stage] = stage_result
+                
+                # Immediately save stage result to file
+                try:
+                    stage_file_path = await save_stage_result(workflow_id, topic, stage, stage_result, test_mode)
+                    workflow["stages"][stage]["file_path"] = stage_file_path
+                    logger.info(f"💾 Stage {stage} result saved: {stage_file_path}")
+                except Exception as save_error:
+                    logger.error(f"⚠️ Failed to save {stage} stage result: {save_error}")
+                    workflow["stages"][stage]["file_path"] = None
                 
                 logger.info(f"✅ {stage} stage completed for workflow {workflow_id}")
                 
@@ -475,6 +613,62 @@ async def delete_patent_workflow(workflow_id: str):
     except Exception as e:
         logger.error(f"Failed to delete patent workflow: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
+
+@app.get("/workflow/{workflow_id}/stages")
+async def get_workflow_stages(workflow_id: str):
+    """Get all stage files for a workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        workflow_dir = workflow.get("workflow_directory")
+        
+        if not workflow_dir or not os.path.exists(workflow_dir):
+            raise HTTPException(status_code=404, detail="Workflow directory not found")
+        
+        # Read stage index
+        index_file = f"{workflow_dir}/stage_index.json"
+        if os.path.exists(index_file):
+            with open(index_file, 'r', encoding='utf-8') as f:
+                stage_index = json.load(f)
+        else:
+            stage_index = {"stages": {}}
+        
+        # Read metadata
+        metadata_file = f"{workflow_dir}/metadata.json"
+        metadata = {}
+        if os.path.exists(metadata_file):
+            with open(metadata_file, 'r', encoding='utf-8') as f:
+                metadata = json.load(f)
+        
+        # List all files in directory
+        files = []
+        if os.path.exists(workflow_dir):
+            for filename in os.listdir(workflow_dir):
+                if filename.endswith('.md'):
+                    file_path = f"{workflow_dir}/{filename}"
+                    file_stat = os.stat(file_path)
+                    files.append({
+                        "filename": filename,
+                        "size": file_stat.st_size,
+                        "modified": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_stat.st_mtime))
+                    })
+        
+        return {
+            "workflow_id": workflow_id,
+            "topic": workflow.get("topic"),
+            "workflow_directory": workflow_dir,
+            "metadata": metadata,
+            "stage_index": stage_index,
+            "files": files
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get workflow stages: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get workflow stages: {str(e)}")
 
 @app.get("/download/patent/{workflow_id}")
 async def download_patent_file(workflow_id: str):
@@ -2037,6 +2231,7 @@ if __name__ == "__main__":
     print("   - POST /coordinator/workflow/start - Start patent workflow")
     print("   - GET /coordinator/workflow/{workflow_id}/status - Get patent workflow status")
     print("   - GET /coordinator/workflow/{workflow_id}/results - Get patent workflow results")
+    print("   - GET /workflow/{workflow_id}/stages - Get workflow stage files")
     print("   - GET /download/patent/{workflow_id} - Download patent file")
     print("   - POST /coordinator/workflow/{workflow_id}/restart - Restart patent workflow")
     print("   - DELETE /coordinator/workflow/{workflow_id} - Delete patent workflow")
