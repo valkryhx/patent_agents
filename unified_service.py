@@ -72,7 +72,7 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                     stage_result = f"Mock {stage} completed for topic: {topic}"
                 else:
                     # Real mode - call actual agent
-                    stage_result = await execute_stage_with_agent(stage, topic, description)
+                    stage_result = await execute_stage_with_agent(stage, topic, description, test_mode)
                 
                 workflow["stages"][stage]["status"] = "completed"
                 workflow["stages"][stage]["completed_at"] = time.time()
@@ -98,7 +98,7 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
             app.state.workflows[workflow_id]["status"] = "failed"
             app.state.workflows[workflow_id]["error"] = str(e)
 
-async def execute_stage_with_agent(stage: str, topic: str, description: str):
+async def execute_stage_with_agent(stage: str, topic: str, description: str, test_mode: bool = False):
     """Execute a stage using the appropriate agent"""
     try:
         # Map stages to agent endpoints
@@ -119,7 +119,7 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"http://localhost:8000/agents/{agent}/execute",
-                json={"topic": topic, "description": description},
+                json={"topic": topic, "description": description, "test_mode": test_mode},
                 timeout=30.0
             )
             
@@ -597,6 +597,7 @@ class TaskRequest(BaseModel):
     stage_name: str
     topic: str
     description: str
+    test_mode: bool = False
     previous_results: Dict[str, Any] = {}
     context: Dict[str, Any] = {}
 
@@ -632,8 +633,8 @@ async def planner_execute(request: TaskRequest):
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Patent planning completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Patent planning completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Planner Agent failed: {str(e)}")
@@ -663,8 +664,8 @@ async def searcher_execute(request: TaskRequest):
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Prior art search completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Prior art search completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Searcher Agent failed: {str(e)}")
@@ -694,8 +695,8 @@ async def discussion_execute(request: TaskRequest):
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Innovation discussion completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Innovation discussion completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Discussion Agent failed: {str(e)}")
@@ -725,8 +726,8 @@ async def writer_execute(request: TaskRequest):
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Patent drafting completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Patent drafting completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Writer Agent failed: {str(e)}")
@@ -756,8 +757,8 @@ async def reviewer_execute(request: TaskRequest):
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Quality review completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Quality review completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Reviewer Agent failed: {str(e)}")
@@ -787,8 +788,8 @@ async def rewriter_execute(request: TaskRequest):
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Patent rewriting completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Patent rewriting completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Rewriter Agent failed: {str(e)}")
@@ -822,8 +823,8 @@ async def compressor_execute(request: TaskRequest):
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Context compression completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Context compression completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Compression Agent failed: {str(e)}")
@@ -841,7 +842,7 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
     context = request.context
     
     logger.info(f"🚀 Starting patent planning for workflow {workflow_id}: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     logger.info(f"🔒 Workflow isolation: {context.get('isolation_level', 'unknown')}")
     
     # Validate workflow context
@@ -849,9 +850,9 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
         logger.warning(f"⚠️ Workflow ID mismatch in context: expected {workflow_id}, got {context.get('workflow_id')}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Mock execution with old system prompts
     analysis = await analyze_patent_topic(topic, description)
@@ -882,9 +883,9 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
         "strategy": final_strategy,
         "analysis": analysis,
         "recommendations": analysis.get("recommendations", []),
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0,
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0,
         "isolation_timestamp": time.time()
     }
 
@@ -896,7 +897,7 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     context = request.context
     
     logger.info(f"🚀 Starting prior art search for workflow {workflow_id}: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     logger.info(f"🔒 Workflow isolation: {context.get('isolation_level', 'unknown')}")
     
     # Validate workflow context
@@ -904,9 +905,9 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
         logger.warning(f"⚠️ Workflow ID mismatch in context: expected {workflow_id}, got {context.get('workflow_id')}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     keywords = await extract_keywords(topic, description)
     search_results = await conduct_prior_art_search(topic, keywords, {})
@@ -930,9 +931,9 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
         "novelty_score": novelty_assessment.get("novelty_score", 8.0),
         "risk_level": novelty_assessment.get("risk_level", "Low"),
         "recommendations": recommendations,
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0,
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0,
         "isolation_timestamp": time.time()
     }
 
@@ -942,12 +943,12 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting innovation discussion for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Extract core strategy from planning stage
     planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
