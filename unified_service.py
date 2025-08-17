@@ -21,6 +21,14 @@ from workflow_manager import WorkflowManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Test mode configuration
+TEST_MODE = {
+    "enabled": True,
+    "mock_delay": 1.0,  # seconds
+    "mock_results": True,
+    "skip_llm_calls": True
+}
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Unified Patent Agent System",
@@ -41,6 +49,7 @@ async def root():
     return {
         "message": "Unified Patent Agent System v2.0.0", 
         "status": "running",
+        "test_mode": TEST_MODE["enabled"],
         "services": {
             "coordinator": "/coordinator/*",
             "agents": {
@@ -60,9 +69,29 @@ async def health_check():
     return {
         "status": "healthy",
         "version": "2.0.0",
+        "test_mode": TEST_MODE["enabled"],
         "active_workflows": len(workflow_manager.workflows),
         "services": ["coordinator", "planner", "searcher", "discussion", "writer", "reviewer", "rewriter"],
         "timestamp": time.time()
+    }
+
+@app.get("/test-mode")
+async def get_test_mode():
+    """Get test mode configuration"""
+    return {
+        "test_mode": TEST_MODE,
+        "description": "Test mode configuration for the unified service"
+    }
+
+@app.post("/test-mode")
+async def set_test_mode(test_config: Dict[str, Any]):
+    """Set test mode configuration"""
+    global TEST_MODE
+    TEST_MODE.update(test_config)
+    logger.info(f"🔧 Test mode updated: {TEST_MODE}")
+    return {
+        "message": "Test mode configuration updated",
+        "test_mode": TEST_MODE
     }
 
 # Coordinator endpoints
@@ -70,6 +99,10 @@ async def health_check():
 async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundTasks):
     """Start a new patent workflow"""
     try:
+        logger.info(f"🚀 Starting workflow in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode")
+        logger.info(f"📝 Topic: {request.topic}")
+        logger.info(f"🔧 Test mode enabled: {TEST_MODE['enabled']}")
+        
         workflow_id = workflow_manager.create_workflow(
             topic=request.topic,
             description=request.description,
@@ -82,7 +115,7 @@ async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundT
         return WorkflowResponse(
             workflow_id=workflow_id,
             status="started",
-            message="Workflow started successfully"
+            message=f"Workflow started successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode"
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start workflow: {str(e)}")
@@ -103,7 +136,7 @@ async def get_workflow_results(workflow_id: str):
     """Get workflow results"""
     try:
         results = workflow_manager.get_workflow_results(workflow_id)
-        return {"workflow_id": workflow_id, "results": results}
+        return {"workflow_id": workflow_id, "results": results, "test_mode": TEST_MODE["enabled"]}
     except KeyError:
         raise HTTPException(status_code=404, detail="Workflow not found")
     except Exception as e:
@@ -126,7 +159,7 @@ async def list_workflows():
     """List all workflows"""
     try:
         workflows = workflow_manager.list_workflows()
-        return {"workflows": workflows}
+        return {"workflows": workflows, "test_mode": TEST_MODE["enabled"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list workflows: {str(e)}")
 
@@ -161,6 +194,7 @@ class TaskResponse(BaseModel):
     status: str
     result: Dict[str, Any]
     message: str
+    test_mode: bool
 
 # Planner Agent
 @app.get("/agents/planner/health")
@@ -169,6 +203,7 @@ async def planner_health():
     return {
         "status": "healthy",
         "service": "planner_agent",
+        "test_mode": TEST_MODE["enabled"],
         "capabilities": ["patent_planning", "strategy_development", "risk_assessment", "timeline_planning"],
         "timestamp": time.time()
     }
@@ -178,12 +213,15 @@ async def planner_execute(request: TaskRequest):
     """Execute planner agent task"""
     try:
         logger.info(f"📋 Planner Agent received task: {request.task_id}")
+        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        
         result = await execute_planner_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message="Patent planning completed successfully"
+            message=f"Patent planning completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
+            test_mode=TEST_MODE["enabled"]
         )
     except Exception as e:
         logger.error(f"❌ Planner Agent failed: {str(e)}")
@@ -196,6 +234,7 @@ async def searcher_health():
     return {
         "status": "healthy",
         "service": "searcher_agent",
+        "test_mode": TEST_MODE["enabled"],
         "capabilities": ["prior_art_search", "patent_analysis", "competitive_research", "novelty_assessment"],
         "timestamp": time.time()
     }
@@ -205,12 +244,15 @@ async def searcher_execute(request: TaskRequest):
     """Execute searcher agent task"""
     try:
         logger.info(f"🔍 Searcher Agent received task: {request.task_id}")
+        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        
         result = await execute_searcher_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message="Prior art search completed successfully"
+            message=f"Prior art search completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
+            test_mode=TEST_MODE["enabled"]
         )
     except Exception as e:
         logger.error(f"❌ Searcher Agent failed: {str(e)}")
@@ -223,6 +265,7 @@ async def discussion_health():
     return {
         "status": "healthy",
         "service": "discussion_agent",
+        "test_mode": TEST_MODE["enabled"],
         "capabilities": ["innovation_discussion", "idea_generation", "technical_analysis"],
         "timestamp": time.time()
     }
@@ -232,12 +275,15 @@ async def discussion_execute(request: TaskRequest):
     """Execute discussion agent task"""
     try:
         logger.info(f"💬 Discussion Agent received task: {request.task_id}")
+        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        
         result = await execute_discussion_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message="Innovation discussion completed successfully"
+            message=f"Innovation discussion completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
+            test_mode=TEST_MODE["enabled"]
         )
     except Exception as e:
         logger.error(f"❌ Discussion Agent failed: {str(e)}")
@@ -250,6 +296,7 @@ async def writer_health():
     return {
         "status": "healthy",
         "service": "writer_agent",
+        "test_mode": TEST_MODE["enabled"],
         "capabilities": ["patent_drafting", "technical_writing", "claim_writing", "legal_compliance"],
         "timestamp": time.time()
     }
@@ -259,12 +306,15 @@ async def writer_execute(request: TaskRequest):
     """Execute writer agent task"""
     try:
         logger.info(f"✍️ Writer Agent received task: {request.task_id}")
+        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        
         result = await execute_writer_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message="Patent drafting completed successfully"
+            message=f"Patent drafting completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
+            test_mode=TEST_MODE["enabled"]
         )
     except Exception as e:
         logger.error(f"❌ Writer Agent failed: {str(e)}")
@@ -277,6 +327,7 @@ async def reviewer_health():
     return {
         "status": "healthy",
         "service": "reviewer_agent",
+        "test_mode": TEST_MODE["enabled"],
         "capabilities": ["quality_review", "compliance_check", "feedback_generation"],
         "timestamp": time.time()
     }
@@ -286,12 +337,15 @@ async def reviewer_execute(request: TaskRequest):
     """Execute reviewer agent task"""
     try:
         logger.info(f"🔍 Reviewer Agent received task: {request.task_id}")
+        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        
         result = await execute_reviewer_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message="Quality review completed successfully"
+            message=f"Quality review completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
+            test_mode=TEST_MODE["enabled"]
         )
     except Exception as e:
         logger.error(f"❌ Reviewer Agent failed: {str(e)}")
@@ -304,6 +358,7 @@ async def rewriter_health():
     return {
         "status": "healthy",
         "service": "rewriter_agent",
+        "test_mode": TEST_MODE["enabled"],
         "capabilities": ["patent_rewriting", "improvement_generation", "final_polish"],
         "timestamp": time.time()
     }
@@ -313,12 +368,15 @@ async def rewriter_execute(request: TaskRequest):
     """Execute rewriter agent task"""
     try:
         logger.info(f"✏️ Rewriter Agent received task: {request.task_id}")
+        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        
         result = await execute_rewriter_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message="Patent rewriting completed successfully"
+            message=f"Patent rewriting completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
+            test_mode=TEST_MODE["enabled"]
         )
     except Exception as e:
         logger.error(f"❌ Rewriter Agent failed: {str(e)}")
@@ -334,6 +392,12 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
     description = request.description
     
     logger.info(f"🚀 Starting patent planning for: {topic}")
+    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    
+    # Add test mode delay
+    if TEST_MODE["enabled"]:
+        await asyncio.sleep(TEST_MODE["mock_delay"])
+        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
     # Mock execution with old system prompts
     analysis = await analyze_patent_topic(topic, description)
@@ -363,8 +427,9 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
         "strategy": final_strategy,
         "analysis": analysis,
         "recommendations": analysis.get("recommendations", []),
-        "execution_time": 1.0,
-        "test_mode": True
+        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
+        "test_mode": TEST_MODE["enabled"],
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
     }
 
 async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
@@ -373,6 +438,12 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     description = request.description
     
     logger.info(f"🚀 Starting prior art search for: {topic}")
+    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    
+    # Add test mode delay
+    if TEST_MODE["enabled"]:
+        await asyncio.sleep(TEST_MODE["mock_delay"])
+        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
     keywords = await extract_keywords(topic, description)
     search_results = await conduct_prior_art_search(topic, keywords, {})
@@ -395,8 +466,9 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
         "novelty_score": novelty_assessment.get("novelty_score", 8.0),
         "risk_level": novelty_assessment.get("risk_level", "Low"),
         "recommendations": recommendations,
-        "execution_time": 1.0,
-        "test_mode": True
+        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
+        "test_mode": TEST_MODE["enabled"],
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
     }
 
 async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
@@ -405,9 +477,12 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting innovation discussion for: {topic}")
+    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
     
-    # Mock discussion execution
-    await asyncio.sleep(1.0)  # Simulate processing time
+    # Add test mode delay
+    if TEST_MODE["enabled"]:
+        await asyncio.sleep(TEST_MODE["mock_delay"])
+        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
     discussion_result = {
         "topic": topic,
@@ -426,8 +501,9 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
             "Emphasize adaptive parameter optimization",
             "Highlight context-aware capabilities"
         ],
-        "execution_time": 1.0,
-        "test_mode": True
+        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
+        "test_mode": TEST_MODE["enabled"],
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
     }
     
     return discussion_result
@@ -438,9 +514,12 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting patent drafting for: {topic}")
+    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
     
-    # Mock patent drafting
-    await asyncio.sleep(1.0)  # Simulate processing time
+    # Add test mode delay
+    if TEST_MODE["enabled"]:
+        await asyncio.sleep(TEST_MODE["mock_delay"])
+        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
     patent_draft = {
         "title": f"Patent Application: {topic}",
@@ -452,8 +531,9 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         ],
         "detailed_description": f"Detailed technical description of the {topic} system...",
         "technical_diagrams": ["Figure 1: System Architecture", "Figure 2: Process Flow"],
-        "execution_time": 1.0,
-        "test_mode": True
+        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
+        "test_mode": TEST_MODE["enabled"],
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
     }
     
     return patent_draft
@@ -464,9 +544,12 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting quality review for: {topic}")
+    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
     
-    # Mock quality review
-    await asyncio.sleep(1.0)  # Simulate processing time
+    # Add test mode delay
+    if TEST_MODE["enabled"]:
+        await asyncio.sleep(TEST_MODE["mock_delay"])
+        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
     review_result = {
         "quality_score": 8.5,
@@ -485,8 +568,9 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
             "Minor improvements suggested",
             "Overall quality is high"
         ],
-        "execution_time": 1.0,
-        "test_mode": True
+        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
+        "test_mode": TEST_MODE["enabled"],
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
     }
     
     return review_result
@@ -497,9 +581,12 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting patent rewriting for: {topic}")
+    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
     
-    # Mock patent rewriting
-    await asyncio.sleep(1.0)  # Simulate processing time
+    # Add test mode delay
+    if TEST_MODE["enabled"]:
+        await asyncio.sleep(TEST_MODE["mock_delay"])
+        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
     improved_draft = {
         "title": f"Improved Patent Application: {topic}",
@@ -515,8 +602,9 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
             "Additional technical examples",
             "Improved abstract description"
         ],
-        "execution_time": 1.0,
-        "test_mode": True
+        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
+        "test_mode": TEST_MODE["enabled"],
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
     }
     
     return improved_draft
@@ -739,6 +827,8 @@ async def generate_recommendations(search_results: List[Dict[str, Any]], analysi
 
 if __name__ == "__main__":
     print("🚀 Starting Unified Patent Agent System v2.0.0...")
+    print(f"🔧 Test mode: {'ENABLED' if TEST_MODE['enabled'] else 'DISABLED'}")
+    print(f"⏱️ Test delay: {TEST_MODE['mock_delay']}s")
     print("📡 Single service will be available at: http://localhost:8000")
     print("📚 API docs will be available at: http://localhost:8000/docs")
     print("🤖 All agents available at:")
@@ -749,4 +839,7 @@ if __name__ == "__main__":
     print("   - Writer: /agents/writer/*")
     print("   - Reviewer: /agents/reviewer/*")
     print("   - Rewriter: /agents/rewriter/*")
+    print("🔧 Test mode endpoints:")
+    print("   - GET /test-mode - Check test mode status")
+    print("   - POST /test-mode - Update test mode settings")
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
