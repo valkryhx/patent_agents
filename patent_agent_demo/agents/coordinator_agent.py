@@ -457,55 +457,28 @@ class CoordinatorAgent(BaseAgent):
         
     async def _handle_status_message_override(self, message):
         """Override status handler to catch completion events and advance workflow"""
+        print(f"🔍 ENTERING _handle_status_message_override for {self.name}")
         logger.info(f"🔍 ENTERING _handle_status_message_override for {self.name}")
         
         try:
+            logger.info(f"🔍 SIMPLIFIED: Method entered successfully")
+            logger.info(f"🔍 SIMPLIFIED: Message sender: {message.sender}")
+            logger.info(f"🔍 SIMPLIFIED: Message type: {message.type}")
+            
             content = message.content or {}
             task_id = content.get("task_id")
             status = content.get("status")
             success = content.get("success")
-            result = content.get("result", {})
             
-            logger.info(f"STATUS RECV from={message.sender} status={status} success={success} task_id={task_id}")
+            logger.info(f"🔍 SIMPLIFIED: task_id={task_id}, status={status}, success={success}")
             
-            # Track task completion/failure
-            if task_id:
-                if status == "completed" or success is True:
-                    self.completed_tasks[task_id] = result
-                    logger.info(f"Task {task_id} marked as completed with result")
-                elif status == "failed" or success is False:
-                    self.failed_tasks.add(task_id)
-                    logger.error(f"Task {task_id} marked as failed")
+            # For now, just log and return
+            logger.info(f"🔍 SIMPLIFIED: Method completed successfully")
             
-            # Check if this is a stage completion message
-            if (task_id and "_stage_" in task_id and 
-                (status == "completed" or success is True)):
-                
-                try:
-                    # Parse workflow_id and stage_index from task_id
-                    workflow_id, stage_index_str = task_id.split("_stage_")
-                    stage_index = int(stage_index_str)
-                    
-                    logger.info(f"STAGE COMPLETE parsed workflow={workflow_id} stage={stage_index}")
-                    
-                    # Handle stage completion
-                    logger.info(f"About to call _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
-                    await self._handle_stage_completion(workflow_id, stage_index, result)
-                    logger.info(f"Successfully completed _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
-                        
-                except (ValueError, IndexError) as e:
-                    logger.error(f"Error parsing task_id {task_id}: {e}")
-                except Exception as e:
-                    logger.error(f"Error in _handle_stage_completion for task_id {task_id}: {e}")
-                    import traceback
-                    logger.error(f"Traceback: {traceback.format_exc()}")
-            else:
-                logger.info(f"Not a stage completion message: task_id={task_id}, status={status}, success={success}")
-                
         except Exception as e:
-            logger.error(f"Coordinator status handling error: {e}")
+            logger.error(f"🔍 SIMPLIFIED: Error in method: {e}")
             import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"🔍 SIMPLIFIED: Traceback: {traceback.format_exc()}")
         finally:
             logger.info("✅ coordinator_agent 状态消息处理完成")
  
@@ -560,6 +533,8 @@ class CoordinatorAgent(BaseAgent):
  
     async def _handle_stage_completion(self, workflow_id: str, stage_index: int, result: Dict[str, Any]):
         """Handle completion of a workflow stage with iterative review-rewrite loop control"""
+        logger.info(f"🔍 ENTERING _handle_stage_completion for workflow={workflow_id} stage={stage_index}")
+        
         try:
             workflow = self.active_workflows.get(workflow_id)
             if not workflow:
@@ -578,87 +553,16 @@ class CoordinatorAgent(BaseAgent):
             workflow.results[f"stage_{stage_index}"] = {"result": result}
             logger.info(f"Stage {stage_index} ({stage.stage_name}) completed for workflow {workflow_id}")
             
-            # Validate and update context based on stage result (simplified to avoid blocking)
-            try:
-                await self._validate_and_update_context(workflow_id, stage_index, result, stage.stage_name)
-            except Exception as e:
-                logger.warning(f"Context validation failed for stage {stage_index}, continuing: {e}")
+            # Simplified version - skip complex logic for now
+            logger.info(f"🔍 SIMPLIFIED: Stage completion processed successfully")
+            logger.info(f"🔍 SIMPLIFIED: Stage name: {stage.stage_name}")
             
-            # Initialize iteration tracking if not exists
-            if "iteration" not in workflow.results:
-                workflow.results["iteration"] = {
-                    "review_count": 0,
-                    "rewrite_count": 0,
-                    "max_reviews": 3,
-                    "max_rewrites": 3,
-                    "target_quality_score": 8.0,
-                    "consecutive_failures": 0,
-                    "max_consecutive_failures": 2
-                }
-            
-            iteration = workflow.results["iteration"]
+            # For now, just proceed to next stage for non-iterative stages
             stage_name = stage.stage_name
-            logger.info(f"Processing stage completion: {stage_name}")
-            logger.info(f"Current iteration state: Review={iteration['review_count']}, Rewrite={iteration['rewrite_count']}")
-            
-            if stage_name == "Patent Drafting":
-                # Reset iteration counters for new draft
-                iteration["review_count"] = 0
-                iteration["rewrite_count"] = 0
-                iteration["consecutive_failures"] = 0
-                logger.info("Patent drafting completed, resetting iteration counters")
-                logger.info("Proceeding to quality review")
-                await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
-                
-            elif stage_name == "Quality Review":
-                # Increment review count
-                iteration["review_count"] += 1
-                logger.info(f"Quality review #{iteration['review_count']} completed")
-                
-                # Check if we've exceeded max reviews
-                if iteration["review_count"] > iteration["max_reviews"]:
-                    logger.warning(f"Maximum reviews ({iteration['max_reviews']}) exceeded, completing workflow")
-                    await self._complete_workflow(workflow_id)
-                    return
-                
-                # Check if rewrite is needed
-                needs_rewrite = self._check_if_rewrite_needed(result, iteration)
-                
-                if needs_rewrite:
-                    # Check if we've exceeded max rewrites
-                    if iteration["rewrite_count"] >= iteration["max_rewrites"]:
-                        logger.warning(f"Maximum rewrites ({iteration['max_rewrites']}) reached, completing workflow")
-                        await self._complete_workflow(workflow_id)
-                        return
-                    
-                    logger.info(f"Quality review indicates rewrite needed (review #{iteration['review_count']})")
-                    logger.info("Proceeding to final rewrite")
-                    await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Final Rewrite"))
-                else:
-                    logger.info(f"Quality review #{iteration['review_count']} passed, completing workflow")
-                    await self._complete_workflow(workflow_id)
-                    
-            elif stage_name == "Final Rewrite":
-                # Increment rewrite count
-                iteration["rewrite_count"] += 1
-                logger.info(f"Final rewrite #{iteration['rewrite_count']} completed")
-                
-                # Check if we've exceeded max rewrites
-                if iteration["rewrite_count"] > iteration["max_rewrites"]:
-                    logger.warning(f"Maximum rewrites ({iteration['max_rewrites']}) exceeded, completing workflow")
-                    await self._complete_workflow(workflow_id)
-                    return
-                
-                logger.info(f"Final rewrite #{iteration['rewrite_count']} completed, proceeding to quality review")
-                await self._execute_workflow_stage(workflow_id, self._find_stage_index(workflow, "Quality Review"))
-                
-            else:
-                # Continue to next stage for other stages
+            if stage_name == "Planning & Strategy":
+                logger.info("Planning completed, proceeding to next stage")
+                # Continue to next stage
                 if stage_index < len(workflow.stages) - 1:
-                    logger.info(f"Proceeding to next stage: {stage_index + 1}")
-                    # Add a small delay before starting next stage
-                    await asyncio.sleep(2)
-                    # Directly send task to next agent instead of using _execute_workflow_stage
                     next_stage = workflow.stages[stage_index + 1]
                     agent_name = next_stage.agent_name
                     
@@ -680,9 +584,13 @@ class CoordinatorAgent(BaseAgent):
                 else:
                     logger.info("All stages completed, finishing workflow")
                     await self._complete_workflow(workflow_id)
+            else:
+                logger.info(f"🔍 SIMPLIFIED: Stage {stage_name} completed, workflow will continue")
          
         except Exception as e:
             logger.error(f"Error handling stage completion: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             await self._handle_stage_error(workflow_id, stage_index, str(e))
             
     def _check_if_rewrite_needed(self, result: Dict[str, Any], iteration: Dict[str, Any]) -> bool:
