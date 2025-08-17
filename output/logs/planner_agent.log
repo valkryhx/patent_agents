@@ -87,3 +87,11 @@
 2025-08-17 06:03:03 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 4000
 2025-08-17 06:03:13 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2410
 2025-08-17 06:03:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4162
+2025-08-17 06:04:12 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3000
+2025-08-17 06:04:13 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3005
+2025-08-17 06:04:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4758
+2025-08-17 06:04:44 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 5000
+2025-08-17 06:05:13 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3600
+2025-08-17 06:05:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5355
+2025-08-17 06:05:53 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 4000
+2025-08-17 06:06:13 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4194
