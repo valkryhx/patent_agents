@@ -54,3 +54,6 @@
 2025-08-17 10:03:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 16072
 2025-08-17 10:04:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 16667
 2025-08-17 10:05:10 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 17000
+2025-08-17 10:05:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 17262
+2025-08-17 10:06:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 17857
+2025-08-17 10:06:51 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 18000
