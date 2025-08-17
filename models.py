@@ -26,7 +26,7 @@ class StageStatusEnum(str, Enum):
 class WorkflowRequest(BaseModel):
     """Request model for starting a workflow"""
     topic: str = Field(..., description="Patent topic")
-    description: str = Field(..., description="Patent description")
+    description: Optional[str] = Field(default=None, description="Patent description (optional, will auto-generate if not provided)")
     workflow_type: str = Field(default="enhanced", description="Workflow type")
     test_mode: bool = Field(default=False, description="Enable test mode for faster execution")
 

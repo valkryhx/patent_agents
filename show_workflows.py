@@ -47,20 +47,24 @@ def show_workflows_summary():
             # Show detailed workflow list
             if workflows:
                 print(f"\n📋 Detailed Workflow List:")
-                print("-" * 80)
-                print(f"{'ID (Short)':<15} {'Topic':<15} {'Status':<10} {'Test Mode':<10} {'Type':<10}")
-                print("-" * 80)
+                print("-" * 100)
+                print(f"{'ID (Short)':<15} {'Topic':<15} {'Description':<40} {'Status':<10} {'Test Mode':<10} {'Type':<10}")
+                print("-" * 100)
                 
                 for workflow in workflows:
                     workflow_id = workflow.get("workflow_id", "")[:8] + "..."
                     topic = workflow.get("topic", "Unknown")
+                    description = workflow.get("description", "No description")
+                    # Truncate description if too long
+                    if len(description) > 37:
+                        description = description[:34] + "..."
                     status = workflow.get("status", "Unknown")
                     test_mode = "✅ Test" if workflow.get("test_mode", False) else "🚀 Real"
                     workflow_type = workflow.get("workflow_type", "Unknown")
                     
-                    print(f"{workflow_id:<15} {topic:<15} {status:<10} {test_mode:<10} {workflow_type:<10}")
+                    print(f"{workflow_id:<15} {topic:<15} {description:<40} {status:<10} {test_mode:<10} {workflow_type:<10}")
                 
-                print("-" * 80)
+                print("-" * 100)
             else:
                 print("\n📭 No workflows found.")
                 
@@ -107,20 +111,24 @@ def show_patent_workflows():
             # Show detailed patent list
             if patent_workflows:
                 print(f"\n📋 Detailed Patent List:")
-                print("-" * 80)
-                print(f"{'ID (Short)':<15} {'Topic':<15} {'Status':<10} {'Test Mode':<10} {'Stages':<10}")
-                print("-" * 80)
+                print("-" * 100)
+                print(f"{'ID (Short)':<15} {'Topic':<15} {'Description':<40} {'Status':<10} {'Test Mode':<10} {'Stages':<10}")
+                print("-" * 100)
                 
                 for workflow in patent_workflows:
                     workflow_id = workflow.get("workflow_id", "")[:8] + "..."
                     topic = workflow.get("topic", "Unknown")
+                    description = workflow.get("description", "No description")
+                    # Truncate description if too long
+                    if len(description) > 37:
+                        description = description[:34] + "..."
                     status = workflow.get("status", "Unknown")
                     test_mode = "✅ Test" if workflow.get("test_mode", False) else "🚀 Real"
                     stages = f"{workflow.get('current_stage', 0)}/{workflow.get('total_stages', 0)}"
                     
-                    print(f"{workflow_id:<15} {topic:<15} {status:<10} {test_mode:<10} {stages:<10}")
+                    print(f"{workflow_id:<15} {topic:<15} {description:<40} {status:<10} {test_mode:<10} {stages:<10}")
                 
-                print("-" * 80)
+                print("-" * 100)
             else:
                 print("\n📭 No patent workflows found.")
                 

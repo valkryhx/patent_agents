@@ -392,6 +392,7 @@ class WorkflowManager:
             workflows.append({
                 "workflow_id": workflow_id,
                 "topic": workflow.topic,
+                "description": workflow.description,
                 "status": workflow.status,
                 "test_mode": workflow.test_mode,
                 "workflow_type": workflow.workflow_type,
