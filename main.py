@@ -60,7 +60,8 @@ async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundT
         workflow_id = workflow_manager.create_workflow(
             topic=request.topic,
             description=request.description,
-            workflow_type=request.workflow_type
+            workflow_type=request.workflow_type,
+            test_mode=request.test_mode
         )
         
         # Start workflow execution in background
@@ -74,6 +75,29 @@ async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundT
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start workflow: {str(e)}")
 
+@app.post("/patent/generate", response_model=WorkflowResponse)
+async def generate_patent(request: WorkflowRequest, background_tasks: BackgroundTasks):
+    """Generate a patent using the patent workflow"""
+    try:
+        # Create workflow with patent-specific configuration
+        workflow_id = workflow_manager.create_workflow(
+            topic=request.topic,
+            description=request.description or f"Patent for topic: {request.topic}",
+            workflow_type="patent",
+            test_mode=request.test_mode
+        )
+        
+        # Start patent workflow execution in background
+        background_tasks.add_task(workflow_manager.execute_workflow_with_agents, workflow_id)
+        
+        return WorkflowResponse(
+            workflow_id=workflow_id,
+            status="started",
+            message=f"Patent generation started for topic: {request.topic} (test_mode: {request.test_mode})"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start patent generation: {str(e)}")
+
 @app.get("/workflow/{workflow_id}/status", response_model=WorkflowStatus)
 async def get_workflow_status(workflow_id: str):
     """Get workflow status and progress"""
@@ -85,6 +109,17 @@ async def get_workflow_status(workflow_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get status: {str(e)}")
 
+@app.get("/patent/{workflow_id}/status", response_model=WorkflowStatus)
+async def get_patent_status(workflow_id: str):
+    """Get patent workflow status and progress"""
+    try:
+        status = workflow_manager.get_workflow_status(workflow_id)
+        return status
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Patent workflow not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get patent status: {str(e)}")
+
 @app.get("/workflow/{workflow_id}/results")
 async def get_workflow_results(workflow_id: str):
     """Get workflow results"""
@@ -95,6 +130,17 @@ async def get_workflow_results(workflow_id: str):
         raise HTTPException(status_code=404, detail="Workflow not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get results: {str(e)}")
+
+@app.get("/patent/{workflow_id}/results")
+async def get_patent_results(workflow_id: str):
+    """Get patent workflow results"""
+    try:
+        results = workflow_manager.get_workflow_results(workflow_id)
+        return {"workflow_id": workflow_id, "results": results, "type": "patent"}
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Patent workflow not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get patent results: {str(e)}")
 
 @app.post("/workflow/{workflow_id}/restart")
 async def restart_workflow(workflow_id: str, background_tasks: BackgroundTasks):
@@ -108,6 +154,18 @@ async def restart_workflow(workflow_id: str, background_tasks: BackgroundTasks):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to restart workflow: {str(e)}")
 
+@app.post("/patent/{workflow_id}/restart")
+async def restart_patent_workflow(workflow_id: str, background_tasks: BackgroundTasks):
+    """Restart a failed patent workflow"""
+    try:
+        workflow_manager.reset_workflow(workflow_id)
+        background_tasks.add_task(workflow_manager.execute_workflow_with_agents, workflow_id)
+        return {"workflow_id": workflow_id, "status": "restarted", "message": "Patent workflow restarted"}
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Patent workflow not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to restart patent workflow: {str(e)}")
+
 @app.get("/workflows")
 async def list_workflows():
     """List all workflows"""
@@ -116,6 +174,17 @@ async def list_workflows():
         return {"workflows": workflows}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list workflows: {str(e)}")
+
+@app.get("/patents")
+async def list_patent_workflows():
+    """List all patent workflows"""
+    try:
+        workflows = workflow_manager.list_workflows()
+        # Filter for patent workflows (workflow_type == "patent")
+        patent_workflows = [w for w in workflows if w.get("workflow_type") == "patent"]
+        return {"patent_workflows": patent_workflows, "total": len(patent_workflows)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list patent workflows: {str(e)}")
 
 @app.delete("/workflow/{workflow_id}")
 async def delete_workflow(workflow_id: str):
@@ -127,6 +196,17 @@ async def delete_workflow(workflow_id: str):
         raise HTTPException(status_code=404, detail="Workflow not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete workflow: {str(e)}")
+
+@app.delete("/patent/{workflow_id}")
+async def delete_patent_workflow(workflow_id: str):
+    """Delete a patent workflow"""
+    try:
+        workflow_manager.delete_workflow(workflow_id)
+        return {"workflow_id": workflow_id, "status": "deleted", "message": "Patent workflow deleted"}
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Patent workflow not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
 
 @app.get("/agents/status")
 async def get_agent_status():
@@ -157,4 +237,4 @@ if __name__ == "__main__":
     print("🤖 Agent services expected at:")
     for agent, url in AGENT_SERVICES.items():
         print(f"   - {agent}: {url}")
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
