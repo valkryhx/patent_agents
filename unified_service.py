@@ -319,7 +319,8 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
     content.append(f"")
     
     # Check if this is test mode (simple string results) or real mode (complex dict results)
-    is_test_mode = any(isinstance(result, str) for result in results.values())
+    # Real mode can also contain string fields, so we need a more sophisticated check
+    is_test_mode = all(isinstance(result, str) for result in results.values())
     
     if is_test_mode:
         # Test mode - generate simple content from mock results
@@ -347,7 +348,7 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
         # Real mode - generate detailed content from agent results
         # Planning stage
         if "planning" in results:
-            planning = results["planning"].get("result", {})
+            planning = results["planning"]
             content.append("## 1. 专利规划阶段")
             content.append("")
             if "strategy" in planning:
@@ -364,7 +365,7 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
         
         # Search stage
         if "search" in results:
-            search = results["search"].get("result", {})
+            search = results["search"]
             content.append("## 2. 现有技术搜索")
             content.append("")
             content.append(f"- **找到相关专利**: {search.get('patents_found', 0)} 件")
@@ -380,7 +381,7 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
         
         # Discussion stage
         if "discussion" in results:
-            discussion = results["discussion"].get("result", {})
+            discussion = results["discussion"]
             content.append("## 3. 创新讨论")
             content.append("")
             if "innovations" in discussion:
@@ -396,7 +397,7 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
         
         # Drafting stage
         if "drafting" in results:
-            drafting = results["drafting"].get("result", {})
+            drafting = results["drafting"]
             content.append("## 4. 专利草稿")
             content.append("")
             content.append(f"### 专利标题")
@@ -417,7 +418,7 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
         
         # Review stage
         if "review" in results:
-            review = results["review"].get("result", {})
+            review = results["review"]
             content.append("## 5. 质量审查")
             content.append("")
             content.append(f"- **质量评分**: {review.get('quality_score', 'N/A')}")
@@ -431,7 +432,7 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
         
         # Rewrite stage
         if "rewrite" in results:
-            rewrite = results["rewrite"].get("result", {})
+            rewrite = results["rewrite"]
             content.append("## 6. 最终专利")
             content.append("")
             content.append(f"### 改进后的专利标题")
