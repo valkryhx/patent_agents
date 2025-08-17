@@ -1,53 +1,15 @@
-2025-08-17 05:56:20 INFO agent.rewriter_agent: 🚀 rewriter_agent 智能体初始化开始
-2025-08-17 05:56:20 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
-2025-08-17 05:56:20 INFO agent.rewriter_agent:    测试模式: True
-2025-08-17 05:56:20 INFO agent.rewriter_agent:    状态: idle
-2025-08-17 05:56:20 INFO agent.rewriter_agent: 🧪 rewriter_agent 以测试模式初始化
-2025-08-17 05:56:21 INFO agent.rewriter_agent: 🔄 rewriter_agent 开始启动...
-2025-08-17 05:56:21 INFO agent.rewriter_agent: ✅ rewriter_agent 已注册到消息总线
-2025-08-17 05:56:21 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息处理循环开始
-2025-08-17 05:56:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1
-2025-08-17 05:56:21 INFO agent.rewriter_agent: ✅ rewriter_agent 启动成功，状态: idle
-2025-08-17 05:56:21 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
-2025-08-17 05:56:23 INFO agent.rewriter_agent: 🚀 rewriter_agent 智能体初始化开始
-2025-08-17 05:56:23 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
-2025-08-17 05:56:23 INFO agent.rewriter_agent:    测试模式: False
-2025-08-17 05:56:23 INFO agent.rewriter_agent:    状态: idle
-2025-08-17 05:56:24 INFO agent.rewriter_agent: 🔄 rewriter_agent 开始启动...
-2025-08-17 05:56:24 INFO agent.rewriter_agent: ✅ rewriter_agent 已注册到消息总线
-2025-08-17 05:56:24 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息处理循环开始
-2025-08-17 05:56:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1
-2025-08-17 05:56:24 INFO agent.rewriter_agent: ✅ rewriter_agent 启动成功，状态: idle
-2025-08-17 05:56:24 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
-2025-08-17 05:57:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 592
-2025-08-17 05:57:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 595
-2025-08-17 05:58:02 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 1000
-2025-08-17 05:58:04 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 1000
-2025-08-17 05:58:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1188
-2025-08-17 05:58:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1190
-2025-08-17 05:59:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1784
-2025-08-17 05:59:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1786
-2025-08-17 05:59:42 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 2000
-2025-08-17 05:59:45 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 2000
-2025-08-17 06:00:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 2379
-2025-08-17 06:00:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 2378
-2025-08-17 06:01:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 2975
-2025-08-17 06:01:23 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 3000
-2025-08-17 06:01:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 2974
-2025-08-17 06:01:26 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 3000
-2025-08-17 06:02:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 3571
-2025-08-17 06:02:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 3569
-2025-08-17 06:03:04 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 4000
-2025-08-17 06:03:07 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 4000
-2025-08-17 06:03:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 4167
-2025-08-17 06:03:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 4164
-2025-08-17 06:04:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 4763
-2025-08-17 06:04:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 4759
-2025-08-17 06:04:44 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 5000
-2025-08-17 06:04:48 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 5000
-2025-08-17 06:05:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 5360
-2025-08-17 06:05:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 5352
-2025-08-17 06:06:21 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 5956
-2025-08-17 06:06:24 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 5949
-2025-08-17 06:06:25 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 6000
-2025-08-17 06:06:29 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 6000
+2025-08-17 06:11:37 INFO agent.rewriter_agent: 🚀 rewriter_agent 智能体初始化开始
+2025-08-17 06:11:37 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+2025-08-17 06:11:37 INFO agent.rewriter_agent:    测试模式: True
+2025-08-17 06:11:37 INFO agent.rewriter_agent:    状态: idle
+2025-08-17 06:11:37 INFO agent.rewriter_agent: 🧪 rewriter_agent 以测试模式初始化
+2025-08-17 06:11:37 INFO agent.rewriter_agent: 🔄 rewriter_agent 开始启动...
+2025-08-17 06:11:37 INFO agent.rewriter_agent: ✅ rewriter_agent 已注册到消息总线
+2025-08-17 06:11:37 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息处理循环开始
+2025-08-17 06:11:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 06:11:38 INFO agent.rewriter_agent: ✅ rewriter_agent 启动成功，状态: idle
+2025-08-17 06:11:38 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+2025-08-17 06:12:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 588
+2025-08-17 06:13:18 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 06:13:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1183
+2025-08-17 06:14:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1779
