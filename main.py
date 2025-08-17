@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Patent Agent System - FastAPI Server
-Ultra-simple in-memory workflow management
+Patent Agent System - FastAPI Coordinator Service
+Coordinates workflow execution by assigning tasks to agent services
 """
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException
@@ -11,24 +11,36 @@ from typing import Dict, Any, Optional
 import uvicorn
 import time
 import uuid
+import httpx
+import asyncio
 
 from workflow_manager import WorkflowManager
 from models import WorkflowRequest, WorkflowResponse, WorkflowStatus
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Patent Agent System",
-    description="Ultra-simple patent workflow management",
+    title="Patent Agent System - Coordinator",
+    description="Coordinates workflow execution by assigning tasks to agent services",
     version="2.0.0"
 )
 
 # Initialize workflow manager (in-memory)
 workflow_manager = WorkflowManager()
 
+# Agent service URLs (these would be the actual agent services)
+AGENT_SERVICES = {
+    "planner": "http://localhost:8001",
+    "searcher": "http://localhost:8002", 
+    "discusser": "http://localhost:8003",
+    "writer": "http://localhost:8004",
+    "reviewer": "http://localhost:8005",
+    "rewriter": "http://localhost:8006"
+}
+
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {"message": "Patent Agent System v2.0.0", "status": "running"}
+    return {"message": "Patent Agent System - Coordinator v2.0.0", "status": "running"}
 
 @app.get("/health")
 async def health_check():
@@ -37,6 +49,7 @@ async def health_check():
         "status": "healthy",
         "version": "2.0.0",
         "active_workflows": len(workflow_manager.workflows),
+        "agent_services": list(AGENT_SERVICES.keys()),
         "timestamp": time.time()
     }
 
@@ -51,7 +64,7 @@ async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundT
         )
         
         # Start workflow execution in background
-        background_tasks.add_task(workflow_manager.execute_workflow, workflow_id)
+        background_tasks.add_task(workflow_manager.execute_workflow_with_agents, workflow_id)
         
         return WorkflowResponse(
             workflow_id=workflow_id,
@@ -88,7 +101,7 @@ async def restart_workflow(workflow_id: str, background_tasks: BackgroundTasks):
     """Restart a failed workflow"""
     try:
         workflow_manager.reset_workflow(workflow_id)
-        background_tasks.add_task(workflow_manager.execute_workflow, workflow_id)
+        background_tasks.add_task(workflow_manager.execute_workflow_with_agents, workflow_id)
         return {"workflow_id": workflow_id, "status": "restarted", "message": "Workflow restarted"}
     except KeyError:
         raise HTTPException(status_code=404, detail="Workflow not found")
@@ -115,8 +128,33 @@ async def delete_workflow(workflow_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete workflow: {str(e)}")
 
+@app.get("/agents/status")
+async def get_agent_status():
+    """Check status of all agent services"""
+    agent_status = {}
+    
+    async with httpx.AsyncClient() as client:
+        for agent_name, agent_url in AGENT_SERVICES.items():
+            try:
+                response = await client.get(f"{agent_url}/health", timeout=5.0)
+                agent_status[agent_name] = {
+                    "status": "healthy" if response.status_code == 200 else "unhealthy",
+                    "url": agent_url
+                }
+            except Exception as e:
+                agent_status[agent_name] = {
+                    "status": "unreachable",
+                    "url": agent_url,
+                    "error": str(e)
+                }
+    
+    return {"agent_services": agent_status}
+
 if __name__ == "__main__":
-    print("🚀 Starting Patent Agent System v2.0.0...")
-    print("📡 Server will be available at: http://localhost:8000")
+    print("🚀 Starting Patent Agent System - Coordinator v2.0.0...")
+    print("📡 Coordinator will be available at: http://localhost:8000")
     print("📚 API docs will be available at: http://localhost:8000/docs")
+    print("🤖 Agent services expected at:")
+    for agent, url in AGENT_SERVICES.items():
+        print(f"   - {agent}: {url}")
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
