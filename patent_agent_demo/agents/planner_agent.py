@@ -43,10 +43,11 @@ class DevelopmentPhase:
 class PlannerAgent(BaseAgent):
     """Agent responsible for patent planning and strategy development"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         super().__init__(
             name="planner_agent",
-            capabilities=["patent_planning", "strategy_development", "risk_assessment", "timeline_planning"]
+            capabilities=["patent_planning", "strategy_development", "risk_assessment", "timeline_planning"],
+            test_mode=test_mode
         )
         self.openai_client = None
         self.strategy_templates = self._load_strategy_templates()
@@ -119,7 +120,7 @@ class PlannerAgent(BaseAgent):
                     inventive_step_score=analysis.inventive_step_score,
                     patentability_assessment=analysis.patentability_assessment,
                     development_phases=phases,
-                    key_innovation_areas=strategy.get("key_innovation_areas", []),
+                    key_innovation_areas=getattr(strategy, 'key_innovation_areas', []),
                     competitive_analysis=risk_assessment.get("competitive_analysis", {}),
                     risk_assessment=risk_assessment,
                     timeline_estimate=timeline_estimate,
@@ -215,7 +216,7 @@ class PlannerAgent(BaseAgent):
                 inventive_step_score=analysis.inventive_step_score,
                 patentability_assessment=analysis.patentability_assessment,
                 development_phases=phases,
-                key_innovation_areas=strategy.get("key_innovation_areas", []),
+                key_innovation_areas=getattr(strategy, 'key_innovation_areas', []),
                 competitive_analysis=risk_assessment.get("competitive_analysis", {}),
                 risk_assessment=risk_assessment,
                 timeline_estimate=timeline_estimate,
@@ -587,4 +588,89 @@ class PlannerAgent(BaseAgent):
         """Create detailed timeline for patent development"""
         # Implementation for timeline creation
         pass
+        
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data"""
+        try:
+            task_type = task_data.get("type")
+            topic = task_data.get("topic", "测试专利主题")
+            description = task_data.get("description", "测试专利描述")
+            
+            if task_type == "patent_planning":
+                # Create mock strategy data
+                mock_strategy = PatentStrategy(
+                    topic=topic,
+                    description=description,
+                    novelty_score=8.5,
+                    inventive_step_score=7.8,
+                    patentability_assessment="Strong",
+                    development_phases=[
+                        {
+                            "phase_name": "Drafting & Review",
+                            "duration_estimate": "3-4 weeks",
+                            "key_deliverables": ["Patent application draft", "Technical diagrams", "Review feedback incorporated"],
+                            "dependencies": ["Strategy Development"],
+                            "resource_requirements": {"patent_attorneys": 2, "technical_writers": 1, "illustrators": 1},
+                            "success_criteria": ["Draft meets legal requirements", "Technical accuracy verified", "Stakeholder approval obtained"]
+                        }
+                    ],
+                    key_innovation_areas=["Core algorithm innovation", "System architecture design", "Integration methodology"],
+                    competitive_analysis={
+                        "market_position": "Emerging technology leader",
+                        "competitive_advantages": ["Higher novelty score", "Strong inventive step", "Clear industrial applicability"],
+                        "threat_level": "Medium",
+                        "response_strategy": "Proactive patent protection and market positioning"
+                    },
+                    risk_assessment={
+                        "risk_factors": {
+                            "prior_art_risks": {"probability": "Medium", "impact": "High", "mitigation": "Comprehensive prior art search"},
+                            "competitive_filing_risks": {"probability": "Medium", "impact": "Medium", "mitigation": "Accelerated filing strategy"}
+                        },
+                        "overall_risk_level": "Medium",
+                        "risk_mitigation_strategies": ["Comprehensive prior art analysis", "Strong patent documentation"]
+                    },
+                    timeline_estimate="Total development time: 3-6 months, Filing to grant: 6-18 months",
+                    resource_requirements={
+                        "human_resources": {"patent_attorneys": 2, "researchers": 2, "technical_experts": 1},
+                        "estimated_costs": {"total_estimated": "$21,000 - $39,000"},
+                        "resource_allocation": "Phased approach with peak during drafting phase"
+                    },
+                    success_probability=0.75
+                )
+                
+                # Create mock analysis
+                mock_analysis = PatentAnalysis(
+                    novelty_score=8.5,
+                    inventive_step_score=7.8,
+                    industrial_applicability=True,
+                    prior_art_analysis=[],
+                    claim_analysis={},
+                    technical_merit={},
+                    commercial_potential="Medium to High",
+                    patentability_assessment="Strong",
+                    recommendations=["Improve claim specificity", "Add more technical details"]
+                )
+                
+                return TaskResult(
+                    success=True,
+                    data={
+                        "strategy": mock_strategy,
+                        "analysis": mock_analysis,
+                        "recommendations": ["Improve claim specificity", "Add more technical details"]
+                    }
+                )
+            else:
+                return TaskResult(
+                    success=False,
+                    data={},
+                    error_message=f"Unknown task type: {task_type}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in test task execution: {e}")
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )
 

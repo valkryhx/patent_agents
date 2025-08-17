@@ -11,7 +11,7 @@ import time
 import uuid
 
 from .base_agent import BaseAgent, TaskResult
-from ..message_bus import MessageType, AgentStatus
+from ..message_bus import MessageType, AgentStatus, Message
 from ..context_manager import context_manager, ContextType, ContextItem
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,8 @@ class CoordinatorAgent(BaseAgent):
             capabilities=["workflow_orchestration", "agent_coordination", "progress_tracking", "quality_assurance"]
         )
         self.active_workflows: Dict[str, PatentWorkflow] = {}
+        self.completed_tasks: set = set()  # Track completed task IDs
+        self.failed_tasks: set = set()     # Track failed task IDs
         self.workflow_templates = self._load_workflow_templates()
         self.agent_dependencies = self._load_agent_dependencies()
         self.completed_workflows: Dict[str, Dict[str, Any]] = {}
@@ -71,6 +73,10 @@ class CoordinatorAgent(BaseAgent):
                 return await self._handle_workflow_completion(task_data)
             elif task_type == "escalate_issue":
                 return await self._escalate_issue(task_data)
+            elif task_type == "get_all_agents_status":
+                return await self.get_all_agents_status()
+            elif task_type == "get_workflow_summary":
+                return await self.get_workflow_summary()
             else:
                 return TaskResult(
                     success=False,
@@ -254,10 +260,23 @@ class CoordinatorAgent(BaseAgent):
     async def _check_agent_availability(self, agent_name: str) -> bool:
         """Check if agent is available"""
         try:
+            # Add a small delay to allow agents to fully initialize
+            await asyncio.sleep(1)
+            
+            # Log all available agents for debugging
+            available_agents = list(self.broker.agents.keys())
+            logger.info(f"Available agents in broker: {available_agents}")
+            
             agent_info = self.broker.agents.get(agent_name)
             if not agent_info:
                 logger.warning(f"Agent {agent_name} not found in broker")
-                return False
+                # Try again after a short delay
+                await asyncio.sleep(2)
+                agent_info = self.broker.agents.get(agent_name)
+                if not agent_info:
+                    logger.error(f"Agent {agent_name} still not found in broker after retry")
+                    logger.error(f"Available agents: {list(self.broker.agents.keys())}")
+                    return False
                 
             if agent_info.status == AgentStatus.OFFLINE:
                 logger.warning(f"Agent {agent_name} is offline")
@@ -311,8 +330,9 @@ class CoordinatorAgent(BaseAgent):
         return task_content
         
     async def _send_task_message(self, agent_name: str, task_content: Dict[str, Any]) -> bool:
-        """Send task message and wait for confirmation"""
+        """Send task message and wait for completion"""
         try:
+            task_id = task_content["task"]["id"]
             message = Message(
                 id=str(uuid.uuid4()),
                 type=MessageType.COORDINATION,
@@ -323,14 +343,39 @@ class CoordinatorAgent(BaseAgent):
                 priority=5
             )
             
-            logger.info(f"Sending task message to {agent_name}")
+            logger.info(f"Sending task message to {agent_name} with task_id: {task_id}")
             await self.broker.send_message(message)
             
-            # Wait a short time to confirm message was sent
-            await asyncio.sleep(0.1)
+            # Wait for task completion with timeout
+            timeout = 300  # 5 minutes timeout
+            start_time = time.time()
             
-            logger.info(f"Task message sent successfully to {agent_name}")
-            return True
+            logger.info(f"Waiting for task {task_id} completion...")
+            logger.info(f"Current completed_tasks: {self.completed_tasks}")
+            logger.info(f"Current failed_tasks: {self.failed_tasks}")
+            
+            while time.time() - start_time < timeout:
+                # Check if we have received a completion message for this task
+                if task_id in self.completed_tasks:
+                    logger.info(f"Task {task_id} completed successfully")
+                    return True
+                    
+                # Check if we have received an error message for this task
+                if task_id in self.failed_tasks:
+                    logger.error(f"Task {task_id} failed")
+                    return False
+                    
+                # Log progress every 10 seconds
+                elapsed = time.time() - start_time
+                if int(elapsed) % 10 == 0 and elapsed > 0:
+                    logger.info(f"Still waiting for task {task_id} completion... ({elapsed:.1f}s elapsed)")
+                    logger.info(f"Current completed_tasks: {self.completed_tasks}")
+                    logger.info(f"Current failed_tasks: {self.failed_tasks}")
+                    
+                await asyncio.sleep(1)  # Check every second
+                
+            logger.error(f"Task {task_id} timed out after {timeout} seconds")
+            return False
             
         except Exception as e:
             logger.error(f"Error sending task message to {agent_name}: {e}")
@@ -397,6 +442,15 @@ class CoordinatorAgent(BaseAgent):
             
             logger.info(f"STATUS RECV from={message.sender} status={status} success={success} task_id={task_id}")
             
+            # Track task completion/failure for _send_task_message waiting
+            if task_id:
+                if status == "completed" or success is True:
+                    self.completed_tasks.add(task_id)
+                    logger.info(f"Task {task_id} marked as completed")
+                elif status == "failed" or success is False:
+                    self.failed_tasks.add(task_id)
+                    logger.error(f"Task {task_id} marked as failed")
+            
             # Check if this is a stage completion message
             if (task_id and "_stage_" in task_id and 
                 (status == "completed" or success is True)):
@@ -429,6 +483,23 @@ class CoordinatorAgent(BaseAgent):
             logger.error(f"Coordinator status handling error: {e}")
             # Fallback to base handler
             await super()._handle_status_message(message)
+ 
+    async def _handle_error_message(self, message: Message):
+        """Handle error messages and track failed tasks"""
+        try:
+            content = message.content or {}
+            task_id = content.get("task_id")
+            
+            if task_id:
+                self.failed_tasks.add(task_id)
+                logger.error(f"Task {task_id} marked as failed due to error message")
+            
+            # Call parent error handler
+            await super()._handle_error_message(message)
+            
+        except Exception as e:
+            logger.error(f"Error handling error message: {e}")
+            await super()._handle_error_message(message)
  
     def _get_current_draft(self, workflow: PatentWorkflow):
         """Return the most recent draft object from writer or rewriter stage results"""
@@ -474,6 +545,11 @@ class CoordinatorAgent(BaseAgent):
             stage.status = "completed"
             stage.end_time = time.time()
             stage.result = result
+            
+            # Initialize results if None
+            if workflow.results is None:
+                workflow.results = {}
+            
             workflow.results[f"stage_{stage_index}"] = {"result": result}
             logger.info(f"Stage {stage_index} ({stage.stage_name}) completed for workflow {workflow_id}")
             
@@ -676,11 +752,12 @@ class CoordinatorAgent(BaseAgent):
             stage.error = error
             stage.end_time = time.time()
             
+            # Set workflow status to error - each stage must succeed
             workflow.overall_status = "error"
             
             logger.error(f"Stage {stage_index} failed for workflow {workflow_id}: {error}")
             
-            # Attempt to recover or escalate
+            # Attempt to recover or terminate workflow
             await self._attempt_recovery(workflow_id, stage_index)
             
         except Exception as e:
@@ -710,13 +787,13 @@ class CoordinatorAgent(BaseAgent):
                 await self._execute_workflow_stage(workflow_id, stage_index)
                 
             else:
-                # Escalate the issue
-                await self._escalate_issue({
-                    "workflow_id": workflow_id,
-                    "stage_index": stage_index,
-                    "error": stage.error,
-                    "retry_count": getattr(stage, 'retry_count', 0)
-                })
+                # Stage failed after retry - terminate workflow
+                logger.error(f"Stage {stage_index} failed after retry, terminating workflow")
+                workflow = self.active_workflows.get(workflow_id)
+                if workflow:
+                    workflow.overall_status = "failed"
+                    logger.error(f"Workflow {workflow_id} terminated due to stage {stage_index} failure")
+                # Don't continue to next stage - workflow must be terminated
                 
         except Exception as e:
             logger.error(f"Error attempting recovery: {e}")
@@ -1020,59 +1097,59 @@ class CoordinatorAgent(BaseAgent):
             "rewriter_agent": ["reviewer_agent"]
         }
         
-        async def _validate_and_update_context(self, workflow_id: str, stage_index: int,
+    async def _validate_and_update_context(self, workflow_id: str, stage_index: int,
                                          result: Dict[str, Any], stage_name: str):
-        """Validate stage result and update context accordingly with enhanced error handling"""
-        try:
-            logger.info(f"Validating and updating context for stage {stage_name}")
+            """Validate stage result and update context accordingly with enhanced error handling"""
+            try:
+                logger.info(f"Validating and updating context for stage {stage_name}")
 
-            # Extract output text for validation
-            output_text = self._extract_output_text(result, stage_name)
-            output_type = "general"
+                # Extract output text for validation
+                output_text = self._extract_output_text(result, stage_name)
+                output_type = "general"
 
-            if output_text:
-                logger.info(f"Extracted output text for validation: {output_text[:100]}...")
-                
-                # Validate output against context
-                try:
-                    validation_result = await context_manager.validate_agent_output(
-                        workflow_id, f"stage_{stage_index}", output_text, output_type
-                    )
+                if output_text:
+                    logger.info(f"Extracted output text for validation: {output_text[:100]}...")
+                    
+                    # Validate output against context
+                    try:
+                        validation_result = await context_manager.validate_agent_output(
+                            workflow_id, f"stage_{stage_index}", output_text, output_type
+                        )
 
-                    if not validation_result["is_consistent"]:
-                        logger.warning(f"Context consistency issues in {stage_name}: {validation_result['issues']}")
+                        if not validation_result["is_consistent"]:
+                            logger.warning(f"Context consistency issues in {stage_name}: {validation_result['issues']}")
 
-                        # Add context item for the issues
-                        try:
-                            await context_manager.add_context_item(workflow_id, ContextItem(
-                                context_type=ContextType.THEME_DEFINITION,
-                                key=f"consistency_issue_{stage_name}",
-                                value=validation_result["issues"],
-                                source_agent=f"stage_{stage_index}",
-                                timestamp=time.time(),
-                                confidence=validation_result["score"]
-                            ))
-                        except Exception as e:
-                            logger.warning(f"Failed to add consistency issue to context: {e}")
-                    else:
-                        logger.info(f"Context validation passed for {stage_name}")
+                            # Add context item for the issues
+                            try:
+                                await context_manager.add_context_item(workflow_id, ContextItem(
+                                    context_type=ContextType.THEME_DEFINITION,
+                                    key=f"consistency_issue_{stage_name}",
+                                    value=validation_result["issues"],
+                                    source_agent=f"stage_{stage_index}",
+                                    timestamp=time.time(),
+                                    confidence=validation_result["score"]
+                                ))
+                            except Exception as e:
+                                logger.warning(f"Failed to add consistency issue to context: {e}")
+                        else:
+                            logger.info(f"Context validation passed for {stage_name}")
 
-                except Exception as e:
-                    logger.warning(f"Context validation failed: {e}, continuing without validation")
+                    except Exception as e:
+                        logger.warning(f"Context validation failed: {e}, continuing without validation")
 
-                # Extract and add new context items based on stage result
-                try:
-                    await self._extract_context_from_result(workflow_id, stage_index, result, stage_name)
-                    logger.info(f"Context extraction completed for {stage_name}")
-                except Exception as e:
-                    logger.warning(f"Context extraction failed: {e}")
+                    # Extract and add new context items based on stage result
+                    try:
+                        await self._extract_context_from_result(workflow_id, stage_index, result, stage_name)
+                        logger.info(f"Context extraction completed for {stage_name}")
+                    except Exception as e:
+                        logger.warning(f"Context extraction failed: {e}")
 
-            else:
-                logger.info(f"No output text extracted for {stage_name}, skipping validation")
+                else:
+                    logger.info(f"No output text extracted for {stage_name}, skipping validation")
 
-        except Exception as e:
-            logger.error(f"Error validating and updating context: {e}")
-            # Don't block the workflow, just log the error
+            except Exception as e:
+                logger.error(f"Error validating and updating context: {e}")
+                # Don't block the workflow, just log the error
 
     def _extract_output_text(self, result: Dict[str, Any], stage_name: str) -> str:
         """Extract output text for validation"""
@@ -1243,10 +1320,10 @@ class CoordinatorAgent(BaseAgent):
             logger.error(f"Error getting iteration status: {e}")
             return {"status": "error", "error": str(e)}
             
-    async def get_all_agents_status(self) -> Dict[str, Any]:
+    async def get_all_agents_status(self) -> TaskResult:
         """Get status of all agents"""
         try:
-            return {
+            agents_status = {
                 agent_name: {
                     "status": agent_info.status.value,
                     "capabilities": agent_info.capabilities,
@@ -1255,23 +1332,81 @@ class CoordinatorAgent(BaseAgent):
                 }
                 for agent_name, agent_info in self.broker.agents.items()
             }
+            return TaskResult(
+                success=True,
+                data=agents_status,
+                metadata={"timestamp": time.time()}
+            )
         except Exception as e:
             logger.error(f"Error getting agents status: {e}")
-            return {"error": str(e)}
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )
             
-    async def get_workflow_summary(self) -> Dict[str, Any]:
+    async def get_workflow_summary(self) -> TaskResult:
         """Get summary of all workflows"""
         try:
             active_workflows = len(self.active_workflows)
             completed_workflows = len(self.completed_workflows)
             
-            return {
+            summary = {
                 "active_workflows": active_workflows,
                 "completed_workflows": completed_workflows,
                 "total_workflows": active_workflows + completed_workflows,
                 "active_workflow_ids": list(self.active_workflows.keys()),
                 "completed_workflow_ids": list(self.completed_workflows.keys())
             }
+            
+            # Add latest workflow details if available
+            if self.active_workflows:
+                latest_workflow_id = list(self.active_workflows.keys())[-1]
+                latest_workflow = self.active_workflows[latest_workflow_id]
+                summary["latest_workflow"] = {
+                    "workflow_id": latest_workflow_id,
+                    "topic": latest_workflow.topic,
+                    "status": latest_workflow.overall_status,
+                    "current_stage": latest_workflow.current_stage,
+                    "start_time": latest_workflow.start_time
+                }
+            
+            return TaskResult(
+                success=True,
+                data=summary,
+                metadata={"timestamp": time.time()}
+            )
         except Exception as e:
             logger.error(f"Error getting workflow summary: {e}")
-            return {"error": str(e)}
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )
+            
+    async def broadcast_message(self, message_type: MessageType, content: Dict[str, Any], 
+                              recipient: str = "all", priority: int = 5) -> None:
+        """Broadcast a message to all agents or a specific agent"""
+        try:
+            message = Message(
+                id=str(uuid.uuid4()),
+                type=message_type,
+                sender=self.name,
+                recipient=recipient,
+                content=content,
+                timestamp=time.time(),
+                priority=priority
+            )
+            
+            if recipient == "all":
+                # Broadcast to all agents
+                for agent_name in self.broker.agents.keys():
+                    if agent_name != self.name:
+                        await self.broker.send_message(message)
+            else:
+                # Send to specific agent
+                await self.broker.send_message(message)
+                
+        except Exception as e:
+            logger.error(f"Error broadcasting message: {e}")
+            

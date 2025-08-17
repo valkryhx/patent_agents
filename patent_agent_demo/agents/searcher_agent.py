@@ -37,10 +37,11 @@ class SearchReport:
 class SearcherAgent(BaseAgent):
     """Agent responsible for prior art research and patent searches"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         super().__init__(
             name="searcher_agent",
-            capabilities=["prior_art_search", "patent_analysis", "competitive_research", "novelty_assessment"]
+            capabilities=["prior_art_search", "patent_analysis", "competitive_research", "novelty_assessment"],
+            test_mode=test_mode
         )
         self.openai_client = None
         self.search_databases = self._load_search_databases()
@@ -203,102 +204,41 @@ class SearcherAgent(BaseAgent):
 2. 然后，识别关键技术术语和概念...
 3. 接着，考虑同义词和相关术语...
 4. 最后，整理出最相关的关键词...
-
 </thinking_process>
 
-<output_format>
-请按照以下XML格式输出结果：
+请提取10-15个最相关的技术关键词，每个关键词用逗号分隔。
+</task>"""
 
-<keywords>
-    <technical_terms>
-        <term>技术术语1</term>
-        <term>技术术语2</term>
-        <term>技术术语3</term>
-    </technical_terms>
-    
-    <industry_terms>
-        <term>行业术语1</term>
-        <term>行业术语2</term>
-    </industry_terms>
-    
-    <synonyms>
-        <term>同义词1</term>
-        <term>同义词2</term>
-    </synonyms>
-    
-    <abbreviations>
-        <term>缩写1</term>
-        <term>缩写2</term>
-    </abbreviations>
-    
-    <related_concepts>
-        <term>相关概念1</term>
-        <term>相关概念2</term>
-    </related_concepts>
-</keywords>
-
-<constraints>
-- 提取10-15个最相关的技术关键词
-- 重点关注技术术语和行业术语
-- 包含同义词和相关术语
-- 考虑缩写和首字母缩写
-- 确保关键词的准确性和相关性
-</constraints>"""
-            
-            response = self.openai_client.client.responses.create(
-                model="gpt-5",
-                input=prompt
-            )
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract keywords
-            # This is a simplified approach - in production, you'd want more robust parsing
-            keywords = [
-                "algorithm", "optimization", "machine learning", "artificial intelligence",
-                "data processing", "system architecture", "user interface", "database",
-                "cloud computing", "distributed systems", "real-time processing",
-                "scalability", "performance", "efficiency", "automation"
-            ]
-            
-            return keywords
+            keywords = [kw.strip() for kw in response.split(',') if kw.strip()]
+            return keywords[:15]  # Limit to 15 keywords
             
         except Exception as e:
             logger.error(f"Error extracting keywords: {e}")
-            # Return default keywords if AI analysis fails
-            return ["technology", "system", "method", "apparatus", "process"]
+            # Fallback to basic keywords
+            return [topic, "technology", "system", "method", "device"]
             
     async def _search_with_openai_web_search(self, search_query: SearchQuery) -> List[SearchResult]:
-        """Search for prior art using OpenAI GPT-5 with web search tool"""
+        """Search for prior art using OpenAI GPT-5 with web search tool and fallback to DuckDuckGo"""
         try:
             # Create comprehensive search query for web search
             search_terms = f"patent prior art {search_query.topic} {' '.join(search_query.keywords)}"
             
-            # Use OpenAI web search tool
-            response = self.openai_client.client.responses.create(
-                model="gpt-5",
-                tools=[{"type": "web_search_preview"}],
-                input=search_terms
+            # Use the search_prior_art method which includes fallback mechanism
+            logger.info(f"🔍 Starting web search for: {search_query.topic}")
+            web_search_results = await self.openai_client.search_prior_art(
+                search_query.topic, 
+                search_query.keywords, 
+                max_results=search_query.max_results
             )
             
-            # Parse web search results and convert to SearchResult objects
-            # This is a simplified approach - in production, you'd want more robust parsing
-            web_search_results = [
-                SearchResult(
-                    patent_id="WEB_SEARCH_001",
-                    title="Prior Art Found via Web Search",
-                    abstract=f"Web search results for: {search_query.topic}",
-                    inventors=["Various"],
-                    filing_date="N/A",
-                    publication_date="N/A",
-                    relevance_score=8.0,
-                    similarity_analysis={"overlap": "Web search results", "differences": "Comprehensive coverage"}
-                )
-            ]
-            
-            logger.info(f"OpenAI web search completed for: {search_query.topic}")
+            logger.info(f"✅ Web search completed, found {len(web_search_results)} results")
             return web_search_results
             
         except Exception as e:
-            logger.error(f"Error in OpenAI web search: {e}")
+            logger.error(f"Error in web search: {e}")
             return []
             
     async def _search_multiple_databases(self, search_query: SearchQuery) -> List[SearchResult]:
@@ -514,7 +454,7 @@ class SearcherAgent(BaseAgent):
     async def _identify_technology_areas(self, results: List[SearchResult], topic: str) -> List[str]:
         """Identify key technology areas from search results"""
         try:
-            # Use Google A2A to identify technology areas
+            # Use OpenAI client to identify technology areas
             abstracts = [result.abstract for result in results[:10]]  # Top 10 results
             
             prompt = f"""
@@ -526,25 +466,17 @@ class SearcherAgent(BaseAgent):
             Please identify 5-7 main technology areas that these patents cover.
             """
             
-            response = await self.google_a2a_client._generate_response(prompt)
+            response = await self.openai_client._generate_response(prompt)
             
             # Parse response to extract technology areas
-            # This is a simplified approach
-            technology_areas = [
-                "Machine Learning Algorithms",
-                "Data Processing Systems",
-                "User Interface Design",
-                "Cloud Computing Infrastructure",
-                "Real-time Analytics",
-                "Distributed Computing",
-                "Performance Optimization"
-            ]
-            
-            return technology_areas
+            # This is a simplified approach - in production, you'd want more robust parsing
+            areas = [area.strip() for area in response.split(',') if area.strip()]
+            return areas[:7]  # Limit to 7 areas
             
         except Exception as e:
             logger.error(f"Error identifying technology areas: {e}")
-            return ["Technology Area 1", "Technology Area 2", "Technology Area 3"]
+            # Fallback to basic technology areas
+            return ["Artificial Intelligence", "Machine Learning", "Data Processing", "System Architecture"]
             
     async def _generate_search_recommendations(self, analysis: Dict[str, Any]) -> List[str]:
         """Generate recommendations based on search analysis"""
@@ -610,7 +542,16 @@ class SearcherAgent(BaseAgent):
                 }
                 
             # Assess timing risk
-            recent_patents = [r for r in results if int(r.filing_date[:4]) >= 2020]
+            recent_patents = []
+            for r in results:
+                try:
+                    if r.filing_date and r.filing_date != "N/A" and len(r.filing_date) >= 4:
+                        year = int(r.filing_date[:4])
+                        if year >= 2020:
+                            recent_patents.append(r)
+                except (ValueError, TypeError):
+                    continue  # Skip invalid dates
+                    
             if len(recent_patents) > 10:
                 risk_factors["timing_risk"] = {
                     "level": "High",
@@ -669,7 +610,16 @@ class SearcherAgent(BaseAgent):
             score_reduction = high_relevance_count * 0.5
             
             # Reduce score based on recent patents
-            recent_patents = [r for r in results if int(r.filing_date[:4]) >= 2020]
+            recent_patents = []
+            for r in results:
+                try:
+                    if r.filing_date and r.filing_date != "N/A" and len(r.filing_date) >= 4:
+                        year = int(r.filing_date[:4])
+                        if year >= 2020:
+                            recent_patents.append(r)
+                except (ValueError, TypeError):
+                    continue  # Skip invalid dates
+                    
             recent_reduction = len(recent_patents) * 0.2
             
             # Calculate final score
@@ -725,3 +675,99 @@ class SearcherAgent(BaseAgent):
                 "api_available": False
             }
         }
+        
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data"""
+        try:
+            task_type = task_data.get("type")
+            topic = task_data.get("topic", "测试专利主题")
+            description = task_data.get("description", "测试专利描述")
+            
+            if task_type == "prior_art_search":
+                # Create mock search results
+                mock_results = [
+                    SearchResult(
+                        patent_id="US12345678",
+                        title="相关专利1",
+                        abstract="这是一个相关的现有技术专利",
+                        inventors=["张三", "李四"],
+                        filing_date="2020-01-15",
+                        publication_date="2021-07-20",
+                        relevance_score=7.5,
+                        similarity_analysis={
+                            "overall_similarity": 0.65,
+                            "technical_similarity": 0.7,
+                            "functional_similarity": 0.6
+                        }
+                    ),
+                    SearchResult(
+                        patent_id="US87654321",
+                        title="相关专利2",
+                        abstract="另一个相关的现有技术专利",
+                        inventors=["王五", "赵六"],
+                        filing_date="2019-03-10",
+                        publication_date="2020-09-15",
+                        relevance_score=6.8,
+                        similarity_analysis={
+                            "overall_similarity": 0.45,
+                            "technical_similarity": 0.5,
+                            "functional_similarity": 0.4
+                        }
+                    )
+                ]
+                
+                # Create mock analysis
+                mock_analysis = {
+                    "total_results": len(mock_results),
+                    "relevance_distribution": {"high": 1, "medium": 1, "low": 0},
+                    "technology_areas": ["人工智能", "机器学习", "数据处理"],
+                    "key_competitors": ["测试公司", "另一测试公司"],
+                    "trends": ["技术发展趋势1", "技术发展趋势2"],
+                    "risk_factors": {
+                        "prior_art_risks": {"level": "Medium", "description": "存在相关现有技术"},
+                        "competitive_filing_risks": {"level": "Low", "description": "竞争风险较低"}
+                    },
+                    "overall_risk_level": "Medium"
+                }
+                
+                # Create mock search report
+                mock_report = SearchReport(
+                    query=SearchQuery(
+                        topic=topic,
+                        keywords=["人工智能", "机器学习", "数据处理"],
+                        date_range="2019-2024",
+                        jurisdiction="US",
+                        max_results=50,
+                        search_filters={}
+                    ),
+                    results=mock_results,
+                    analysis=mock_analysis,
+                    recommendations=["建议1: 加强技术创新点", "建议2: 扩大权利要求范围"],
+                    risk_assessment=mock_analysis["risk_factors"],
+                    novelty_score=7.2
+                )
+                
+                return TaskResult(
+                    success=True,
+                    data={
+                        "search_report": mock_report,
+                        "results": mock_results,
+                        "analysis": mock_analysis,
+                        "recommendations": ["建议1: 加强技术创新点", "建议2: 扩大权利要求范围"],
+                        "novelty_score": 7.2
+                    }
+                )
+            else:
+                return TaskResult(
+                    success=False,
+                    data={},
+                    error_message=f"Unknown task type: {task_type}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in test task execution: {e}")
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )

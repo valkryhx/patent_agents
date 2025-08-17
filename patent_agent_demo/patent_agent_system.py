@@ -33,10 +33,11 @@ class SystemStatus:
 class PatentAgentSystem:
     """Main system for coordinating patent development agents"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         self.agents: Dict[str, Any] = {}
         self.coordinator: Optional[CoordinatorAgent] = None
         self.system_start_time = time.time()
+        self.test_mode = test_mode
         
         # Initialize Message Bus
         self.message_bus_config = message_bus_config
@@ -51,12 +52,12 @@ class PatentAgentSystem:
             
             # Create and start agents
             self.agents = {
-                "planner_agent": PlannerAgent(),
-                "searcher_agent": SearcherAgent(),
-                "discusser_agent": DiscusserAgent(),
-                "writer_agent": WriterAgent(),
-                "reviewer_agent": ReviewerAgent(),
-                "rewriter_agent": RewriterAgent(),
+                "planner_agent": PlannerAgent(test_mode=self.test_mode),
+                "searcher_agent": SearcherAgent(test_mode=self.test_mode),
+                "discusser_agent": DiscusserAgent(test_mode=self.test_mode),
+                "writer_agent": WriterAgent(test_mode=self.test_mode),
+                "reviewer_agent": ReviewerAgent(test_mode=self.test_mode),
+                "rewriter_agent": RewriterAgent(test_mode=self.test_mode),
                 "coordinator_agent": CoordinatorAgent()
             }
             
@@ -102,7 +103,7 @@ class PatentAgentSystem:
             raise
             
     async def execute_workflow(self, topic: str, description: str, 
-                             workflow_type: str = "standard") -> Dict[str, Any]:
+                             workflow_type: str = "standard") -> str:
         """Execute a patent development workflow"""
         try:
             if not self.coordinator:
@@ -122,18 +123,11 @@ class PatentAgentSystem:
             workflow_id = result.data.get("workflow_id")
             logger.info(f"Started workflow: {workflow_id}")
             
-            return {
-                "success": True,
-                "workflow_id": workflow_id,
-                "status": "started"
-            }
+            return workflow_id
             
         except Exception as e:
             logger.error(f"Error executing workflow: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            raise
             
     async def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:
         """Get the status of a workflow"""

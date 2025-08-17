@@ -37,10 +37,11 @@ class ReviewResult:
 class ReviewerAgent(BaseAgent):
     """Agent responsible for reviewing patent drafts"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         super().__init__(
             name="reviewer_agent",
-            capabilities=["patent_review", "quality_assessment", "compliance_checking", "feedback_generation"]
+            capabilities=["patent_review", "quality_assessment", "compliance_checking", "feedback_generation"],
+            test_mode=test_mode
         )
         self.openai_client = None
         self.review_criteria = self._load_review_criteria()
@@ -923,3 +924,72 @@ class ReviewerAgent(BaseAgent):
         except Exception as e:
             logger.error(f"Error in _generate_recommendations_simplified: {e}")
             return ["建议进行全面的专利审查"]
+            
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data"""
+        try:
+            task_type = task_data.get("type")
+            topic = task_data.get("topic", "测试专利主题")
+            description = task_data.get("description", "测试专利描述")
+            
+            if task_type == "patent_review":
+                # Create mock review result
+                mock_feedback = {
+                    "overall_score": 8.2,
+                    "quality_assessment": "Good",
+                    "compliance_status": "Compliant",
+                    "issues": [
+                        {
+                            "type": "content",
+                            "severity": "medium",
+                            "description": "背景技术描述可以更详细",
+                            "recommendation": "补充更多现有技术信息"
+                        },
+                        {
+                            "type": "format",
+                            "severity": "low",
+                            "description": "权利要求书格式需要调整",
+                            "recommendation": "按照标准格式重新组织权利要求"
+                        }
+                    ],
+                    "recommendations": [
+                        "建议1: 完善背景技术部分",
+                        "建议2: 优化权利要求书格式",
+                        "建议3: 增加具体实施例"
+                    ],
+                    "section_scores": {
+                        "title": 9.0,
+                        "abstract": 8.5,
+                        "background": 7.0,
+                        "summary": 8.0,
+                        "description": 8.5,
+                        "claims": 7.5,
+                        "drawings": 9.0
+                    }
+                }
+                
+                return TaskResult(
+                    success=True,
+                    data={
+                        "feedback": mock_feedback,
+                        "overall_score": 8.2,
+                        "quality_assessment": "Good",
+                        "compliance_status": "Compliant",
+                        "issues": mock_feedback["issues"],
+                        "recommendations": mock_feedback["recommendations"]
+                    }
+                )
+            else:
+                return TaskResult(
+                    success=False,
+                    data={},
+                    error_message=f"Unknown task type: {task_type}"
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in test task execution: {e}")
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=str(e)
+            )
