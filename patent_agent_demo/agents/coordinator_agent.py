@@ -313,14 +313,19 @@ class CoordinatorAgent(BaseAgent):
                     await self._handle_stage_error(workflow_id, stage_index, f"Task {task_id} failed")
                     return
                     
-                # Log progress every 30 seconds
+                # Log progress every 10 seconds (more frequent than before)
                 elapsed = time.time() - start_time
-                if int(elapsed) % 30 == 0 and elapsed > 0:
+                if int(elapsed) % 10 == 0 and elapsed > 0:
                     logger.info(f"Still waiting for task {task_id} completion... ({elapsed:.1f}s elapsed)")
+                    # Also log the current state of completed_tasks and failed_tasks
+                    logger.info(f"Current completed_tasks: {list(self.completed_tasks.keys())}")
+                    logger.info(f"Current failed_tasks: {list(self.failed_tasks)}")
                     
-                await asyncio.sleep(2)  # Check every 2 seconds
+                await asyncio.sleep(1)  # Check every 1 second (more frequent than before)
                 
             logger.error(f"Task {task_id} timed out after {timeout} seconds")
+            logger.error(f"Final state - completed_tasks: {list(self.completed_tasks.keys())}")
+            logger.error(f"Final state - failed_tasks: {list(self.failed_tasks)}")
             await self._handle_stage_error(workflow_id, stage_index, f"Task {task_id} timed out")
             
         except Exception as e:

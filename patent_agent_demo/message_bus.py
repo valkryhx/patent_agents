@@ -91,18 +91,32 @@ class MessageBusBroker:
             queue = self.message_queues[recipient]
             logger.info(f"Queue instance ID for {recipient}: {id(queue)}")
             logger.info(f"PUT: 放入消息前队列大小: {queue.qsize()}")
-            await queue.put(message)
-            logger.info(f"PUT: 放入消息后队列大小: {queue.qsize()}")
             
-            # 立即检查队列大小，看看是否有其他代码在消费
-            await asyncio.sleep(0.01)  # 等待一小段时间
-            logger.info(f"PUT: 等待后队列大小: {queue.qsize()}")
-            
-            logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
-            logger.debug(f"Message content: {message.content}")
+            try:
+                await queue.put(message)
+                logger.info(f"PUT: 放入消息后队列大小: {queue.qsize()}")
+                
+                # 立即检查队列大小，看看是否有其他代码在消费
+                await asyncio.sleep(0.01)  # 等待一小段时间
+                logger.info(f"PUT: 等待后队列大小: {queue.qsize()}")
+                
+                logger.info(f"Message sent: {message.type.value} from {message.sender} to {message.recipient}")
+                logger.debug(f"Message content: {message.content}")
+                
+                # 验证消息是否真的被放入队列
+                if queue.qsize() == 0:
+                    logger.warning(f"Message may not have been properly queued for {recipient}")
+                else:
+                    logger.info(f"Message successfully queued for {recipient}")
+                    
+            except Exception as e:
+                logger.error(f"Error putting message in queue for {recipient}: {e}")
+                raise
         else:
             logger.warning(f"Recipient {recipient} not found, message dropped")
             logger.warning(f"Available recipients: {list(self.message_queues.keys())}")
+            logger.warning(f"Message details: {message.type.value} from {message.sender} to {message.recipient}")
+            raise RuntimeError(f"Recipient {recipient} not found in message queues")
             
     async def broadcast_message(self, message: Message):
         """Broadcast a message to all agents"""
