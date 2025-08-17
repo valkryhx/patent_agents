@@ -13,6 +13,7 @@ import time
 import uuid
 import asyncio
 import logging
+import httpx # Added for patent-specific API calls
 
 from models import WorkflowRequest, WorkflowResponse, WorkflowStatus, WorkflowState, WorkflowStatusEnum, StageStatusEnum
 from workflow_manager import WorkflowManager
@@ -1336,6 +1337,294 @@ async def generate_recommendations(search_results: List[Dict[str, Any]], analysi
         "Include comprehensive technical diagrams and examples"
     ]
 
+# Patent-specific API endpoints
+@app.post("/patent/generate", response_model=WorkflowResponse)
+async def generate_patent(request: WorkflowRequest, background_tasks: BackgroundTasks):
+    """Generate a patent using the patent workflow"""
+    try:
+        # Create workflow with patent-specific configuration
+        workflow_id = str(uuid.uuid4())
+        
+        # Initialize workflow state
+        workflow_state = {
+            "workflow_id": workflow_id,
+            "topic": request.topic,
+            "description": request.description or f"Patent for topic: {request.topic}",
+            "workflow_type": "patent",
+            "test_mode": request.test_mode,
+            "status": "created",
+            "created_at": time.time(),
+            "stages": {
+                "planning": {"status": "pending", "started_at": None, "completed_at": None},
+                "search": {"status": "pending", "started_at": None, "completed_at": None},
+                "discussion": {"status": "pending", "started_at": None, "completed_at": None},
+                "drafting": {"status": "pending", "started_at": None, "completed_at": None},
+                "review": {"status": "pending", "started_at": None, "completed_at": None},
+                "rewrite": {"status": "pending", "started_at": None, "completed_at": None}
+            },
+            "results": {},
+            "current_stage": "planning"
+        }
+        
+        # Store workflow in memory (in a real system, this would be in a database)
+        if not hasattr(app.state, 'workflows'):
+            app.state.workflows = {}
+        app.state.workflows[workflow_id] = workflow_state
+        
+        # Start patent workflow execution in background
+        background_tasks.add_task(execute_patent_workflow, workflow_id, request.topic, request.description, request.test_mode)
+        
+        return WorkflowResponse(
+            workflow_id=workflow_id,
+            status="started",
+            message=f"Patent generation started for topic: {request.topic} (test_mode: {request.test_mode})"
+        )
+    except Exception as e:
+        logger.error(f"Failed to start patent generation: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start patent generation: {str(e)}")
+
+@app.get("/patent/{workflow_id}/status")
+async def get_patent_workflow_status(workflow_id: str):
+    """Get status of a specific patent workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        return {
+            "workflow_id": workflow_id,
+            "topic": workflow["topic"],
+            "description": workflow["description"],
+            "status": workflow["status"],
+            "current_stage": workflow["current_stage"],
+            "stages": workflow["stages"],
+            "test_mode": workflow["test_mode"],
+            "created_at": workflow["created_at"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get patent workflow status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get patent workflow status: {str(e)}")
+
+@app.get("/patent/{workflow_id}/results")
+async def get_patent_workflow_results(workflow_id: str):
+    """Get results of a completed patent workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        if workflow["status"] != "completed":
+            return {
+                "workflow_id": workflow_id,
+                "status": workflow["status"],
+                "message": "Workflow is not yet completed",
+                "current_stage": workflow["current_stage"]
+            }
+        
+        return {
+            "workflow_id": workflow_id,
+            "topic": workflow["topic"],
+            "description": workflow["description"],
+            "status": workflow["status"],
+            "results": workflow["results"],
+            "completed_at": workflow.get("completed_at")
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get patent workflow results: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get patent workflow results: {str(e)}")
+
+@app.post("/patent/{workflow_id}/restart")
+async def restart_patent_workflow(workflow_id: str):
+    """Restart a patent workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        
+        # Reset workflow state
+        workflow["status"] = "restarted"
+        workflow["current_stage"] = "planning"
+        for stage in workflow["stages"]:
+            workflow["stages"][stage] = {"status": "pending", "started_at": None, "completed_at": None}
+        workflow["results"] = {}
+        
+        # Start workflow execution in background
+        background_tasks = BackgroundTasks()
+        background_tasks.add_task(execute_patent_workflow, workflow_id, workflow["topic"], workflow["description"], workflow["test_mode"])
+        
+        return {
+            "workflow_id": workflow_id,
+            "status": "restarted",
+            "message": "Patent workflow restarted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to restart patent workflow: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to restart patent workflow: {str(e)}")
+
+@app.delete("/patent/{workflow_id}")
+async def delete_patent_workflow(workflow_id: str):
+    """Delete a patent workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        del app.state.workflows[workflow_id]
+        return {
+            "workflow_id": workflow_id,
+            "status": "deleted",
+            "message": "Patent workflow deleted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete patent workflow: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
+
+@app.get("/patents")
+async def list_patent_workflows():
+    """List all patent workflows"""
+    try:
+        if not hasattr(app.state, 'workflows'):
+            return {"patent_workflows": [], "total": 0, "summary": {}}
+        
+        workflows = list(app.state.workflows.values())
+        # Filter for patent workflows (workflow_type == "patent")
+        patent_workflows = [w for w in workflows if w.get("workflow_type") == "patent"]
+        
+        # Add summary information for patents
+        summary = {
+            "total_patents": len(patent_workflows),
+            "by_topic": {},
+            "by_status": {},
+            "by_test_mode": {"test": 0, "real": 0}
+        }
+        
+        for workflow in patent_workflows:
+            topic = workflow.get("topic", "Unknown")
+            status = workflow.get("status", "Unknown")
+            test_mode = workflow.get("test_mode", False)
+            
+            # Count by topic
+            if topic not in summary["by_topic"]:
+                summary["by_topic"][topic] = 0
+            summary["by_topic"][topic] += 1
+            
+            # Count by status
+            if status not in summary["by_status"]:
+                summary["by_status"][status] = 0
+            summary["by_status"][status] += 1
+            
+            # Count by test mode
+            if test_mode:
+                summary["by_test_mode"]["test"] += 1
+            else:
+                summary["by_test_mode"]["real"] += 1
+        
+        return {
+            "patent_workflows": patent_workflows,
+            "total": len(patent_workflows),
+            "summary": summary
+        }
+    except Exception as e:
+        logger.error(f"Failed to list patent workflows: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to list patent workflows: {str(e)}")
+
+async def execute_patent_workflow(workflow_id: str, topic: str, description: str, test_mode: bool):
+    """Execute the complete patent workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            logger.error(f"Workflow {workflow_id} not found")
+            return
+        
+        workflow = app.state.workflows[workflow_id]
+        workflow["status"] = "running"
+        
+        # Execute each stage
+        stages = ["planning", "search", "discussion", "drafting", "review", "rewrite"]
+        
+        for stage in stages:
+            try:
+                workflow["current_stage"] = stage
+                workflow["stages"][stage]["status"] = "running"
+                workflow["stages"][stage]["started_at"] = time.time()
+                
+                logger.info(f"🚀 Starting {stage} stage for workflow {workflow_id}")
+                
+                # Execute stage based on test mode
+                if test_mode:
+                    # Test mode - use mock execution
+                    await asyncio.sleep(2)  # Simulate processing time
+                    stage_result = f"Mock {stage} completed for topic: {topic}"
+                else:
+                    # Real mode - call actual agent
+                    stage_result = await execute_stage_with_agent(stage, topic, description)
+                
+                workflow["stages"][stage]["status"] = "completed"
+                workflow["stages"][stage]["completed_at"] = time.time()
+                workflow["results"][stage] = stage_result
+                
+                logger.info(f"✅ {stage} stage completed for workflow {workflow_id}")
+                
+            except Exception as e:
+                logger.error(f"❌ {stage} stage failed for workflow {workflow_id}: {e}")
+                workflow["stages"][stage]["status"] = "failed"
+                workflow["stages"][stage]["error"] = str(e)
+                workflow["status"] = "failed"
+                return
+        
+        # All stages completed successfully
+        workflow["status"] = "completed"
+        workflow["completed_at"] = time.time()
+        logger.info(f"🎉 Patent workflow {workflow_id} completed successfully")
+        
+    except Exception as e:
+        logger.error(f"❌ Patent workflow {workflow_id} failed: {e}")
+        if hasattr(app.state, 'workflows') and workflow_id in app.state.workflows:
+            app.state.workflows[workflow_id]["status"] = "failed"
+            app.state.workflows[workflow_id]["error"] = str(e)
+
+async def execute_stage_with_agent(stage: str, topic: str, description: str):
+    """Execute a stage using the appropriate agent"""
+    try:
+        # Map stages to agent endpoints
+        stage_to_agent = {
+            "planning": "planner",
+            "search": "searcher",
+            "discussion": "discussion",
+            "drafting": "writer",
+            "review": "reviewer",
+            "rewrite": "rewriter"
+        }
+        
+        agent = stage_to_agent.get(stage)
+        if not agent:
+            return f"Unknown stage: {stage}"
+        
+        # Call agent endpoint
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"http://localhost:8000/agents/{agent}/execute",
+                json={"topic": topic, "description": description},
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return result.get("result", f"{stage} completed")
+            else:
+                return f"{stage} failed: {response.status_code}"
+                
+    except Exception as e:
+        logger.error(f"Failed to execute {stage} stage: {e}")
+        return f"{stage} failed: {str(e)}"
+
 if __name__ == "__main__":
     print("🚀 Starting Unified Patent Agent System v2.0.0...")
     print(f"🔧 Test mode: {'ENABLED' if TEST_MODE['enabled'] else 'DISABLED'}")
@@ -1350,6 +1639,13 @@ if __name__ == "__main__":
     print("   - Writer: /agents/writer/*")
     print("   - Reviewer: /agents/reviewer/*")
     print("   - Rewriter: /agents/rewriter/*")
+    print("📋 Patent-specific API endpoints:")
+    print("   - POST /patent/generate - Start patent generation workflow")
+    print("   - GET /patent/{workflow_id}/status - Get workflow status")
+    print("   - GET /patent/{workflow_id}/results - Get workflow results")
+    print("   - POST /patent/{workflow_id}/restart - Restart workflow")
+    print("   - DELETE /patent/{workflow_id} - Delete workflow")
+    print("   - GET /patents - List all patent workflows")
     print("🔧 Test mode endpoints:")
     print("   - GET /test-mode - Check test mode status")
     print("   - POST /test-mode - Update test mode settings")
