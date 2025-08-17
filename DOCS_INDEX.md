@@ -28,6 +28,7 @@
 ### 🐛 问题排查
 1. **[README.md](README.md)** - 查看故障排除部分
 2. **[API_INTERFACE_TESTING.md](API_INTERFACE_TESTING.md)** - 对比测试结果
+3. **[DEBUG_LOG_TEST_MODE_BUG.md](DEBUG_LOG_TEST_MODE_BUG.md)** - 调试经验参考
 
 ## 📖 文档说明
 
@@ -38,6 +39,7 @@
 | API_INTERFACE_TESTING.md | API测试文档 | 开发者、测试者 |
 | CLEANUP_SUMMARY.md | 代码清理记录 | 开发者、维护者 |
 | FINAL_CLEANUP_SUMMARY.md | 最终清理总结 | 开发者、维护者 |
+| DEBUG_LOG_TEST_MODE_BUG.md | 调试经验参考 | 开发者、维护者 |
 
 ## 🔗 相关链接
 
