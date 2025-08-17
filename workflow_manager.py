@@ -25,7 +25,9 @@ AGENT_SERVICES = {
     "planning": "http://localhost:8000/agents/planner",
     "search": "http://localhost:8000/agents/searcher", 
     "discussion": "http://localhost:8000/agents/discussion",
+    "compression_1": "http://localhost:8000/agents/compressor",  # After discussion
     "drafting": "http://localhost:8000/agents/writer",
+    "compression_2": "http://localhost:8000/agents/compressor",  # After drafting
     "review": "http://localhost:8000/agents/reviewer",
     "rewrite": "http://localhost:8000/agents/rewriter"
 }
@@ -82,8 +84,12 @@ class WorkflowManager:
                     workflow.stage_times[stage_name] = {"start": time.time()}
                     workflow.updated_at = time.time()
                     
-                    # Assign task to agent service
-                    result = await self._assign_task_to_agent(workflow_id, stage_name, workflow)
+                    # Handle compression stages specially
+                    if stage_name.startswith("compression_"):
+                        result = await self._assign_compression_task(workflow_id, stage_name, workflow)
+                    else:
+                        # Assign task to agent service
+                        result = await self._assign_task_to_agent(workflow_id, stage_name, workflow)
                     
                     # Update stage result
                     workflow.stage_results[stage_name] = result
@@ -111,6 +117,75 @@ class WorkflowManager:
             if workflow_id in self.workflows:
                 self.workflows[workflow_id].status = WorkflowStatusEnum.FAILED
                 self.workflows[workflow_id].updated_at = time.time()
+    
+    async def _assign_compression_task(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
+        """Assign compression task to compression agent"""
+        try:
+            agent_url = AGENT_SERVICES.get("compression_1")  # Use compression agent URL
+            
+            # Determine compression context based on stage
+            compression_context = self._prepare_compression_context(stage_name, workflow)
+            
+            # Prepare task data for compression
+            task_data = {
+                "task_id": f"{workflow_id}_{stage_name}",
+                "workflow_id": workflow_id,
+                "stage_name": stage_name,
+                "topic": workflow.topic,
+                "description": workflow.description,
+                "previous_results": workflow.stage_results,
+                "context": compression_context
+            }
+            
+            logger.info(f"🗜️ Assigning compression task to compression agent at {agent_url}")
+            logger.info(f"📋 Compression context: {compression_context}")
+            
+            # Send task to compression agent service
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{agent_url}/execute",
+                    json=task_data,
+                    timeout=300.0  # 5 minutes timeout
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    logger.info(f"✅ Compression agent completed task successfully")
+                    return result
+                else:
+                    error_msg = f"Compression agent failed with status {response.status_code}: {response.text}"
+                    logger.error(error_msg)
+                    raise Exception(error_msg)
+                    
+        except Exception as e:
+            logger.error(f"❌ Failed to assign compression task: {str(e)}")
+            raise
+    
+    def _prepare_compression_context(self, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
+        """Prepare compression context based on stage"""
+        if stage_name == "compression_1":
+            # Compress after discussion - focus on planning, search, discussion
+            return {
+                "compression_target": "early_stages",
+                "stages_to_compress": ["planning", "search", "discussion"],
+                "compression_purpose": "prepare_for_drafting",
+                "preserve_elements": ["core_strategy", "key_insights", "critical_findings"]
+            }
+        elif stage_name == "compression_2":
+            # Compress after drafting - focus on all previous stages
+            return {
+                "compression_target": "all_stages",
+                "stages_to_compress": ["planning", "search", "discussion", "compression_1", "drafting"],
+                "compression_purpose": "prepare_for_review",
+                "preserve_elements": ["core_strategy", "key_insights", "critical_findings", "draft_summary"]
+            }
+        else:
+            return {
+                "compression_target": "unknown",
+                "stages_to_compress": [],
+                "compression_purpose": "general",
+                "preserve_elements": []
+            }
     
     async def _assign_task_to_agent(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
         """Assign task to agent service"""

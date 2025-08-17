@@ -383,6 +383,41 @@ async def rewriter_execute(request: TaskRequest):
         raise HTTPException(status_code=500, detail=f"Task execution failed: {str(e)}")
 
 # ============================================================================
+# COMPRESSION AGENT ENDPOINTS
+# ============================================================================
+
+# Compression Agent
+@app.get("/agents/compressor/health")
+async def compressor_health():
+    """Compression agent health check"""
+    return {
+        "status": "healthy",
+        "service": "compression_agent",
+        "test_mode": TEST_MODE["enabled"],
+        "capabilities": ["context_compression", "content_summarization", "key_insight_extraction", "unified_content_preservation"],
+        "timestamp": time.time()
+    }
+
+@app.post("/agents/compressor/execute", response_model=TaskResponse)
+async def compressor_execute(request: TaskRequest):
+    """Execute compression agent task"""
+    try:
+        logger.info(f"🗜️ Compression Agent received task: {request.task_id}")
+        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        
+        result = await execute_compression_task(request)
+        return TaskResponse(
+            task_id=request.task_id,
+            status="completed",
+            result=result,
+            message=f"Context compression completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
+            test_mode=TEST_MODE["enabled"]
+        )
+    except Exception as e:
+        logger.error(f"❌ Compression Agent failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Task execution failed: {str(e)}")
+
+# ============================================================================
 # AGENT TASK EXECUTION FUNCTIONS
 # ============================================================================
 
@@ -536,16 +571,34 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
-    # Extract unified content from all previous stages
-    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
-    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
-    discussion_insights = previous_results.get("discussion", {}).get("result", {})
+    # Check if compressed context is available
+    compressed_context = previous_results.get("compression_1", {}).get("result", {}).get("compressed_context", {})
+    
+    if compressed_context:
+        logger.info(f"🗜️ Using compressed context for drafting")
+        # Use compressed context
+        core_strategy = compressed_context.get("core_strategy", {})
+        key_insights = compressed_context.get("key_insights", [])
+        critical_findings = compressed_context.get("critical_findings", [])
+        unified_theme = compressed_context.get("unified_theme", topic)
+    else:
+        logger.info(f"📋 Using full context for drafting")
+        # Extract unified content from all previous stages
+        planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
+        search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+        discussion_insights = previous_results.get("discussion", {}).get("result", {})
+        
+        # Build unified patent content
+        core_strategy = planning_strategy
+        key_insights = []
+        critical_findings = []
+        unified_theme = topic
     
     # Build unified patent content
-    core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
-    novelty_score = planning_strategy.get("novelty_score", 8.5)
-    search_findings = search_results.get("results", [])
-    discussion_innovations = discussion_insights.get("innovations", [])
+    core_innovation_areas = core_strategy.get("key_innovation_areas", [])
+    novelty_score = core_strategy.get("novelty_score", 8.5)
+    search_findings = []  # Will be empty if using compressed context
+    discussion_innovations = key_insights
     
     logger.info(f"📋 Using unified strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating {len(search_findings)} search findings")
@@ -599,16 +652,35 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
-    # Extract unified content for review
-    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
-    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
-    discussion_insights = previous_results.get("discussion", {}).get("result", {})
-    writer_draft = previous_results.get("drafting", {}).get("result", {})
+    # Check if compressed context is available
+    compressed_context = previous_results.get("compression_2", {}).get("result", {}).get("compressed_context", {})
+    
+    if compressed_context:
+        logger.info(f"🗜️ Using compressed context for review")
+        # Use compressed context
+        core_strategy = compressed_context.get("core_strategy", {})
+        key_insights = compressed_context.get("key_insights", [])
+        critical_findings = compressed_context.get("critical_findings", [])
+        unified_theme = compressed_context.get("unified_theme", topic)
+        writer_draft = previous_results.get("drafting", {}).get("result", {})
+    else:
+        logger.info(f"📋 Using full context for review")
+        # Extract unified content for review
+        planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
+        search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+        discussion_insights = previous_results.get("discussion", {}).get("result", {})
+        writer_draft = previous_results.get("drafting", {}).get("result", {})
+        
+        # Build review context
+        core_strategy = planning_strategy
+        key_insights = []
+        critical_findings = []
+        unified_theme = topic
     
     # Review against unified strategy
-    core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
-    novelty_score = planning_strategy.get("novelty_score", 8.5)
-    search_findings = search_results.get("results", [])
+    core_innovation_areas = core_strategy.get("key_innovation_areas", [])
+    novelty_score = core_strategy.get("novelty_score", 8.5)
+    search_findings = critical_findings
     
     logger.info(f"📋 Reviewing against unified strategy: {core_innovation_areas}")
     logger.info(f"🔍 Checking consistency with {len(search_findings)} search findings")
@@ -717,6 +789,263 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
     }
     
     return improved_draft
+
+# ============================================================================
+# COMPRESSION TASK EXECUTION FUNCTION
+# ============================================================================
+
+async def execute_compression_task(request: TaskRequest) -> Dict[str, Any]:
+    """Execute compression task to compress long context"""
+    topic = request.topic
+    previous_results = request.previous_results
+    context = request.context
+    
+    logger.info(f"🚀 Starting context compression for: {topic}")
+    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    
+    # Add test mode delay
+    if TEST_MODE["enabled"]:
+        await asyncio.sleep(TEST_MODE["mock_delay"])
+        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    
+    # Analyze what needs to be compressed
+    compression_needs = analyze_compression_needs(previous_results, context)
+    logger.info(f"📊 Compression analysis: {compression_needs}")
+    
+    # Compress context intelligently
+    compressed_context = await compress_context_intelligently(previous_results, topic, compression_needs)
+    
+    # Create compression summary
+    compression_summary = {
+        "original_size": compression_needs.get("total_size", 0),
+        "compressed_size": len(str(compressed_context)),
+        "compression_ratio": calculate_compression_ratio(compression_needs.get("total_size", 0), len(str(compressed_context))),
+        "key_elements_preserved": list(compressed_context.keys()),
+        "compression_strategy": compression_needs.get("strategy", "selective")
+    }
+    
+    compression_result = {
+        "topic": topic,
+        "compressed_context": compressed_context,
+        "compression_summary": compression_summary,
+        "preserved_elements": {
+            "core_strategy": compressed_context.get("core_strategy", {}),
+            "key_insights": compressed_context.get("key_insights", []),
+            "critical_findings": compressed_context.get("critical_findings", []),
+            "unified_theme": compressed_context.get("unified_theme", "")
+        },
+        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
+        "test_mode": TEST_MODE["enabled"],
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+    }
+    
+    return compression_result
+
+def analyze_compression_needs(previous_results: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+    """Analyze what needs to be compressed and how"""
+    logger.info("📊 Analyzing compression needs...")
+    
+    # Calculate total context size
+    total_size = len(str(previous_results)) + len(str(context))
+    
+    # Determine compression strategy
+    if total_size > 10000:  # Large context
+        strategy = "aggressive"
+        compression_level = "high"
+    elif total_size > 5000:  # Medium context
+        strategy = "balanced"
+        compression_level = "medium"
+    else:  # Small context
+        strategy = "selective"
+        compression_level = "low"
+    
+    # Identify key elements to preserve
+    key_elements = []
+    if "planning" in previous_results:
+        key_elements.append("core_strategy")
+    if "search" in previous_results:
+        key_elements.append("critical_findings")
+    if "discussion" in previous_results:
+        key_elements.append("key_insights")
+    
+    return {
+        "total_size": total_size,
+        "strategy": strategy,
+        "compression_level": compression_level,
+        "key_elements": key_elements,
+        "stages_present": list(previous_results.keys())
+    }
+
+async def compress_context_intelligently(previous_results: Dict[str, Any], topic: str, compression_needs: Dict[str, Any]) -> Dict[str, Any]:
+    """Intelligently compress context while preserving essential unified content"""
+    logger.info(f"🗜️ Compressing context using {compression_needs['strategy']} strategy...")
+    
+    compressed_context = {
+        "topic": topic,
+        "unified_theme": extract_unified_theme(previous_results, topic),
+        "core_strategy": extract_core_strategy(previous_results),
+        "key_insights": extract_key_insights(previous_results),
+        "critical_findings": extract_critical_findings(previous_results),
+        "innovation_focus": extract_innovation_focus(previous_results),
+        "quality_metrics": extract_quality_metrics(previous_results)
+    }
+    
+    # Apply compression based on strategy
+    if compression_needs["strategy"] == "aggressive":
+        compressed_context = apply_aggressive_compression(compressed_context)
+    elif compression_needs["strategy"] == "balanced":
+        compressed_context = apply_balanced_compression(compressed_context)
+    else:  # selective
+        compressed_context = apply_selective_compression(compressed_context)
+    
+    logger.info(f"✅ Context compressed from {compression_needs['total_size']} to {len(str(compressed_context))} characters")
+    
+    return compressed_context
+
+def extract_unified_theme(previous_results: Dict[str, Any], topic: str) -> str:
+    """Extract the unified theme from all previous stages"""
+    theme_elements = []
+    
+    # Extract from planning
+    if "planning" in previous_results:
+        strategy = previous_results["planning"].get("result", {}).get("strategy", {})
+        innovation_areas = strategy.get("key_innovation_areas", [])
+        if innovation_areas:
+            theme_elements.extend(innovation_areas[:2])  # Top 2 innovation areas
+    
+    # Extract from discussion
+    if "discussion" in previous_results:
+        discussion = previous_results["discussion"].get("result", {})
+        innovations = discussion.get("innovations", [])
+        if innovations:
+            theme_elements.append(innovations[0] if innovations else "")
+    
+    # Create unified theme
+    if theme_elements:
+        return f"{topic}: {', '.join(theme_elements[:3])}"  # Limit to 3 elements
+    else:
+        return topic
+
+def extract_core_strategy(previous_results: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract core strategy from planning stage"""
+    if "planning" in previous_results:
+        strategy = previous_results["planning"].get("result", {}).get("strategy", {})
+        return {
+            "key_innovation_areas": strategy.get("key_innovation_areas", [])[:3],  # Top 3
+            "novelty_score": strategy.get("novelty_score", 8.0),
+            "patentability_assessment": strategy.get("patentability_assessment", "Strong"),
+            "success_probability": strategy.get("success_probability", 0.75)
+        }
+    return {}
+
+def extract_key_insights(previous_results: Dict[str, Any]) -> List[str]:
+    """Extract key insights from all stages"""
+    insights = []
+    
+    # From planning
+    if "planning" in previous_results:
+        strategy = previous_results["planning"].get("result", {}).get("strategy", {})
+        insights.append(f"Novelty score: {strategy.get('novelty_score', 8.0)}")
+        insights.append(f"Patentability: {strategy.get('patentability_assessment', 'Strong')}")
+    
+    # From search
+    if "search" in previous_results:
+        search_results = previous_results["search"].get("result", {}).get("search_results", {})
+        patents_found = len(search_results.get("results", []))
+        insights.append(f"Prior art found: {patents_found} patents")
+    
+    # From discussion
+    if "discussion" in previous_results:
+        discussion = previous_results["discussion"].get("result", {})
+        innovations = discussion.get("innovations", [])
+        if innovations:
+            insights.append(f"Key innovation: {innovations[0]}")
+    
+    return insights[:5]  # Limit to 5 key insights
+
+def extract_critical_findings(previous_results: Dict[str, Any]) -> List[str]:
+    """Extract critical findings that must be preserved"""
+    findings = []
+    
+    # From search
+    if "search" in previous_results:
+        search_results = previous_results["search"].get("result", {}).get("search_results", {})
+        analysis = search_results.get("analysis", {})
+        risk_level = analysis.get("risk_level", "Unknown")
+        findings.append(f"Risk level: {risk_level}")
+    
+    # From review
+    if "review" in previous_results:
+        review = previous_results["review"].get("result", {})
+        quality_score = review.get("quality_score", 0)
+        findings.append(f"Quality score: {quality_score}")
+    
+    return findings
+
+def extract_innovation_focus(previous_results: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract innovation focus areas"""
+    focus = {}
+    
+    if "planning" in previous_results:
+        strategy = previous_results["planning"].get("result", {}).get("strategy", {})
+        innovation_areas = strategy.get("key_innovation_areas", [])
+        if innovation_areas:
+            focus["primary"] = innovation_areas[0]
+            if len(innovation_areas) > 1:
+                focus["secondary"] = innovation_areas[1]
+    
+    return focus
+
+def extract_quality_metrics(previous_results: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract quality metrics from review stage"""
+    if "review" in previous_results:
+        review = previous_results["review"].get("result", {})
+        return {
+            "quality_score": review.get("quality_score", 0),
+            "consistency_score": review.get("consistency_score", 0),
+            "strategy_alignment": review.get("unified_content_review", {}).get("strategy_alignment", "Unknown")
+        }
+    return {}
+
+def apply_aggressive_compression(compressed_context: Dict[str, Any]) -> Dict[str, Any]:
+    """Apply aggressive compression - keep only essential elements"""
+    logger.info("🗜️ Applying aggressive compression...")
+    
+    return {
+        "topic": compressed_context.get("topic", ""),
+        "unified_theme": compressed_context.get("unified_theme", ""),
+        "core_strategy": {
+            "key_innovation_areas": compressed_context.get("core_strategy", {}).get("key_innovation_areas", [])[:2],
+            "novelty_score": compressed_context.get("core_strategy", {}).get("novelty_score", 8.0)
+        },
+        "key_insights": compressed_context.get("key_insights", [])[:3],
+        "critical_findings": compressed_context.get("critical_findings", [])[:2]
+    }
+
+def apply_balanced_compression(compressed_context: Dict[str, Any]) -> Dict[str, Any]:
+    """Apply balanced compression - keep important elements"""
+    logger.info("🗜️ Applying balanced compression...")
+    
+    return {
+        "topic": compressed_context.get("topic", ""),
+        "unified_theme": compressed_context.get("unified_theme", ""),
+        "core_strategy": compressed_context.get("core_strategy", {}),
+        "key_insights": compressed_context.get("key_insights", [])[:4],
+        "critical_findings": compressed_context.get("critical_findings", []),
+        "innovation_focus": compressed_context.get("innovation_focus", {})
+    }
+
+def apply_selective_compression(compressed_context: Dict[str, Any]) -> Dict[str, Any]:
+    """Apply selective compression - keep most elements"""
+    logger.info("🗜️ Applying selective compression...")
+    
+    return compressed_context
+
+def calculate_compression_ratio(original_size: int, compressed_size: int) -> float:
+    """Calculate compression ratio"""
+    if original_size == 0:
+        return 0.0
+    return round((1 - compressed_size / original_size) * 100, 2)
 
 # ============================================================================
 # HELPER FUNCTIONS (from old system)
