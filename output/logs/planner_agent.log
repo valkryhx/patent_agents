@@ -265,3 +265,34 @@ AttributeError: type object 'AgentStatus' has no attribute 'ONLINE'. Did you mea
 2025-08-17 05:47:38 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3400
 2025-08-17 05:47:44 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2000
 2025-08-17 05:47:48 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3500
+2025-08-17 05:47:55 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2100
+2025-08-17 05:47:58 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3600
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2150
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3612
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2151
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3613
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2152
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3614
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2153
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3615
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2154
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3616
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2155
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3617
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2156
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3618
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2157
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3619
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2158
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3620
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2159
+2025-08-17 05:48:00 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3621
+2025-08-17 05:48:05 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2200
+2025-08-17 05:48:08 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3700
+2025-08-17 05:48:15 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2300
+2025-08-17 05:48:19 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3800
+2025-08-17 05:48:25 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2400
+2025-08-17 05:48:29 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3900
+2025-08-17 05:48:35 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2500
+2025-08-17 05:48:39 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 4000
+2025-08-17 05:48:45 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2600
