@@ -72,7 +72,7 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                     stage_result = f"Mock {stage} completed for topic: {topic}"
                 else:
                     # Real mode - call actual agent
-                    stage_result = await execute_stage_with_agent(stage, topic, description)
+                    stage_result = await execute_stage_with_agent(stage, topic, description, test_mode)
                 
                 workflow["stages"][stage]["status"] = "completed"
                 workflow["stages"][stage]["completed_at"] = time.time()
@@ -98,7 +98,7 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
             app.state.workflows[workflow_id]["status"] = "failed"
             app.state.workflows[workflow_id]["error"] = str(e)
 
-async def execute_stage_with_agent(stage: str, topic: str, description: str):
+async def execute_stage_with_agent(stage: str, topic: str, description: str, test_mode: bool = False):
     """Execute a stage using the appropriate agent"""
     try:
         # Map stages to agent endpoints
@@ -119,7 +119,7 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"http://localhost:8000/agents/{agent}/execute",
-                json={"topic": topic, "description": description},
+                json={"topic": topic, "description": description, "test_mode": test_mode},
                 timeout=30.0
             )
             
@@ -341,7 +341,7 @@ async def root():
     return {
         "message": "Unified Patent Agent System v2.0.0", 
         "status": "running",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Root endpoint always shows real mode
         "services": {
             "coordinator": "/coordinator/*",
             "agents": {
@@ -361,7 +361,7 @@ async def health_check():
     return {
         "status": "healthy",
         "version": "2.0.0",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "active_workflows": len(workflow_manager.workflows),
         "services": ["coordinator", "planner", "searcher", "discussion", "writer", "reviewer", "rewriter"],
         "timestamp": time.time()
@@ -391,9 +391,9 @@ async def set_test_mode(test_config: Dict[str, Any]):
 async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundTasks):
     """Start a new patent workflow"""
     try:
-        logger.info(f"🚀 Starting patent workflow in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode")
+        logger.info(f"🚀 Starting patent workflow in {'TEST' if request.test_mode else 'REAL'} mode")
         logger.info(f"📝 Topic: {request.topic}")
-        logger.info(f"🔧 Test mode enabled: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode enabled: {request.test_mode}")
         
         # Only support patent workflows
         if request.workflow_type != "patent":
@@ -501,7 +501,7 @@ async def get_workflow_results(workflow_id: str):
         
         # Use regular workflow manager
         results = workflow_manager.get_workflow_results(workflow_id)
-        return {"workflow_id": workflow_id, "results": results, "test_mode": TEST_MODE["enabled"]}
+        return {"workflow_id": workflow_id, "results": results, "test_mode": workflow.get("test_mode", False)}
     except KeyError:
         raise HTTPException(status_code=404, detail="Workflow not found")
     except Exception as e:
@@ -560,7 +560,7 @@ async def list_workflows():
             "workflows": patent_workflows, 
             "patent_workflows": patent_workflows,
             "total_workflows": len(patent_workflows),
-            "test_mode": TEST_MODE["enabled"]
+            "test_mode": False  # List endpoint always shows real mode
         }
     except Exception as e:
         logger.error(f"Failed to list patent workflows: {e}")
@@ -597,6 +597,7 @@ class TaskRequest(BaseModel):
     stage_name: str
     topic: str
     description: str
+    test_mode: bool = False
     previous_results: Dict[str, Any] = {}
     context: Dict[str, Any] = {}
 
@@ -615,7 +616,7 @@ async def planner_health():
     return {
         "status": "healthy",
         "service": "planner_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["patent_planning", "strategy_development", "risk_assessment", "timeline_planning"],
         "timestamp": time.time()
     }
@@ -625,15 +626,15 @@ async def planner_execute(request: TaskRequest):
     """Execute planner agent task"""
     try:
         logger.info(f"📋 Planner Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_planner_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Patent planning completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Patent planning completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Planner Agent failed: {str(e)}")
@@ -646,7 +647,7 @@ async def searcher_health():
     return {
         "status": "healthy",
         "service": "searcher_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["prior_art_search", "patent_analysis", "competitive_research", "novelty_assessment"],
         "timestamp": time.time()
     }
@@ -656,15 +657,15 @@ async def searcher_execute(request: TaskRequest):
     """Execute searcher agent task"""
     try:
         logger.info(f"🔍 Searcher Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_searcher_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Prior art search completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Prior art search completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Searcher Agent failed: {str(e)}")
@@ -677,7 +678,7 @@ async def discussion_health():
     return {
         "status": "healthy",
         "service": "discussion_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["innovation_discussion", "idea_generation", "technical_analysis"],
         "timestamp": time.time()
     }
@@ -687,15 +688,15 @@ async def discussion_execute(request: TaskRequest):
     """Execute discussion agent task"""
     try:
         logger.info(f"💬 Discussion Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_discussion_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Innovation discussion completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Innovation discussion completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Discussion Agent failed: {str(e)}")
@@ -708,7 +709,7 @@ async def writer_health():
     return {
         "status": "healthy",
         "service": "writer_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["patent_drafting", "technical_writing", "claim_writing", "legal_compliance"],
         "timestamp": time.time()
     }
@@ -718,15 +719,15 @@ async def writer_execute(request: TaskRequest):
     """Execute writer agent task"""
     try:
         logger.info(f"✍️ Writer Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_writer_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Patent drafting completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Patent drafting completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Writer Agent failed: {str(e)}")
@@ -739,7 +740,7 @@ async def reviewer_health():
     return {
         "status": "healthy",
         "service": "reviewer_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["quality_review", "compliance_check", "feedback_generation"],
         "timestamp": time.time()
     }
@@ -749,15 +750,15 @@ async def reviewer_execute(request: TaskRequest):
     """Execute reviewer agent task"""
     try:
         logger.info(f"🔍 Reviewer Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_reviewer_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Quality review completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Quality review completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Reviewer Agent failed: {str(e)}")
@@ -770,7 +771,7 @@ async def rewriter_health():
     return {
         "status": "healthy",
         "service": "rewriter_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["patent_rewriting", "improvement_generation", "final_polish"],
         "timestamp": time.time()
     }
@@ -780,15 +781,15 @@ async def rewriter_execute(request: TaskRequest):
     """Execute rewriter agent task"""
     try:
         logger.info(f"✏️ Rewriter Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_rewriter_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Patent rewriting completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Patent rewriting completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Rewriter Agent failed: {str(e)}")
@@ -805,7 +806,7 @@ async def compressor_health():
     return {
         "status": "healthy",
         "service": "compression_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["context_compression", "content_summarization", "key_insight_extraction", "unified_content_preservation"],
         "timestamp": time.time()
     }
@@ -815,15 +816,15 @@ async def compressor_execute(request: TaskRequest):
     """Execute compression agent task"""
     try:
         logger.info(f"🗜️ Compression Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_compression_task(request)
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
             result=result,
-            message=f"Context compression completed successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode",
-            test_mode=TEST_MODE["enabled"]
+            message=f"Context compression completed successfully in {'TEST' if request.test_mode else 'REAL'} mode",
+            test_mode=request.test_mode
         )
     except Exception as e:
         logger.error(f"❌ Compression Agent failed: {str(e)}")
@@ -841,7 +842,7 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
     context = request.context
     
     logger.info(f"🚀 Starting patent planning for workflow {workflow_id}: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     logger.info(f"🔒 Workflow isolation: {context.get('isolation_level', 'unknown')}")
     
     # Validate workflow context
@@ -849,9 +850,9 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
         logger.warning(f"⚠️ Workflow ID mismatch in context: expected {workflow_id}, got {context.get('workflow_id')}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Mock execution with old system prompts
     analysis = await analyze_patent_topic(topic, description)
@@ -882,9 +883,9 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
         "strategy": final_strategy,
         "analysis": analysis,
         "recommendations": analysis.get("recommendations", []),
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0,
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0,
         "isolation_timestamp": time.time()
     }
 
@@ -896,7 +897,7 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     context = request.context
     
     logger.info(f"🚀 Starting prior art search for workflow {workflow_id}: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     logger.info(f"🔒 Workflow isolation: {context.get('isolation_level', 'unknown')}")
     
     # Validate workflow context
@@ -904,9 +905,9 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
         logger.warning(f"⚠️ Workflow ID mismatch in context: expected {workflow_id}, got {context.get('workflow_id')}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     keywords = await extract_keywords(topic, description)
     search_results = await conduct_prior_art_search(topic, keywords, {})
@@ -930,9 +931,9 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
         "novelty_score": novelty_assessment.get("novelty_score", 8.0),
         "risk_level": novelty_assessment.get("risk_level", "Low"),
         "recommendations": recommendations,
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0,
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0,
         "isolation_timestamp": time.time()
     }
 
@@ -942,12 +943,12 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting innovation discussion for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Extract core strategy from planning stage
     planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
@@ -981,9 +982,9 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
             f"Highlight {core_innovation_areas[2] if len(core_innovation_areas) > 2 else 'context-aware'} capabilities"
         ],
         "novelty_score": novelty_score,
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0
     }
     
     return discussion_result
@@ -994,12 +995,12 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting patent drafting for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Check if compressed context is available (look for any compression result)
     compressed_context = None
@@ -1076,9 +1077,9 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
             "novelty_score": novelty_score,
             "innovation_areas": core_innovation_areas
         },
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0
     }
     
     return patent_draft
@@ -1089,12 +1090,12 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting quality review for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Check if compressed context is available (look for any compression result)
     compressed_context = None
@@ -1163,9 +1164,9 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
             "topic_coherence": "Excellent",
             "search_integration": "Good"
         },
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0
     }
     
     return review_result
@@ -1176,12 +1177,12 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting patent rewriting for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Initialize variables
     core_strategy = {}
@@ -1268,9 +1269,9 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
             "final_novelty_score": novelty_score,
             "innovation_areas": core_innovation_areas
         },
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0
     }
     
     return improved_draft
@@ -1286,12 +1287,12 @@ async def execute_compression_task(request: TaskRequest) -> Dict[str, Any]:
     context = request.context
     
     logger.info(f"🚀 Starting context compression for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Analyze what needs to be compressed
     compression_needs = analyze_compression_needs(previous_results, context)
@@ -1319,9 +1320,9 @@ async def execute_compression_task(request: TaskRequest) -> Dict[str, Any]:
             "critical_findings": compressed_context.get("critical_findings", []),
             "unified_theme": compressed_context.get("unified_theme", "")
         },
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0
     }
     
     return compression_result
