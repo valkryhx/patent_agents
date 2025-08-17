@@ -58,7 +58,7 @@ class PatentAgentSystem:
                 "writer_agent": WriterAgent(test_mode=self.test_mode),
                 "reviewer_agent": ReviewerAgent(test_mode=self.test_mode),
                 "rewriter_agent": RewriterAgent(test_mode=self.test_mode),
-                "coordinator_agent": CoordinatorAgent()
+                "coordinator_agent": CoordinatorAgent(test_mode=self.test_mode)
             }
             
             # Start all agents

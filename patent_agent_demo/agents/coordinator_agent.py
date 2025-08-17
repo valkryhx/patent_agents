@@ -5,6 +5,7 @@ Orchestrates the entire patent development workflow across all agents
 
 import asyncio
 import logging
+import traceback
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 import time
@@ -43,10 +44,11 @@ class PatentWorkflow:
 class CoordinatorAgent(BaseAgent):
     """Agent responsible for orchestrating the entire patent development workflow"""
     
-    def __init__(self):
+    def __init__(self, test_mode: bool = False):
         super().__init__(
             name="coordinator_agent",
-            capabilities=["workflow_orchestration", "agent_coordination", "progress_tracking", "quality_assurance"]
+            capabilities=["workflow_orchestration", "agent_coordination", "progress_tracking", "quality_assurance"],
+            test_mode=test_mode
         )
         self.active_workflows: Dict[str, PatentWorkflow] = {}
         self.completed_tasks: set = set()  # Track completed task IDs
@@ -55,29 +57,43 @@ class CoordinatorAgent(BaseAgent):
         self.agent_dependencies = self._load_agent_dependencies()
         self.completed_workflows: Dict[str, Dict[str, Any]] = {}
         
+        self.agent_logger.info(f"🎯 协调器智能体初始化完成")
+        self.agent_logger.info(f"   工作流模板数量: {len(self.workflow_templates)}")
+        self.agent_logger.info(f"   智能体依赖关系数量: {len(self.agent_dependencies)}")
+        
     async def start(self):
         """Start the coordinator agent"""
         await super().start()
+        self.agent_logger.info(f"🎯 协调器智能体启动成功")
         logger.info("Coordinator Agent started successfully")
         
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
         """Execute coordination tasks"""
         try:
             task_type = task_data.get("type")
+            self.agent_logger.info(f"🎯 协调器收到任务: {task_type}")
+            self.agent_logger.info(f"   任务数据: {task_data}")
             
             if task_type == "start_patent_workflow":
+                self.agent_logger.info(f"🚀 开始专利工作流")
                 return await self._start_patent_workflow(task_data)
             elif task_type == "monitor_workflow":
+                self.agent_logger.info(f"📊 监控工作流")
                 return await self._monitor_workflow(task_data)
             elif task_type == "handle_workflow_completion":
+                self.agent_logger.info(f"✅ 处理工作流完成")
                 return await self._handle_workflow_completion(task_data)
             elif task_type == "escalate_issue":
+                self.agent_logger.info(f"⚠️ 升级问题")
                 return await self._escalate_issue(task_data)
             elif task_type == "get_all_agents_status":
+                self.agent_logger.info(f"📋 获取所有智能体状态")
                 return await self.get_all_agents_status()
             elif task_type == "get_workflow_summary":
+                self.agent_logger.info(f"📋 获取工作流摘要")
                 return await self.get_workflow_summary()
             else:
+                self.agent_logger.warning(f"⚠️ 未知任务类型: {task_type}")
                 return TaskResult(
                     success=False,
                     data={},
@@ -85,6 +101,8 @@ class CoordinatorAgent(BaseAgent):
                 )
                 
         except Exception as e:
+            self.agent_logger.error(f"❌ 协调器任务执行失败: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"Error executing task in Coordinator Agent: {e}")
             return TaskResult(
                 success=False,
@@ -98,7 +116,12 @@ class CoordinatorAgent(BaseAgent):
             topic = task_data.get("topic")
             description = task_data.get("description")
             
+            self.agent_logger.info(f"🚀 开始专利工作流")
+            self.agent_logger.info(f"   主题: {topic}")
+            self.agent_logger.info(f"   描述: {description}")
+            
             if not topic or not description:
+                self.agent_logger.error(f"❌ 缺少必要参数: topic 或 description")
                 return TaskResult(
                     success=False,
                     data={},
@@ -106,15 +129,20 @@ class CoordinatorAgent(BaseAgent):
                 )
                 
             workflow_id = str(uuid.uuid4())
+            self.agent_logger.info(f"🆔 生成工作流ID: {workflow_id}")
             logger.info(f"Starting patent workflow {workflow_id} for: {topic}")
             
             # Initialize context for this workflow
+            self.agent_logger.info(f"📋 初始化工作流上下文: {workflow_id}")
             logger.info(f"Initializing context for workflow {workflow_id}")
             theme_definition = await context_manager.initialize_workflow_context(workflow_id, topic, description)
+            self.agent_logger.info(f"✅ 上下文初始化完成，主题: {theme_definition.primary_title}")
             logger.info(f"Context initialized with theme: {theme_definition.primary_title}")
             
             # Create workflow stages
+            self.agent_logger.info(f"📋 创建工作流阶段")
             stages = await self._create_workflow_stages(topic, description)
+            self.agent_logger.info(f"✅ 创建了 {len(stages)} 个工作流阶段")
             
             # Initialize workflow
             workflow = PatentWorkflow(
@@ -130,10 +158,13 @@ class CoordinatorAgent(BaseAgent):
             
             # Store workflow
             self.active_workflows[workflow_id] = workflow
+            self.agent_logger.info(f"💾 工作流已存储到活动工作流列表")
             
             # Start first stage
+            self.agent_logger.info(f"🚀 开始执行第一个阶段")
             await self._execute_workflow_stage(workflow_id, 0)
             
+            self.agent_logger.info(f"✅ 专利工作流启动成功")
             return TaskResult(
                 success=True,
                 data={
@@ -148,6 +179,8 @@ class CoordinatorAgent(BaseAgent):
             )
             
         except Exception as e:
+            self.agent_logger.error(f"❌ 启动专利工作流失败: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"Error starting patent workflow: {e}")
             return TaskResult(
                 success=False,
@@ -1484,4 +1517,86 @@ class CoordinatorAgent(BaseAgent):
                 
         except Exception as e:
             logger.error(f"Error broadcasting message: {e}")
+            
+    async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
+        """Execute a test task with mock data for coordinator agent"""
+        try:
+            task_type = task_data.get("type")
+            self.agent_logger.info(f"🧪 协调器测试模式执行任务: {task_type}")
+            
+            if task_type == "start_patent_workflow":
+                # 模拟工作流启动
+                workflow_id = str(uuid.uuid4())
+                mock_workflow = PatentWorkflow(
+                    workflow_id=workflow_id,
+                    topic=task_data.get("topic", "测试主题"),
+                    description=task_data.get("description", "测试描述"),
+                    stages=[],
+                    current_stage=0,
+                    overall_status="test_completed",
+                    start_time=time.time(),
+                    results={"test_result": "模拟工作流启动成功"}
+                )
+                
+                self.active_workflows[workflow_id] = mock_workflow
+                
+                return TaskResult(
+                    success=True,
+                    data={
+                        "workflow_id": workflow_id,
+                        "workflow": mock_workflow,
+                        "test_mode": True
+                    },
+                    metadata={"test_execution": True}
+                )
+                
+            elif task_type == "get_all_agents_status":
+                # 模拟获取智能体状态
+                mock_agents_status = {
+                    "planner_agent": {"status": "online", "capabilities": ["planning"], "current_task": None, "last_activity": time.time()},
+                    "searcher_agent": {"status": "online", "capabilities": ["searching"], "current_task": None, "last_activity": time.time()},
+                    "discusser_agent": {"status": "online", "capabilities": ["discussion"], "current_task": None, "last_activity": time.time()},
+                    "writer_agent": {"status": "online", "capabilities": ["writing"], "current_task": None, "last_activity": time.time()},
+                    "reviewer_agent": {"status": "online", "capabilities": ["reviewing"], "current_task": None, "last_activity": time.time()},
+                    "rewriter_agent": {"status": "online", "capabilities": ["rewriting"], "current_task": None, "last_activity": time.time()}
+                }
+                
+                return TaskResult(
+                    success=True,
+                    data=mock_agents_status,
+                    metadata={"test_execution": True, "timestamp": time.time()}
+                )
+                
+            elif task_type == "get_workflow_summary":
+                # 模拟获取工作流摘要
+                mock_summary = {
+                    "active_workflows": len(self.active_workflows),
+                    "completed_workflows": 0,
+                    "total_workflows": len(self.active_workflows),
+                    "active_workflow_ids": list(self.active_workflows.keys()),
+                    "completed_workflow_ids": [],
+                    "test_mode": True
+                }
+                
+                return TaskResult(
+                    success=True,
+                    data=mock_summary,
+                    metadata={"test_execution": True, "timestamp": time.time()}
+                )
+                
+            else:
+                # 默认测试响应
+                return TaskResult(
+                    success=True,
+                    data={"test_result": f"测试任务 {task_type} 执行成功"},
+                    metadata={"test_execution": True}
+                )
+                
+        except Exception as e:
+            self.agent_logger.error(f"❌ 协调器测试任务执行失败: {e}")
+            return TaskResult(
+                success=False,
+                data={},
+                error_message=f"Test task failed: {str(e)}"
+            )
             

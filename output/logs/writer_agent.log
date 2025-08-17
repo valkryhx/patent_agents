@@ -1,0 +1,32 @@
+2025-08-17 05:34:37 INFO agent.writer_agent: 🚀 writer_agent 智能体初始化开始
+2025-08-17 05:34:37 INFO agent.writer_agent:    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-17 05:34:37 INFO agent.writer_agent:    测试模式: True
+2025-08-17 05:34:37 INFO agent.writer_agent:    状态: idle
+2025-08-17 05:34:37 INFO agent.writer_agent: 🧪 writer_agent 以测试模式初始化
+2025-08-17 05:34:37 INFO agent.writer_agent: 🔄 writer_agent 开始停止...
+2025-08-17 05:34:37 INFO agent.writer_agent: 📊 writer_agent 状态更新为: offline
+2025-08-17 05:34:37 INFO agent.writer_agent: ✅ writer_agent 已从消息总线注销
+2025-08-17 05:34:37 INFO agent.writer_agent: 📊 writer_agent 性能统计:
+2025-08-17 05:34:37 INFO agent.writer_agent:    完成任务: 0
+2025-08-17 05:34:37 INFO agent.writer_agent:    失败任务: 0
+2025-08-17 05:34:37 INFO agent.writer_agent:    平均执行时间: 0.00秒
+2025-08-17 05:34:37 INFO agent.writer_agent:    总执行时间: 0.00秒
+2025-08-17 05:34:47 INFO agent.writer_agent: 🚀 writer_agent 智能体初始化开始
+2025-08-17 05:34:47 INFO agent.writer_agent:    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-17 05:34:47 INFO agent.writer_agent:    测试模式: True
+2025-08-17 05:34:47 INFO agent.writer_agent:    状态: idle
+2025-08-17 05:34:47 INFO agent.writer_agent: 🧪 writer_agent 以测试模式初始化
+2025-08-17 05:34:48 INFO agent.writer_agent: 🔄 writer_agent 开始启动...
+2025-08-17 05:34:48 INFO agent.writer_agent: ✅ writer_agent 已注册到消息总线
+2025-08-17 05:34:48 INFO agent.writer_agent: 🔄 writer_agent 消息处理循环开始
+2025-08-17 05:34:48 INFO agent.writer_agent: ✅ writer_agent 启动成功，状态: idle
+2025-08-17 05:34:48 INFO agent.writer_agent:    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-17 05:34:55 INFO agent.writer_agent: 🔄 writer_agent 开始停止...
+2025-08-17 05:34:55 INFO agent.writer_agent: 📊 writer_agent 状态更新为: offline
+2025-08-17 05:34:55 INFO agent.writer_agent: ✅ writer_agent 消息处理任务已取消
+2025-08-17 05:34:55 INFO agent.writer_agent: ✅ writer_agent 已从消息总线注销
+2025-08-17 05:34:55 INFO agent.writer_agent: 📊 writer_agent 性能统计:
+2025-08-17 05:34:55 INFO agent.writer_agent:    完成任务: 0
+2025-08-17 05:34:55 INFO agent.writer_agent:    失败任务: 0
+2025-08-17 05:34:55 INFO agent.writer_agent:    平均执行时间: 0.00秒
+2025-08-17 05:34:55 INFO agent.writer_agent:    总执行时间: 0.00秒

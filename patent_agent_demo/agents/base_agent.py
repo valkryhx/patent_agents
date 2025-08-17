@@ -7,6 +7,7 @@ import asyncio
 import logging
 import time
 import uuid
+import traceback
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from enum import Enum
@@ -15,6 +16,7 @@ from ..message_bus import (
     MessageBusBroker, Message, MessageType, AgentStatus, message_bus_config
 )
 from ..context_manager import context_manager
+from ..logging_utils import attach_agent_file_logger
 
 logger = logging.getLogger(__name__)
 
@@ -42,16 +44,28 @@ class BaseAgent:
             "average_execution_time": 0.0,
             "total_execution_time": 0.0
         }
-        self.agent_logger = logging.getLogger(f"agent.{name}")
+        
+        # 为每个智能体创建独立的日志记录器
+        self.agent_logger = attach_agent_file_logger(name)
         self.test_mode = test_mode
+        
+        # 记录智能体初始化信息
+        self.agent_logger.info(f"🚀 {self.name} 智能体初始化开始")
+        self.agent_logger.info(f"   能力: {self.capabilities}")
+        self.agent_logger.info(f"   测试模式: {test_mode}")
+        self.agent_logger.info(f"   状态: {self.status.value}")
+        
         if test_mode:
-            self.agent_logger.info(f"{self.name} initialized in TEST MODE")
+            self.agent_logger.info(f"🧪 {self.name} 以测试模式初始化")
         
     async def start(self):
         """Start the agent"""
         try:
+            self.agent_logger.info(f"🔄 {self.name} 开始启动...")
+            
             # Register with message bus
             await self.broker.register_agent(self.name, self.capabilities)
+            self.agent_logger.info(f"✅ {self.name} 已注册到消息总线")
             
             # Start message processing loop and wait for it to initialize
             self.message_task = asyncio.create_task(self._message_processing_loop())
@@ -59,17 +73,24 @@ class BaseAgent:
             # Give the message loop a moment to start
             await asyncio.sleep(0.1)
             
-            self.agent_logger.info(f"{self.name} initialized with capabilities: {self.capabilities}")
+            self.status = AgentStatus.IDLE
+            self.agent_logger.info(f"✅ {self.name} 启动成功，状态: {self.status.value}")
+            self.agent_logger.info(f"   能力: {self.capabilities}")
             
         except Exception as e:
+            self.agent_logger.error(f"❌ {self.name} 启动失败: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"Error starting agent {self.name}: {e}")
             raise
             
     async def stop(self):
         """Stop the agent"""
         try:
+            self.agent_logger.info(f"🔄 {self.name} 开始停止...")
+            
             # Update status to stop message processing loop
             self.status = AgentStatus.OFFLINE
+            self.agent_logger.info(f"📊 {self.name} 状态更新为: {self.status.value}")
             
             # Cancel message processing task if it exists
             if hasattr(self, 'message_task') and self.message_task:
@@ -77,20 +98,30 @@ class BaseAgent:
                 try:
                     await self.message_task
                 except asyncio.CancelledError:
-                    pass
+                    self.agent_logger.info(f"✅ {self.name} 消息处理任务已取消")
             
             # Unregister from message bus
             await self.broker.unregister_agent(self.name)
+            self.agent_logger.info(f"✅ {self.name} 已从消息总线注销")
+            
+            # 记录性能统计
+            self.agent_logger.info(f"📊 {self.name} 性能统计:")
+            self.agent_logger.info(f"   完成任务: {self.performance_metrics['tasks_completed']}")
+            self.agent_logger.info(f"   失败任务: {self.performance_metrics['tasks_failed']}")
+            self.agent_logger.info(f"   平均执行时间: {self.performance_metrics['average_execution_time']:.2f}秒")
+            self.agent_logger.info(f"   总执行时间: {self.performance_metrics['total_execution_time']:.2f}秒")
             
             logger.info(f"Agent {self.name} stopped successfully")
             
         except Exception as e:
+            self.agent_logger.error(f"❌ {self.name} 停止失败: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"Error stopping agent {self.name}: {e}")
             
     async def _message_processing_loop(self):
         """Main message processing loop"""
         try:
-            logger.info(f"Message processing loop started for {self.name}")
+            self.agent_logger.info(f"🔄 {self.name} 消息处理循环开始")
             loop_count = 0
             while self.status != AgentStatus.OFFLINE:
                 loop_count += 1
@@ -99,45 +130,33 @@ class BaseAgent:
                 try:
                     message = await self.broker.get_message(self.name)
                     if message:
-                        logger.info(f"🔔 Agent {self.name} received message: {message.type.value} from {message.sender}")
-                        logger.info(f"   消息ID: {message.id}")
-                        logger.info(f"   内容: {message.content}")
+                        self.agent_logger.info(f"📨 {self.name} 收到消息: {message.type.value} 来自 {message.sender}")
+                        self.agent_logger.info(f"   消息ID: {message.id}")
+                        self.agent_logger.info(f"   内容: {message.content}")
+                        await self._process_message(message)
                     else:
                         # Log occasionally to show the loop is running
-                        if int(time.time()) % 10 == 0:  # Log every 10 seconds
-                            logger.debug(f"Agent {self.name} waiting for messages...")
+                        if int(time.time()) % 30 == 0:  # Log every 30 seconds
+                            self.agent_logger.debug(f"⏳ {self.name} 等待消息中... (循环次数: {loop_count})")
                 except Exception as e:
-                    logger.error(f"Error getting message for {self.name}: {e}")
-                    import traceback
-                    logger.error(f"Traceback: {traceback.format_exc()}")
+                    self.agent_logger.error(f"❌ {self.name} 获取消息失败: {e}")
+                    self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
                     message = None
                 
-                if message:
-                    logger.info(f"Agent {self.name} received message: {message.type.value} from {message.sender}")
-                    # Process message
-                    try:
-                        await self._process_message(message)
-                    except Exception as e:
-                        logger.error(f"Error processing message in {self.name}: {e}")
-                        import traceback
-                        logger.error(f"Traceback: {traceback.format_exc()}")
-                else:
-                    # Log occasionally to show the loop is running
-                    if int(time.time()) % 10 == 0:  # Log every 10 seconds
-                        logger.debug(f"Agent {self.name} waiting for messages...")
-                    
                 # Add heartbeat to show the loop is running
-                if int(time.time()) % 5 == 0:  # Log every 5 seconds
-                    logger.info(f"Agent {self.name} message loop heartbeat - status: {self.status.value} - loop count: {loop_count}")
+                if int(time.time()) % 60 == 0:  # Log every 60 seconds
+                    self.agent_logger.info(f"💓 {self.name} 心跳 - 状态: {self.status.value} - 循环次数: {loop_count}")
                 
-                # Force log every 10 loops to ensure we see activity
-                if loop_count % 10 == 0:
-                    logger.info(f"Agent {self.name} message loop active - loop count: {loop_count}")
+                # Force log every 100 loops to ensure we see activity
+                if loop_count % 100 == 0:
+                    self.agent_logger.info(f"🔄 {self.name} 消息循环活跃 - 循环次数: {loop_count}")
                     
                 # Small delay to prevent busy waiting
                 await asyncio.sleep(0.1)
                 
         except Exception as e:
+            self.agent_logger.error(f"❌ {self.name} 消息处理循环错误: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"Error in message processing loop for {self.name}: {e}")
             import traceback
             logger.error(f"Traceback: {traceback.format_exc()}")
@@ -145,27 +164,29 @@ class BaseAgent:
     async def _process_message(self, message: Message):
         """Process an incoming message"""
         try:
-            logger.info(f"🔄 Agent {self.name} processing message: {message.type.value}")
-            logger.info(f"   消息ID: {message.id}")
-            logger.info(f"   发送者: {message.sender}")
-            logger.info(f"   内容: {message.content}")
+            self.agent_logger.info(f"🔄 {self.name} 开始处理消息: {message.type.value}")
+            self.agent_logger.info(f"   消息ID: {message.id}")
+            self.agent_logger.info(f"   发送者: {message.sender}")
+            self.agent_logger.info(f"   内容: {message.content}")
             
             message_type = message.type
             
             if message_type == MessageType.COORDINATION:
-                logger.info(f"🔄 Agent {self.name} routing to coordination handler")
+                self.agent_logger.info(f"🔄 {self.name} 路由到协调处理器")
                 await self._handle_coordination_message(message)
             elif message_type == MessageType.STATUS:
-                logger.info(f"🔄 Agent {self.name} routing to status handler")
+                self.agent_logger.info(f"🔄 {self.name} 路由到状态处理器")
                 await self._handle_status_message(message)
             elif message_type == MessageType.ERROR:
-                logger.info(f"🔄 Agent {self.name} routing to error handler")
+                self.agent_logger.info(f"🔄 {self.name} 路由到错误处理器")
                 await self._handle_error_message(message)
             else:
-                logger.info(f"🔄 Agent {self.name} routing to specific handler")
+                self.agent_logger.info(f"🔄 {self.name} 路由到特定处理器")
                 await self._handle_specific_message(message)
                 
         except Exception as e:
+            self.agent_logger.error(f"❌ {self.name} 处理消息失败: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"🔄 Error processing message in {self.name}: {e}")
             import traceback
             logger.error(f"🔄 Traceback: {traceback.format_exc()}")
@@ -185,23 +206,26 @@ class BaseAgent:
     async def _handle_coordination_message(self, message: Message):
         """Handle coordination messages"""
         try:
-            logger.info(f"🔧 Agent {self.name} handling coordination message")
-            logger.info(f"   消息内容: {message.content}")
+            self.agent_logger.info(f"🔧 {self.name} 处理协调消息")
+            self.agent_logger.info(f"   消息内容: {message.content}")
             
             task_data = message.content.get("task", {})
             task_type = task_data.get("type")
             
-            logger.info(f"🔧 Agent {self.name} task type: {task_type}, capabilities: {self.capabilities}")
+            self.agent_logger.info(f"🔧 {self.name} 任务类型: {task_type}")
+            self.agent_logger.info(f"   可用能力: {self.capabilities}")
             
             if task_type in self.capabilities:
-                logger.info(f"🔧 Agent {self.name} executing task: {task_type}")
+                self.agent_logger.info(f"✅ {self.name} 开始执行任务: {task_type}")
                 await self._execute_task(task_data)
-                logger.info(f"🔧 Agent {self.name} task execution completed")
+                self.agent_logger.info(f"✅ {self.name} 任务执行完成: {task_type}")
             else:
-                logger.warning(f"🔧 Agent {self.name} cannot handle task type: {task_type}")
-                logger.warning(f"   可用能力: {self.capabilities}")
+                self.agent_logger.warning(f"⚠️ {self.name} 无法处理任务类型: {task_type}")
+                self.agent_logger.warning(f"   可用能力: {self.capabilities}")
                 
         except Exception as e:
+            self.agent_logger.error(f"❌ {self.name} 处理协调消息失败: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"🔧 Error handling coordination message: {e}")
             import traceback
             logger.error(f"🔧 Traceback: {traceback.format_exc()}")
@@ -232,28 +256,34 @@ class BaseAgent:
         try:
             start_time = time.time()
             task_id = task_data.get("id", str(uuid.uuid4()))
+            task_type = task_data.get("type", "unknown")
             
-            logger.info(f"Agent {self.name} executing task: {task_id}")
-            self.agent_logger.info(f"EXECUTE task_id={task_id} type={task_data.get('type')} meta={{'topic': task_data.get('topic')}}")
+            self.agent_logger.info(f"🚀 {self.name} 开始执行任务")
+            self.agent_logger.info(f"   任务ID: {task_id}")
+            self.agent_logger.info(f"   任务类型: {task_type}")
+            self.agent_logger.info(f"   任务数据: {task_data}")
             
             # Extract context information if available
             context_data = task_data.get("context", {})
             workflow_id = task_data.get("workflow_id")
             
             if context_data and workflow_id:
-                logger.info(f"Agent {self.name} received context data for workflow {workflow_id}")
+                self.agent_logger.info(f"📋 {self.name} 收到工作流 {workflow_id} 的上下文数据")
                 # Store context for use during task execution
                 self.current_context = context_data
                 self.current_workflow_id = workflow_id
             else:
+                self.agent_logger.info(f"📋 {self.name} 无上下文数据")
                 self.current_context = {}
                 self.current_workflow_id = None
             
             # Execute the task using the abstract method
             if self.test_mode:
+                self.agent_logger.info(f"🧪 {self.name} 使用测试模式执行")
                 # In test mode, use mock execution
                 result = await self._execute_test_task(task_data)
             else:
+                self.agent_logger.info(f"🔧 {self.name} 使用正常模式执行")
                 # Normal execution
                 result = await self.execute_task(task_data)
             
@@ -273,6 +303,16 @@ class BaseAgent:
             )
             self.task_history.append(task_result)
             
+            # Log execution result
+            if result.success:
+                self.agent_logger.info(f"✅ {self.name} 任务执行成功")
+                self.agent_logger.info(f"   执行时间: {execution_time:.2f}秒")
+                self.agent_logger.info(f"   结果数据: {result.data}")
+            else:
+                self.agent_logger.warning(f"⚠️ {self.name} 任务执行失败")
+                self.agent_logger.warning(f"   执行时间: {execution_time:.2f}秒")
+                self.agent_logger.warning(f"   错误信息: {result.error_message}")
+            
             # Send completion message with correct task_id format
             completion_message = Message(
                 id=f"completion_{uuid.uuid4()}",
@@ -290,9 +330,11 @@ class BaseAgent:
                 priority=5
             )
             await self.broker.send_message(completion_message)
-            self.agent_logger.info(f"COMPLETE task_id={task_id} success={result.success} time={execution_time:.2f}s")
+            self.agent_logger.info(f"📤 {self.name} 发送完成消息到协调器")
             
         except Exception as e:
+            self.agent_logger.error(f"❌ {self.name} 任务执行异常: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"Error executing task in {self.name}: {e}")
             
             # Send error message with correct task_id
@@ -306,6 +348,7 @@ class BaseAgent:
                 priority=10
             )
             await self.broker.send_message(error_message)
+            self.agent_logger.info(f"📤 {self.name} 发送错误消息到协调器")
             
     async def execute_task(self, task_data: Dict[str, Any]) -> TaskResult:
         """Execute a task - to be implemented by subclasses"""
@@ -319,26 +362,35 @@ class BaseAgent:
         """Update performance metrics"""
         if success:
             self.performance_metrics["tasks_completed"] += 1
+            self.agent_logger.info(f"📊 {self.name} 性能统计更新 - 完成任务: {self.performance_metrics['tasks_completed']}")
         else:
             self.performance_metrics["tasks_failed"] += 1
+            self.agent_logger.warning(f"📊 {self.name} 性能统计更新 - 失败任务: {self.performance_metrics['tasks_failed']}")
             
         self.performance_metrics["total_execution_time"] += execution_time
         
+        # 计算平均执行时间
         total_tasks = self.performance_metrics["tasks_completed"] + self.performance_metrics["tasks_failed"]
         if total_tasks > 0:
-            self.performance_metrics["average_execution_time"] = (
-                self.performance_metrics["total_execution_time"] / total_tasks
-            )
+            self.performance_metrics["average_execution_time"] = self.performance_metrics["total_execution_time"] / total_tasks
+            
+        self.agent_logger.debug(f"📊 {self.name} 性能统计 - 平均执行时间: {self.performance_metrics['average_execution_time']:.2f}秒")
             
     async def get_status(self) -> Dict[str, Any]:
         """Get agent status"""
-        return {
+        status_info = {
             "name": self.name,
             "status": self.status.value,
             "capabilities": self.capabilities,
             "performance_metrics": self.performance_metrics,
-            "task_history_length": len(self.task_history)
+            "task_history_length": len(self.task_history),
+            "test_mode": self.test_mode,
+            "current_workflow_id": getattr(self, 'current_workflow_id', None),
+            "has_context": bool(getattr(self, 'current_context', {}))
         }
+        
+        self.agent_logger.debug(f"📊 {self.name} 状态查询: {status_info}")
+        return status_info
         
     async def send_message(self, recipient: str, message_type: MessageType, 
                           content: Dict[str, Any], priority: int = 5):
@@ -354,6 +406,9 @@ class BaseAgent:
                 priority=priority
             )
             await self.broker.send_message(message)
+            self.agent_logger.info(f"📤 {self.name} 发送消息到 {recipient}: {message_type.value}")
             
         except Exception as e:
+            self.agent_logger.error(f"❌ {self.name} 发送消息失败: {e}")
+            self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
             logger.error(f"Error sending message from {self.name}: {e}")
