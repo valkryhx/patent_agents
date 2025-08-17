@@ -498,8 +498,8 @@ class EnhancedPatentWorkflow:
 async def main():
     """主函数"""
     try:
-        # 创建增强工作流实例（使用真实模式）
-        workflow = EnhancedPatentWorkflow(test_mode=False)
+        # 创建增强工作流实例（使用测试模式）
+        workflow = EnhancedPatentWorkflow(test_mode=True)
         
         # 定义专利主题
         topic = "基于智能分层推理的多参数工具自适应调用系统"

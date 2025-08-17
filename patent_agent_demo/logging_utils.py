@@ -3,7 +3,8 @@ import os
 from logging.handlers import RotatingFileHandler
 from typing import Optional
 
-LOG_DIR = "/workspace/output/logs"
+# 使用相对路径，在当前项目目录下创建output文件夹
+LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "output", "logs")
 SYSTEM_LOG = "system.log"
 
 

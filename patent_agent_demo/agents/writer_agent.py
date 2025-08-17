@@ -129,7 +129,9 @@ class WriterAgent(BaseAgent):
             workflow_id = task_data.get("workflow_id", "") or ""
             wid8 = (workflow_id[:8] if isinstance(workflow_id, str) and workflow_id else "noid")
             topic_str = (topic or "patent").replace(" ", "_")
-            progress_dir = f"/workspace/output/progress/{topic_str}_{wid8}"
+            # 使用相对路径，在当前项目目录下创建output文件夹
+            output_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "output")
+            progress_dir = os.path.join(output_dir, "progress", f"{topic_str}_{wid8}")
             try:
                 os.makedirs(progress_dir, exist_ok=True)
             except Exception:
