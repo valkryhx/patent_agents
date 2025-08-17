@@ -112,3 +112,12 @@
 2025-08-17 10:10:33 INFO agent.rewriter_agent:    结果数据: {'improved_draft': PatentDraft(title='基于智能分层推理的多参数工具自适应调用系统 - 改进版专利申请书', abstract='本发明涉及基于智能分层推理的多参数工具自适应调用系统的技术领域，提供了一种改进的解决方案。一种通过智能分层推理技术实现多参数工具自适应调用的系统，能够根据上下文和用户意图自动推断工具参数，提高大语言模型调用复杂工具的准确性和效率。', background='现有技术中，大语言模型在调用具有大量参数的工具时存在准确性和效率问题。本发明提供了一种创新的解决方案。', summary='本发明的目的是提供一种能够智能处理多参数工具调用的系统，通过分层推理和自适应机制提高调用准确性。', detailed_description='\n# 技术领域\n\n本发明涉及基于智能分层推理的多参数工具自适应调用系统的技术领域，具体涉及一种基于智能分层推理的多参数工具自适应调用系统。\n\n# 发明内容\n\n本发明的目的是提供一种能够智能处理多参数工具调用的系统，通过分层推理和自适应机制提高调用准确性。\n\n# 具体实施方式\n\n## 实施例1\n\n本实施例提供了一种基于智能分层推理的多参数工具自适应调用系统，包括：\n\n1. 参数分层模块：将参数按重要性和使用频率进行分类；\n2. 智能推理模块：基于上下文自动推断参数值；\n3. 自适应调用模块：根据工具特性动态调整调用策略。\n\n## 实施例2\n\n本实施例进一步优化了参数验证机制，包括：\n\n1. 参数有效性检查；\n2. 参数一致性验证；\n3. 调用结果反馈优化。\n                    ', claims=['1. 一种基于智能分层推理的多参数工具自适应调用系统，其特征在于，包括参数分层模块、智能推理模块和自适应调用模块。', '2. 根据权利要求1所述的系统，其特征在于，所述参数分层模块将参数按重要性和使用频率进行分类。', '3. 根据权利要求1所述的系统，其特征在于，所述智能推理模块基于上下文自动推断参数值。'], drawings_description='图1为本发明的系统架构图；图2为本发明的参数处理流程图。', technical_diagrams=['图1：系统架构图', '图2：参数处理流程图']), 'changes_made': ['改进了背景技术描述', '优化了权利要求书格式', '增加了具体实施例'], 'quality_improvement': 0.8, 'compliance_status': 'Compliant', 'final_quality_score': 8.8}
 2025-08-17 10:10:33 INFO agent.rewriter_agent: 📤 rewriter_agent 发送完成消息到协调器
 2025-08-17 10:10:33 INFO agent.rewriter_agent: ✅ rewriter_agent 任务执行完成: patent_rewrite
+2025-08-17 10:10:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 20239
+2025-08-17 10:11:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 20833
+2025-08-17 10:11:53 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 21000
+2025-08-17 10:12:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 21428
+2025-08-17 10:13:34 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 22000
+2025-08-17 10:13:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 22022
+2025-08-17 10:14:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 22617
+2025-08-17 10:15:15 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 23000
+2025-08-17 10:15:37 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 23212

@@ -271,3 +271,13 @@
 2025-08-17 10:10:33 INFO agent.coordinator_agent: 🔍 coordinator_agent 开始调用 _handle_status_message_override
 2025-08-17 10:10:33 INFO agent.coordinator_agent: 🔍 coordinator_agent 子类状态消息处理器调用完成
 2025-08-17 10:10:33 INFO agent.coordinator_agent: ✅ coordinator_agent 状态消息处理完成
+2025-08-17 10:10:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 20238
+2025-08-17 10:11:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 20833
+2025-08-17 10:11:53 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 21000
+2025-08-17 10:12:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 21427
+2025-08-17 10:13:33 INFO agent.coordinator_agent: ✅ 专利工作流启动成功
+2025-08-17 10:13:34 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 22000
+2025-08-17 10:13:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 22022
+2025-08-17 10:14:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 22616
+2025-08-17 10:15:15 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 23000
+2025-08-17 10:15:37 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 23211
