@@ -65,35 +65,71 @@ async def debug_planner_detailed():
         data_end = time.time()
         logger.info(f"⏱️ 结束: 准备任务数据 - 耗时: {data_end - data_start:.2f}秒")
         
-        # 步骤4: 执行任务
-        logger.info("⏱️ 开始: 执行planner任务")
+        # 步骤4: 通过消息总线发送任务
+        logger.info("⏱️ 开始: 通过消息总线发送任务")
         task_start = time.time()
         
         try:
-            # 直接调用execute_task方法
-            result: TaskResult = await planner.execute_task(task_data)
-            task_end = time.time()
-            logger.info(f"⏱️ 结束: 执行planner任务 - 耗时: {task_end - task_start:.2f}秒")
+            # 获取消息总线
+            broker = system.message_bus_config.broker
             
-            if result.success:
-                logger.info("✅ planner_agent 任务成功")
-                logger.info(f"   结果类型: {type(result.data)}")
-                if result.data:
-                    if isinstance(result.data, dict):
-                        logger.info(f"   数据键: {list(result.data.keys())}")
-                    else:
-                        logger.info(f"   数据内容: {str(result.data)[:200]}...")
-                else:
-                    logger.info("   数据为空")
+            # 创建任务消息
+            task_message = Message(
+                id=str(uuid.uuid4()),
+                type=MessageType.COORDINATION,
+                sender="test_script",
+                recipient="planner_agent",
+                content={
+                    "task": task_data,
+                    "task_id": str(uuid.uuid4())
+                },
+                timestamp=time.time(),
+                priority=5
+            )
+            
+            # 发送消息
+            await broker.send_message(task_message)
+            logger.info("✅ 任务消息已发送到planner_agent")
+            
+            # 等待任务完成
+            logger.info("⏱️ 开始: 等待任务完成")
+            wait_start = time.time()
+            
+            # 等待最多5分钟
+            max_wait_time = 300  # 5分钟
+            wait_time = 0
+            check_interval = 5  # 每5秒检查一次
+            
+            while wait_time < max_wait_time:
+                await asyncio.sleep(check_interval)
+                wait_time += check_interval
                 
-                success = True
-            else:
-                logger.error(f"❌ planner_agent 任务失败: {result.error_message}")
+                # 检查planner_agent的状态
+                planner_status = await broker.get_agent_status("planner_agent")
+                if planner_status:
+                    logger.info(f"planner_agent状态: {planner_status.status.value}")
+                    if planner_status.status.value == "idle":
+                        logger.info("planner_agent已完成任务")
+                        break
+                else:
+                    logger.warning("无法获取planner_agent状态")
+            
+            wait_end = time.time()
+            logger.info(f"⏱️ 结束: 等待任务完成 - 耗时: {wait_end - wait_start:.2f}秒")
+            
+            task_end = time.time()
+            logger.info(f"⏱️ 结束: 通过消息总线发送任务 - 耗时: {task_end - task_start:.2f}秒")
+            
+            if wait_time >= max_wait_time:
+                logger.warning("⚠️ 等待超时，planner_agent可能没有正确完成任务")
                 success = False
+            else:
+                logger.info("✅ planner_agent任务完成")
+                success = True
                 
         except Exception as e:
             task_end = time.time()
-            logger.info(f"⏱️ 结束: 执行planner任务 - 耗时: {task_end - task_start:.2f}秒")
+            logger.info(f"⏱️ 结束: 通过消息总线发送任务 - 耗时: {task_end - task_start:.2f}秒")
             logger.error(f"❌ planner_agent 任务执行出错: {e}")
             traceback.print_exc()
             success = False
