@@ -1,0 +1,32 @@
+=== 工作流监控脚本启动 ===
+每3分钟检查一次工作流状态
+================================
+
+=== 2025-08-17 06:17:12 工作流进度汇报 ===
+
+📊 整体进度:
+   已生成文档数量: 0
+
+🤖 智能体状态:
+   coordinator:
+     2025-08-17 06:17:11 INFO agent.coordinator_agent: 🎯 协调器智能体启动成功
+   planner:
+     2025-08-17 06:17:11 INFO agent.planner_agent:    能力: ['patent_planning', 'strategy_development', 'risk_assessment', 'timeline_planning']
+   searcher:
+     2025-08-17 06:17:11 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+   discusser:
+     2025-08-17 06:17:11 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+   writer:
+     2025-08-17 06:17:11 INFO agent.writer_agent:    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+   reviewer:
+     2025-08-17 06:17:11 INFO agent.reviewer_agent:    能力: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
+   rewriter:
+     2025-08-17 06:17:11 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
+
+🔍 最新任务执行:
+   output/logs/planner_agent.log:2025-08-17 06:16:29 INFO agent.planner_agent: ✅ planner_agent 任务执行完成: patent_planning
+   output/logs/discusser_agent.log:2025-08-17 06:14:47 INFO agent.discusser_agent: ✅ discusser_agent 任务执行成功
+   output/logs/discusser_agent.log:2025-08-17 06:14:47 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+
+⏰ 等待3分钟后再次检查...
+==========================================
