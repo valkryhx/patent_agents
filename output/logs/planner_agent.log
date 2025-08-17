@@ -95,3 +95,5 @@
 2025-08-17 06:05:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5355
 2025-08-17 06:05:53 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 4000
 2025-08-17 06:06:13 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4194
+2025-08-17 06:06:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5951
+2025-08-17 06:06:25 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 6000
