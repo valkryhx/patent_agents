@@ -252,9 +252,9 @@ class BaseAgent:
             self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 是否有_handle_status_message: {hasattr(self, '_handle_status_message')}")
             self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 类名不是BaseAgent: {self.__class__.__name__ != 'BaseAgent'}")
             
-            if hasattr(self, '_handle_status_message') and self.__class__.__name__ != 'BaseAgent':
+            if hasattr(self, '_handle_status_message_override') and self.__class__.__name__ != 'BaseAgent':
                 self.agent_logger.info(f"🔍 {self.name} 调用子类状态消息处理器")
-                await self._handle_status_message(message)
+                await self._handle_status_message_override(message)
             else:
                 self.agent_logger.info(f"🔍 {self.name} 使用基础状态消息处理器")
                     

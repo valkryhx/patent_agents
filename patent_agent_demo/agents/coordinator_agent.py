@@ -455,7 +455,7 @@ class CoordinatorAgent(BaseAgent):
         }
         return context_mapping.get(stage_name, [ContextType.THEME_DEFINITION])
         
-    async def _handle_status_message(self, message):
+    async def _handle_status_message_override(self, message):
         """Override status handler to catch completion events and advance workflow"""
         try:
             content = message.content or {}
@@ -507,11 +507,6 @@ class CoordinatorAgent(BaseAgent):
                 
         except Exception as e:
             logger.error(f"Coordinator status handling error: {e}")
-            # Fallback to base handler
-            await super()._handle_status_message(message)
-        else:
-            # Call base handler for normal status updates
-            await super()._handle_status_message(message)
         finally:
             logger.info("✅ coordinator_agent 状态消息处理完成")
  

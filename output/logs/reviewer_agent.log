@@ -1,12 +1,17 @@
-2025-08-17 09:05:54 INFO agent.reviewer_agent: 🚀 reviewer_agent 智能体初始化开始
-2025-08-17 09:05:54 INFO agent.reviewer_agent:    能力: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
-2025-08-17 09:05:54 INFO agent.reviewer_agent:    测试模式: True
-2025-08-17 09:05:54 INFO agent.reviewer_agent:    状态: idle
-2025-08-17 09:05:54 INFO agent.reviewer_agent: 🧪 reviewer_agent 以测试模式初始化
-2025-08-17 09:05:55 INFO agent.reviewer_agent: 🔄 reviewer_agent 开始启动...
-2025-08-17 09:05:55 INFO agent.reviewer_agent: ✅ reviewer_agent 已注册到消息总线
-2025-08-17 09:05:55 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息处理循环开始
-2025-08-17 09:05:55 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 1
-2025-08-17 09:05:55 INFO agent.reviewer_agent: ✅ reviewer_agent 启动成功，状态: idle
-2025-08-17 09:05:55 INFO agent.reviewer_agent:    能力: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
-2025-08-17 09:06:55 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 596
+2025-08-17 09:08:39 INFO agent.reviewer_agent: 🚀 reviewer_agent 智能体初始化开始
+2025-08-17 09:08:39 INFO agent.reviewer_agent:    能力: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
+2025-08-17 09:08:39 INFO agent.reviewer_agent:    测试模式: True
+2025-08-17 09:08:39 INFO agent.reviewer_agent:    状态: idle
+2025-08-17 09:08:39 INFO agent.reviewer_agent: 🧪 reviewer_agent 以测试模式初始化
+2025-08-17 09:08:39 INFO agent.reviewer_agent: 🔄 reviewer_agent 开始启动...
+2025-08-17 09:08:39 INFO agent.reviewer_agent: ✅ reviewer_agent 已注册到消息总线
+2025-08-17 09:08:39 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息处理循环开始
+2025-08-17 09:08:39 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 09:08:39 INFO agent.reviewer_agent: ✅ reviewer_agent 启动成功，状态: idle
+2025-08-17 09:08:39 INFO agent.reviewer_agent:    能力: ['patent_review', 'quality_assessment', 'compliance_checking', 'feedback_generation']
+2025-08-17 09:09:39 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 590
+2025-08-17 09:10:20 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 09:10:39 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 1186
+2025-08-17 09:11:39 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 1782
+2025-08-17 09:12:01 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 09:12:39 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 2377
