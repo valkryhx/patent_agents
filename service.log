@@ -1,0 +1,30 @@
+INFO:workflow_manager:🚀 WorkflowManager initialized with task assignment to agent services
+INFO:     Started server process [36170]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+🚀 Starting Unified Patent Agent System v2.0.0...
+🔧 Test mode: DEPRECATED - Now using workflow-specific test_mode
+⏱️ Test delay: Configurable per workflow
+📡 Single service will be available at: http://localhost:8000
+📚 API docs will be available at: http://localhost:8000/docs
+🤖 All agents available at:
+   - Coordinator: /coordinator/* (Patent workflows only)
+   - Planner: /agents/planner/*
+   - Searcher: /agents/searcher/*
+   - Discussion: /agents/discussion/*
+   - Writer: /agents/writer/*
+   - Reviewer: /agents/reviewer/*
+   - Rewriter: /agents/rewriter/*
+📋 Coordinator API endpoints (Patent workflows only):
+   - POST /coordinator/workflow/start - Start patent workflow
+   - GET /coordinator/workflow/{workflow_id}/status - Get patent workflow status
+   - GET /coordinator/workflow/{workflow_id}/results - Get patent workflow results
+   - POST /coordinator/workflow/{workflow_id}/restart - Restart patent workflow
+   - DELETE /coordinator/workflow/{workflow_id} - Delete patent workflow
+   - GET /coordinator/workflows - List all patent workflows
+🔧 Test mode endpoints:
+   - GET /test-mode - Check test mode status
+   - POST /test-mode - Update test mode settings
