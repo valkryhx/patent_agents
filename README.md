@@ -26,6 +26,30 @@
 - Python 3.8+
 - 依赖包: FastAPI, Uvicorn, Pydantic, httpx
 
+### 系统特性
+
+#### 🔄 实时保存与监控
+- **WebSocket实时通知**: 阶段开始、完成、工作流完成等事件实时推送
+- **进度查询接口**: 实时查询工作流进度和预估完成时间
+- **实时保存**: 每个阶段完成后立即保存结果到文件
+
+#### 📁 智能文件管理
+- **工作流目录**: 每个工作流创建独立的目录结构
+- **阶段结果**: 保存每个阶段的详细结果
+- **最终专利**: 生成完整的专利文档
+- **元数据管理**: 完整的文件索引和追踪
+
+#### 🛡️ 数据安全保障
+- **断点续传**: 支持工作流中断后的恢复
+- **文件隔离**: 每个工作流独立存储空间
+- **时间戳命名**: 避免文件覆盖和数据丢失
+- **错误处理**: 完善的异常处理机制
+
+#### ⚡ 高性能架构
+- **并发支持**: 多个工作流可同时运行
+- **异步处理**: 非阻塞的工作流执行
+- **资源优化**: 高效的内存和存储管理
+
 ### 安装依赖
 ```bash
 pip install -r requirements.txt
@@ -111,6 +135,73 @@ ps aux | grep "python3 unified_service.py"
 - **服务地址**: `http://localhost:8000`
 - **API文档**: `http://localhost:8000/docs`
 - **健康检查**: `http://localhost:8000/health`
+- **WebSocket**: `ws://localhost:8000/ws/workflow/{workflow_id}`
+
+### 完整使用流程示例
+
+以下是一个完整的工作流使用示例，展示如何启动、监控和下载专利撰写结果：
+
+#### 步骤1: 启动专利工作流
+```bash
+# 启动工作流
+curl -X POST "http://localhost:8000/coordinator/workflow/start" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic": "基于量子计算的机器学习算法优化系统",
+    "workflow_type": "patent",
+    "test_mode": true
+  }'
+
+# 响应示例
+{
+  "workflow_id": "2219e3da-6cdb-41f6-86ba-06e01b525331",
+  "status": "started",
+  "message": "Patent workflow started successfully for topic: 基于量子计算的机器学习算法优化系统"
+}
+```
+
+#### 步骤2: 实时监控进度（WebSocket）
+```javascript
+const workflowId = "2219e3da-6cdb-41f6-86ba-06e01b525331";
+const ws = new WebSocket(`ws://localhost:8000/ws/workflow/${workflowId}`);
+
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log(`[${data.type}] ${data.message}`);
+    
+    if (data.type === 'workflow_completed') {
+        console.log("🎉 工作流完成！可以下载结果了");
+        downloadWorkflowResults(workflowId);
+    }
+};
+```
+
+#### 步骤3: 查询进度状态
+```bash
+# 查询实时进度
+curl "http://localhost:8000/workflow/2219e3da-6cdb-41f6-86ba-06e01b525331/progress"
+
+# 响应示例
+{
+  "workflow_id": "2219e3da-6cdb-41f6-86ba-06e01b525331",
+  "topic": "基于量子计算的机器学习算法优化系统",
+  "status": "completed",
+  "progress": "6/6",
+  "percentage": 100.0,
+  "download_url": "/download/workflow/2219e3da-6cdb-41f6-86ba-06e01b525331"
+}
+```
+
+#### 步骤4: 下载完整工作流结果
+```bash
+# 下载整个工作流目录（ZIP格式）
+curl -X GET "http://localhost:8000/download/workflow/2219e3da-6cdb-41f6-86ba-06e01b525331" \
+  -o "quantum_ml_workflow.zip"
+
+# 解压查看内容
+unzip quantum_ml_workflow.zip
+ls -la
+```
 
 ### 1. 启动专利工作流
 
@@ -198,6 +289,174 @@ curl -X GET "http://localhost:8000/coordinator/workflow/{workflow_id}/results"
     "discussion": "技术方案讨论完成...",
     "drafting": "专利文档初稿已生成...",
     "review": "文档审查完成...",
+    "rewrite": "文档重写完成..."
+  },
+  "download_url": "/download/workflow/{workflow_id}",
+  "patent_file_path": "workflow_stages/{workflow_id}_{topic}/final_patent_{timestamp}.md"
+}
+```
+
+### 4. 实时监控工作流进度
+
+#### 4.1 WebSocket实时通知（推荐）
+
+**接口**: `WS /ws/workflow/{workflow_id}`
+
+**JavaScript示例**:
+```javascript
+// 连接WebSocket获取实时更新
+const workflowId = "your-workflow-id";
+const ws = new WebSocket(`ws://localhost:8000/ws/workflow/${workflowId}`);
+
+ws.onopen = function() {
+    console.log("WebSocket连接已建立");
+};
+
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    
+    switch(data.type) {
+        case 'connection_established':
+            console.log("✅ 已连接到工作流更新");
+            break;
+        case 'stage_started':
+            console.log(`🚀 ${data.stage} 阶段开始`);
+            break;
+        case 'stage_completed':
+            console.log(`✅ ${data.stage} 阶段完成 (${data.progress})`);
+            break;
+        case 'workflow_completed':
+            console.log(`🎉 工作流完成！下载链接: ${data.download_url}`);
+            break;
+    }
+};
+
+ws.onclose = function() {
+    console.log("WebSocket连接已关闭");
+};
+
+// 保持连接活跃
+setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send("ping");
+    }
+}, 30000);
+```
+
+**通知类型说明**:
+- **`connection_established`**: 连接建立确认
+- **`stage_started`**: 阶段开始通知
+- **`stage_completed`**: 阶段完成通知（包含进度）
+- **`workflow_completed`**: 工作流完成通知（包含下载链接）
+
+#### 4.2 进度查询接口
+
+**接口**: `GET /workflow/{workflow_id}/progress`
+
+**cURL调用**:
+```bash
+curl -X GET "http://localhost:8000/workflow/{workflow_id}/progress"
+```
+
+**预期响应**:
+```json
+{
+  "workflow_id": "uuid-string",
+  "topic": "基于量子计算的机器学习算法优化系统",
+  "status": "running",
+  "current_stage": "drafting",
+  "progress": "3/6",
+  "percentage": 50.0,
+  "completed_stages": 3,
+  "total_stages": 6,
+  "started_at": 1755456920.9572496,
+  "estimated_completion": "~6.0 seconds"
+}
+```
+
+### 5. 下载工作流结果
+
+#### 5.1 下载整个工作流目录（推荐）
+
+**接口**: `GET /download/workflow/{workflow_id}`
+
+**功能**: 下载包含所有阶段结果和最终专利文档的完整工作流目录（ZIP格式）
+
+**cURL调用**:
+```bash
+curl -X GET "http://localhost:8000/download/workflow/{workflow_id}" \
+  -o "workflow_{workflow_id}.zip"
+```
+
+**下载内容**:
+```
+workflow_{workflow_id}.zip
+├── metadata.json              # 工作流基本信息
+├── workflow_metadata.json     # 文件追踪元数据
+├── stage_index.json           # 阶段文件索引
+├── planning_{timestamp}.md    # 规划阶段结果
+├── search_{timestamp}.md      # 搜索阶段结果
+├── discussion_{timestamp}.md  # 讨论阶段结果
+├── drafting_{timestamp}.md    # 草稿阶段结果
+├── review_{timestamp}.md      # 审查阶段结果
+├── rewrite_{timestamp}.md     # 重写阶段结果
+└── final_patent_{timestamp}.md # 最终专利文档
+```
+
+#### 5.2 仅下载最终专利文档
+
+**接口**: `GET /download/patent/{workflow_id}`
+
+**功能**: 仅下载最终生成的专利文档
+
+**cURL调用**:
+```bash
+curl -X GET "http://localhost:8000/download/patent/{workflow_id}" \
+  -o "final_patent_{workflow_id}.md"
+```
+
+### 6. 查看工作流文件结构
+
+**接口**: `GET /workflow/{workflow_id}/stages`
+
+**功能**: 查看工作流目录中的所有文件和元数据
+
+**cURL调用**:
+```bash
+curl -X GET "http://localhost:8000/workflow/{workflow_id}/stages"
+```
+
+**预期响应**:
+```json
+{
+  "workflow_id": "uuid-string",
+  "topic": "基于量子计算的机器学习算法优化系统",
+  "workflow_directory": "workflow_stages/{workflow_id}_{topic}",
+  "metadata": {
+    "workflow_id": "uuid-string",
+    "topic": "基于量子计算的机器学习算法优化系统",
+    "created_at": "2025-08-17 18:55:20",
+    "status": "completed",
+    "completed_at": "2025-08-17 18:55:32"
+  },
+  "stage_index": {
+    "stages": {
+      "planning": {
+        "filename": "planning_1755456922.md",
+        "timestamp": 1755456922,
+        "generated_at": "2025-08-17 18:55:22"
+      }
+    }
+  },
+  "files": [
+    {
+      "filename": "planning_1755456922.md",
+      "size": 301,
+      "modified": "2025-08-17 18:55:22"
+    }
+  ]
+}
+```
     "rewrite": "最终专利文档已优化完成..."
   },
   "test_mode": true
@@ -328,6 +587,9 @@ curl -X POST "http://localhost:8000/test-mode" \
 2. **依赖缺失**: 确保已安装所有requirements.txt中的包
 3. **权限问题**: 确保有足够的文件读写权限
 4. **服务未启动**: 检查unified_service.py是否正常运行
+5. **WebSocket连接失败**: 检查浏览器是否支持WebSocket，网络是否正常
+6. **下载失败**: 检查工作流是否已完成，文件是否存在
+7. **进度查询异常**: 检查workflow_id是否正确，工作流是否在运行
 
 ### 调试命令
 ```bash
@@ -342,6 +604,18 @@ netstat -tlnp | grep :8000
 
 # 测试服务连通性
 curl -X GET "http://localhost:8000/health"
+
+# 测试WebSocket连接
+wscat -c ws://localhost:8000/ws/workflow/{workflow_id}
+
+# 检查工作流目录
+ls -la workflow_stages/
+
+# 检查特定工作流文件
+ls -la workflow_stages/{workflow_id}_{topic}/
+
+# 测试下载接口
+curl -I "http://localhost:8000/download/workflow/{workflow_id}"
 ```
 
 ## 📞 技术支持
@@ -351,12 +625,18 @@ curl -X GET "http://localhost:8000/health"
 2. API接口是否可访问
 3. 工作流状态是否正常
 4. 测试模式设置是否正确
+5. WebSocket连接是否正常建立
+6. 工作流目录是否成功创建
+7. 下载接口是否返回正确状态码
+8. 文件权限是否正确设置
 
 ## 📚 相关文档
 
 - **[DOCS_INDEX.md](DOCS_INDEX.md)** - 文档导航索引，快速找到所需文档
 - **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - 项目结构详细说明
 - **[API_INTERFACE_TESTING.md](API_INTERFACE_TESTING.md)** - API接口测试文档和结果
+- **[DEBUG_LOG_TEST_MODE_BUG.md](DEBUG_LOG_TEST_MODE_BUG.md)** - Test Mode Bug调试日志和经验总结
+- **[REAL_TIME_SAVING_PR_SUMMARY.md](REAL_TIME_SAVING_PR_SUMMARY.md)** - 实时保存系统功能总结
 
 ---
 
