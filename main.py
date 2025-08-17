@@ -171,7 +171,40 @@ async def list_workflows():
     """List all workflows"""
     try:
         workflows = workflow_manager.list_workflows()
-        return {"workflows": workflows}
+        
+        # Add summary information
+        summary = {
+            "total_workflows": len(workflows),
+            "by_topic": {},
+            "by_status": {},
+            "by_test_mode": {"test": 0, "real": 0}
+        }
+        
+        for workflow in workflows:
+            topic = workflow.get("topic", "Unknown")
+            status = workflow.get("status", "Unknown")
+            test_mode = workflow.get("test_mode", False)
+            
+            # Count by topic
+            if topic not in summary["by_topic"]:
+                summary["by_topic"][topic] = 0
+            summary["by_topic"][topic] += 1
+            
+            # Count by status
+            if status not in summary["by_status"]:
+                summary["by_status"][status] = 0
+            summary["by_status"][status] += 1
+            
+            # Count by test mode
+            if test_mode:
+                summary["by_test_mode"]["test"] += 1
+            else:
+                summary["by_test_mode"]["real"] += 1
+        
+        return {
+            "workflows": workflows,
+            "summary": summary
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list workflows: {str(e)}")
 
@@ -182,7 +215,41 @@ async def list_patent_workflows():
         workflows = workflow_manager.list_workflows()
         # Filter for patent workflows (workflow_type == "patent")
         patent_workflows = [w for w in workflows if w.get("workflow_type") == "patent"]
-        return {"patent_workflows": patent_workflows, "total": len(patent_workflows)}
+        
+        # Add summary information for patents
+        summary = {
+            "total_patents": len(patent_workflows),
+            "by_topic": {},
+            "by_status": {},
+            "by_test_mode": {"test": 0, "real": 0}
+        }
+        
+        for workflow in patent_workflows:
+            topic = workflow.get("topic", "Unknown")
+            status = workflow.get("status", "Unknown")
+            test_mode = workflow.get("test_mode", False)
+            
+            # Count by topic
+            if topic not in summary["by_topic"]:
+                summary["by_topic"][topic] = 0
+            summary["by_topic"][topic] += 1
+            
+            # Count by status
+            if status not in summary["by_status"]:
+                summary["by_status"][status] = 0
+            summary["by_status"][status] += 1
+            
+            # Count by test mode
+            if test_mode:
+                summary["by_test_mode"]["test"] += 1
+            else:
+                summary["by_test_mode"]["real"] += 1
+        
+        return {
+            "patent_workflows": patent_workflows,
+            "total": len(patent_workflows),
+            "summary": summary
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list patent workflows: {str(e)}")
 
