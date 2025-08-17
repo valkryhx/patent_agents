@@ -5,7 +5,7 @@ Hosts coordinator and all agent services on one port with different URL paths
 """
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 import uvicorn
@@ -44,6 +44,140 @@ workflow_manager = WorkflowManager()
 # ============================================================================
 # PATENT-SPECIFIC API ENDPOINTS
 # ============================================================================
+
+async def save_patent_to_file(workflow_id: str, topic: str, results: Dict[str, Any]) -> str:
+    """Save patent results to a file and return the file path"""
+    try:
+        # Create patent content
+        patent_content = generate_patent_content(topic, results)
+        
+        # Create filename
+        timestamp = int(time.time())
+        filename = f"patent_{workflow_id}_{timestamp}.md"
+        file_path = f"patent_files/{filename}"
+        
+        # Save to file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(patent_content)
+        
+        return file_path
+    except Exception as e:
+        logger.error(f"Failed to save patent to file: {e}")
+        raise
+
+def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
+    """Generate formatted patent content from workflow results"""
+    content = []
+    
+    # Header
+    content.append(f"# 专利撰写结果")
+    content.append(f"")
+    content.append(f"**主题**: {topic}")
+    content.append(f"**生成时间**: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    content.append(f"**工作流ID**: {list(results.keys())[0] if results else 'Unknown'}")
+    content.append(f"")
+    
+    # Planning stage
+    if "planning" in results:
+        planning = results["planning"].get("result", {})
+        content.append("## 1. 专利规划阶段")
+        content.append("")
+        if "strategy" in planning:
+            strategy = planning["strategy"]
+            content.append(f"### 策略分析")
+            content.append(f"- **新颖性评分**: {strategy.get('novelty_score', 'N/A')}")
+            content.append(f"- **创造性评分**: {strategy.get('inventive_step_score', 'N/A')}")
+            content.append(f"- **可专利性评估**: {strategy.get('patentability_assessment', 'N/A')}")
+            content.append("")
+            content.append(f"### 开发阶段")
+            for phase in strategy.get('development_phases', []):
+                content.append(f"- **{phase.get('phase_name', 'Unknown')}**: {phase.get('duration_estimate', 'N/A')}")
+            content.append("")
+    
+    # Search stage
+    if "search" in results:
+        search = results["search"].get("result", {})
+        content.append("## 2. 现有技术搜索")
+        content.append("")
+        content.append(f"- **找到相关专利**: {search.get('patents_found', 0)} 件")
+        content.append(f"- **新颖性评分**: {search.get('novelty_score', 'N/A')}")
+        content.append(f"- **风险等级**: {search.get('risk_level', 'N/A')}")
+        content.append("")
+        if "search_results" in search and "results" in search["search_results"]:
+            content.append("### 相关专利")
+            for patent in search["search_results"]["results"]:
+                content.append(f"- **{patent.get('title', 'Unknown')}** (ID: {patent.get('patent_id', 'N/A')})")
+                content.append(f"  - 相关性: {patent.get('relevance_score', 'N/A')}")
+            content.append("")
+    
+    # Discussion stage
+    if "discussion" in results:
+        discussion = results["discussion"].get("result", {})
+        content.append("## 3. 创新讨论")
+        content.append("")
+        if "innovations" in discussion:
+            content.append("### 创新点")
+            for innovation in discussion["innovations"]:
+                content.append(f"- {innovation}")
+            content.append("")
+        if "technical_insights" in discussion:
+            content.append("### 技术洞察")
+            for insight in discussion["technical_insights"]:
+                content.append(f"- {insight}")
+            content.append("")
+    
+    # Drafting stage
+    if "drafting" in results:
+        drafting = results["drafting"].get("result", {})
+        content.append("## 4. 专利草稿")
+        content.append("")
+        content.append(f"### 专利标题")
+        content.append(f"{drafting.get('title', 'N/A')}")
+        content.append("")
+        content.append(f"### 专利摘要")
+        content.append(f"{drafting.get('abstract', 'N/A')}")
+        content.append("")
+        if "claims" in drafting:
+            content.append("### 权利要求")
+            for i, claim in enumerate(drafting["claims"], 1):
+                content.append(f"{i}. {claim}")
+            content.append("")
+        if "detailed_description" in drafting:
+            content.append("### 详细描述")
+            content.append(f"{drafting.get('detailed_description', 'N/A')}")
+            content.append("")
+    
+    # Review stage
+    if "review" in results:
+        review = results["review"].get("result", {})
+        content.append("## 5. 质量审查")
+        content.append("")
+        content.append(f"- **质量评分**: {review.get('quality_score', 'N/A')}")
+        content.append(f"- **一致性评分**: {review.get('consistency_score', 'N/A')}")
+        content.append("")
+        if "feedback" in review:
+            content.append("### 审查反馈")
+            for feedback in review["feedback"]:
+                content.append(f"- {feedback}")
+            content.append("")
+    
+    # Rewrite stage
+    if "rewrite" in results:
+        rewrite = results["rewrite"].get("result", {})
+        content.append("## 6. 最终专利")
+        content.append("")
+        content.append(f"### 改进后的专利标题")
+        content.append(f"{rewrite.get('title', 'N/A')}")
+        content.append("### 改进后的专利摘要")
+        content.append(f"{rewrite.get('abstract', 'N/A')}")
+        content.append("")
+        if "improvements" in rewrite:
+            content.append("### 主要改进")
+            for improvement in rewrite["improvements"]:
+                content.append(f"- {improvement}")
+            content.append("")
+    
+    return "\n".join(content)
 
 async def execute_patent_workflow(workflow_id: str, topic: str, description: str, test_mode: bool):
     """Execute the complete patent workflow"""
@@ -91,6 +225,18 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
         # All stages completed successfully
         workflow["status"] = "completed"
         workflow["completed_at"] = time.time()
+        
+        # Save patent to file
+        try:
+            patent_file_path = await save_patent_to_file(workflow_id, topic, workflow["results"])
+            workflow["patent_file_path"] = patent_file_path
+            workflow["download_url"] = f"/download/patent/{workflow_id}"
+            logger.info(f"💾 Patent saved to file: {patent_file_path}")
+        except Exception as e:
+            logger.error(f"❌ Failed to save patent to file: {e}")
+            workflow["patent_file_path"] = None
+            workflow["download_url"] = None
+        
         logger.info(f"🎉 Patent workflow {workflow_id} completed successfully")
         
     except Exception as e:
@@ -242,7 +388,9 @@ async def get_patent_workflow_results(workflow_id: str):
             "description": workflow["description"],
             "status": workflow["status"],
             "results": workflow["results"],
-            "completed_at": workflow.get("completed_at")
+            "completed_at": workflow.get("completed_at"),
+            "patent_file_path": workflow.get("patent_file_path"),
+            "download_url": workflow.get("download_url")
         }
     except HTTPException:
         raise
@@ -299,6 +447,38 @@ async def delete_patent_workflow(workflow_id: str):
     except Exception as e:
         logger.error(f"Failed to delete patent workflow: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
+
+@app.get("/download/patent/{workflow_id}")
+async def download_patent_file(workflow_id: str):
+    """Download patent file for a completed workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        if workflow["status"] != "completed":
+            raise HTTPException(status_code=400, detail="Workflow is not yet completed")
+        
+        patent_file_path = workflow.get("patent_file_path")
+        if not patent_file_path:
+            raise HTTPException(status_code=404, detail="Patent file not found")
+        
+        # Check if file exists
+        if not os.path.exists(patent_file_path):
+            raise HTTPException(status_code=404, detail="Patent file not found on disk")
+        
+        # Return file for download
+        return FileResponse(
+            path=patent_file_path,
+            filename=f"patent_{workflow_id}.md",
+            media_type="text/markdown"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download patent file: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to download patent file: {str(e)}")
 
 @app.get("/patents")
 async def list_patent_workflows():
@@ -516,7 +696,9 @@ async def get_workflow_results(workflow_id: str):
                     "status": workflow["status"],
                     "results": workflow["results"],
                     "completed_at": workflow.get("completed_at"),
-                    "test_mode": workflow["test_mode"]
+                    "test_mode": workflow["test_mode"],
+                    "patent_file_path": workflow.get("patent_file_path"),
+                    "download_url": workflow.get("download_url")
                 }
         
         # Use regular workflow manager
@@ -1817,6 +1999,7 @@ if __name__ == "__main__":
     print("   - POST /coordinator/workflow/start - Start patent workflow")
     print("   - GET /coordinator/workflow/{workflow_id}/status - Get patent workflow status")
     print("   - GET /coordinator/workflow/{workflow_id}/results - Get patent workflow results")
+    print("   - GET /download/patent/{workflow_id} - Download patent file")
     print("   - POST /coordinator/workflow/{workflow_id}/restart - Restart patent workflow")
     print("   - DELETE /coordinator/workflow/{workflow_id} - Delete patent workflow")
     print("   - GET /coordinator/workflows - List all patent workflows")
