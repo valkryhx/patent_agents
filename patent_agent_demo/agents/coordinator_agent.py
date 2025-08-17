@@ -1213,7 +1213,16 @@ class CoordinatorAgent(BaseAgent):
         """Extract output text for validation"""
         try:
             if stage_name == "Planning & Strategy":
-                return result.get("strategy", {}).get("summary", "")
+                strategy = result.get("strategy", {})
+                if strategy:
+                    # Handle PatentStrategy object
+                    if hasattr(strategy, 'key_innovation_areas'):
+                        return str(getattr(strategy, 'key_innovation_areas', []))
+                    elif isinstance(strategy, dict):
+                        return strategy.get("summary", "")
+                    else:
+                        return str(strategy)
+                return ""
             elif stage_name == "Prior Art Search":
                 return result.get("search_results", {}).get("summary", "")
             elif stage_name == "Innovation Discussion":
@@ -1237,10 +1246,18 @@ class CoordinatorAgent(BaseAgent):
             if stage_name == "Planning & Strategy":
                 strategy = result.get("strategy", {})
                 if strategy:
+                    # Handle PatentStrategy object
+                    if hasattr(strategy, 'key_innovation_areas'):
+                        innovations = getattr(strategy, 'key_innovation_areas', [])
+                    elif isinstance(strategy, dict):
+                        innovations = strategy.get("key_innovations", [])
+                    else:
+                        innovations = []
+                    
                     await context_manager.add_context_item(workflow_id, ContextItem(
                         context_type=ContextType.INNOVATION_POINTS,
                         key="planned_innovations",
-                        value=strategy.get("key_innovations", []),
+                        value=innovations,
                         source_agent=f"stage_{stage_index}",
                         timestamp=time.time()
                     ))
