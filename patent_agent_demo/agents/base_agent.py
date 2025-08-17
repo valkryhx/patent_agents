@@ -178,7 +178,13 @@ class BaseAgent:
                 await self._handle_coordination_message(message)
             elif message_type == MessageType.STATUS:
                 self.agent_logger.info(f"🔄 {self.name} 路由到状态处理器")
-                await self._handle_status_message(message)
+                try:
+                    await self._handle_status_message(message)
+                    self.agent_logger.info(f"✅ {self.name} 状态消息处理完成")
+                except Exception as e:
+                    self.agent_logger.error(f"❌ {self.name} 状态消息处理失败: {e}")
+                    self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
+                    raise
             elif message_type == MessageType.ERROR:
                 self.agent_logger.info(f"🔄 {self.name} 路由到错误处理器")
                 await self._handle_error_message(message)
@@ -242,8 +248,15 @@ class BaseAgent:
                     self.status = AgentStatus(new_status)
             
             # Call subclass implementation if it exists
-            if hasattr(self, '_handle_status_message') and self.__class__._handle_status_message != BaseAgent._handle_status_message:
+            self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 类名: {self.__class__.__name__}")
+            self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 是否有_handle_status_message: {hasattr(self, '_handle_status_message')}")
+            self.agent_logger.info(f"🔍 {self.name} 状态消息处理 - 类名不是BaseAgent: {self.__class__.__name__ != 'BaseAgent'}")
+            
+            if hasattr(self, '_handle_status_message') and self.__class__.__name__ != 'BaseAgent':
+                self.agent_logger.info(f"🔍 {self.name} 调用子类状态消息处理器")
                 await self._handle_status_message(message)
+            else:
+                self.agent_logger.info(f"🔍 {self.name} 使用基础状态消息处理器")
                     
         except Exception as e:
             logger.error(f"Error handling status message: {e}")

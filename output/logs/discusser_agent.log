@@ -1,14 +1,12 @@
-2025-08-17 07:53:21 INFO agent.discusser_agent: 🚀 discusser_agent 智能体初始化开始
-2025-08-17 07:53:21 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
-2025-08-17 07:53:21 INFO agent.discusser_agent:    测试模式: True
-2025-08-17 07:53:21 INFO agent.discusser_agent:    状态: idle
-2025-08-17 07:53:21 INFO agent.discusser_agent: 🧪 discusser_agent 以测试模式初始化
-2025-08-17 07:53:22 INFO agent.discusser_agent: 🔄 discusser_agent 开始启动...
-2025-08-17 07:53:22 INFO agent.discusser_agent: ✅ discusser_agent 已注册到消息总线
-2025-08-17 07:53:22 INFO agent.discusser_agent: 🔄 discusser_agent 消息处理循环开始
-2025-08-17 07:53:22 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 1
-2025-08-17 07:53:22 INFO agent.discusser_agent: ✅ discusser_agent 启动成功，状态: idle
-2025-08-17 07:53:22 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
-2025-08-17 07:54:22 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 596
-2025-08-17 07:55:02 INFO agent.discusser_agent: 🔄 discusser_agent 消息循环活跃 - 循环次数: 1000
-2025-08-17 07:55:22 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 1192
+2025-08-17 08:01:56 INFO agent.discusser_agent: 🚀 discusser_agent 智能体初始化开始
+2025-08-17 08:01:56 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+2025-08-17 08:01:56 INFO agent.discusser_agent:    测试模式: True
+2025-08-17 08:01:56 INFO agent.discusser_agent:    状态: idle
+2025-08-17 08:01:56 INFO agent.discusser_agent: 🧪 discusser_agent 以测试模式初始化
+2025-08-17 08:01:56 INFO agent.discusser_agent: 🔄 discusser_agent 开始启动...
+2025-08-17 08:01:56 INFO agent.discusser_agent: ✅ discusser_agent 已注册到消息总线
+2025-08-17 08:01:56 INFO agent.discusser_agent: 🔄 discusser_agent 消息处理循环开始
+2025-08-17 08:01:56 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 08:01:56 INFO agent.discusser_agent: ✅ discusser_agent 启动成功，状态: idle
+2025-08-17 08:01:56 INFO agent.discusser_agent:    能力: ['innovation_discussion', 'discussion_facilitation', 'brainstorming', 'consensus_building', 'idea_refinement']
+2025-08-17 08:02:56 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 591

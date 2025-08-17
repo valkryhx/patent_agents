@@ -487,14 +487,12 @@ class CoordinatorAgent(BaseAgent):
                         await self._handle_stage_completion(workflow_id, stage_index, result)
                     else:
                         logger.warning(f"Invalid task_id format: {task_id}")
-                        await super()._handle_status_message(message)
                         
                 except (ValueError, IndexError) as e:
                     logger.error(f"Error parsing task_id {task_id}: {e}")
-                    await super()._handle_status_message(message)
             else:
                 # Fallback to base for agent status updates
-                await super()._handle_status_message(message)
+                pass
                 
         except Exception as e:
             logger.error(f"Coordinator status handling error: {e}")
