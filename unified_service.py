@@ -648,6 +648,12 @@ async def planner_execute(request: TaskRequest):
         logger.info(f"📋 Planner Agent received task: {request.task_id}")
         logger.info(f"🔧 Test mode: {request.test_mode}")
         
+        # DEBUG: 详细检查接收到的参数
+        logger.info(f"🔍 DEBUG API: 接收到的request.test_mode = {request.test_mode}")
+        logger.info(f"🔍 DEBUG API: type(request.test_mode) = {type(request.test_mode)}")
+        logger.info(f"🔍 DEBUG API: request.test_mode == False = {request.test_mode == False}")
+        logger.info(f"🔍 DEBUG API: request.test_mode == True = {request.test_mode == True}")
+        
         result = await execute_planner_task(request)
         logger.info(f"🔍 DEBUG: execute_planner_task returned result with test_mode: {result.get('test_mode', 'NOT_FOUND')}")
         logger.info(f"🔍 DEBUG: request.test_mode: {request.test_mode}")
@@ -870,6 +876,12 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
     logger.info(f"🔧 Test mode: {request.test_mode}")
     logger.info(f"🔒 Workflow isolation: {context.get('isolation_level', 'unknown')}")
     
+    # DEBUG: 详细追踪test_mode
+    logger.info(f"🔍 DEBUG STEP 1: request.test_mode = {request.test_mode}")
+    logger.info(f"🔍 DEBUG STEP 1: type(request.test_mode) = {type(request.test_mode)}")
+    logger.info(f"🔍 DEBUG STEP 1: request.test_mode == False = {request.test_mode == False}")
+    logger.info(f"🔍 DEBUG STEP 1: request.test_mode == True = {request.test_mode == True}")
+    
     # Validate workflow context
     if context.get("workflow_id") != workflow_id:
         logger.warning(f"⚠️ Workflow ID mismatch in context: expected {workflow_id}, got {context.get('workflow_id')}")
@@ -903,7 +915,13 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
         "success_probability": success_probability
     }
     
-    return {
+    # DEBUG: 在返回结果构建之前检查test_mode
+    logger.info(f"🔍 DEBUG STEP 2: 准备构建返回结果")
+    logger.info(f"🔍 DEBUG STEP 2: request.test_mode = {request.test_mode}")
+    logger.info(f"🔍 DEBUG STEP 2: execution_time 计算: {0.5 if request.test_mode else 1.0}")
+    logger.info(f"🔍 DEBUG STEP 2: mock_delay_applied 计算: {0.5 if request.test_mode else 0}")
+    
+    result_dict = {
         "workflow_id": workflow_id,  # Include workflow ID in result
         "strategy": final_strategy,
         "analysis": analysis,
@@ -913,6 +931,13 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
         "mock_delay_applied": 0.5 if request.test_mode else 0,
         "isolation_timestamp": time.time()
     }
+    
+    # DEBUG: 检查构建后的结果
+    logger.info(f"🔍 DEBUG STEP 3: 构建完成的结果")
+    logger.info(f"🔍 DEBUG STEP 3: result_dict['test_mode'] = {result_dict['test_mode']}")
+    logger.info(f"🔍 DEBUG STEP 3: result_dict keys = {list(result_dict.keys())}")
+    
+    return result_dict
 
 async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     """Execute searcher task using old system prompts with workflow isolation"""
