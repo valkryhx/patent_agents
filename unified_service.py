@@ -649,6 +649,11 @@ async def planner_execute(request: TaskRequest):
         logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_planner_task(request)
+        logger.info(f"🔍 DEBUG: execute_planner_task returned result with test_mode: {result.get('test_mode', 'NOT_FOUND')}")
+        logger.info(f"🔍 DEBUG: request.test_mode: {request.test_mode}")
+        logger.info(f"🔍 DEBUG: result type: {type(result)}")
+        logger.info(f"🔍 DEBUG: result keys: {list(result.keys()) if isinstance(result, dict) else 'NOT_DICT'}")
+        
         return TaskResponse(
             task_id=request.task_id,
             status="completed",
