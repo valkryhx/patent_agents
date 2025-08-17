@@ -879,8 +879,10 @@ class CoordinatorAgent(BaseAgent):
             # Export to markdown
             try:
                 import os
-                os.makedirs("/workspace/output", exist_ok=True)
-                md_path = f"/workspace/output/{workflow.topic.replace(' ', '_')}_{workflow_id[:8]}.md"
+                # 使用相对路径，在当前项目目录下创建output文件夹
+                output_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "output")
+                os.makedirs(output_dir, exist_ok=True)
+                md_path = os.path.join(output_dir, f"{workflow.topic.replace(' ', '_')}_{workflow_id[:8]}.md")
                 with open(md_path, "w", encoding="utf-8") as f:
                     f.write(f"# {workflow.topic}\n\n")
                     # Try to compile final patent draft into a readable document

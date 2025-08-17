@@ -28,9 +28,11 @@ class UltraRealTimeMonitor:
     
     def __init__(self, workflow_id: str = None):
         self.workflow_id = workflow_id
-        self.monitor_dir = "/workspace"
-        self.output_dir = "/workspace/output"
-        self.log_file = "/workspace/ultra_monitor.log"
+        # 使用相对路径，在当前项目目录下
+        self.monitor_dir = os.path.dirname(__file__)
+        # 使用相对路径，在当前项目目录下创建output文件夹
+        self.output_dir = os.path.join(os.path.dirname(__file__), "output")
+        self.log_file = os.path.join(os.path.dirname(__file__), "ultra_monitor.log")
         self.monitoring = False
         self.start_time = None
         self.last_status = None

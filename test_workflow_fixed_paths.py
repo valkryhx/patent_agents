@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-最终测试修改后的工作流程，确保所有6个智能体都能依次执行
+测试修复后的工作流程，验证相对路径和动态主题内容
 """
 
 import asyncio
@@ -22,18 +22,18 @@ logger = logging.getLogger(__name__)
 async def test_workflow_execution():
     """测试工作流程执行"""
     try:
-        logger.info("🚀 开始测试最终修改后的工作流程执行")
+        logger.info("🚀 开始测试修复后的工作流程执行")
         
         # 创建系统
         system = PatentAgentSystem(test_mode=False)
         await system.start()
         logger.info("✅ 系统启动成功")
         
-        # 测试数据
+        # 测试数据 - 使用复杂参数相关的主题
         task_data = {
             "type": "start_patent_workflow",
             "topic": "基于智能分层推理的多参数工具自适应调用系统",
-            "description": "一种通过智能分层推理技术实现多参数工具自适应调用的系统"
+            "description": "一种通过智能分层推理技术实现多参数工具自适应调用的系统，能够自动推断和优化工具调用参数"
         }
         
         # 获取coordinator_agent
@@ -92,6 +92,17 @@ async def test_workflow_execution():
             for file in output_files:
                 file_size = os.path.getsize(file)
                 logger.info(f"   {file}: {file_size} 字节")
+                
+                # 检查文件内容是否包含硬编码的主题
+                try:
+                    with open(file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        if "证据图" in content and "以证据图增强" not in task_data["topic"]:
+                            logger.warning(f"⚠️ 文件 {file} 包含硬编码的'证据图'内容")
+                        if "子图选择" in content and "子图选择" not in task_data["description"]:
+                            logger.warning(f"⚠️ 文件 {file} 包含硬编码的'子图选择'内容")
+                except Exception as e:
+                    logger.warning(f"⚠️ 无法读取文件 {file}: {e}")
         else:
             logger.warning("⚠️ 未找到输出文件")
         
@@ -110,14 +121,14 @@ async def test_workflow_execution():
 async def main():
     """主函数"""
     try:
-        logger.info("🔍 开始测试最终工作流程")
+        logger.info("🔍 开始测试修复后的工作流程")
         
         success = await test_workflow_execution()
         
         if success:
-            logger.info("✅ 最终工作流程测试成功")
+            logger.info("✅ 修复后的工作流程测试成功")
         else:
-            logger.error("❌ 最终工作流程测试失败")
+            logger.error("❌ 修复后的工作流程测试失败")
         
     except Exception as e:
         logger.error(f"❌ 主函数出错: {e}")
