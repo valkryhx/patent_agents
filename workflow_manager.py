@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Workflow Manager - In-Memory Workflow Orchestration
-Ultra-simple workflow management without infinite loops
+Workflow Manager - Task Assignment to Agent Services
+Assigns tasks to agent services and manages workflow progression
 """
 
 import asyncio
 import time
 import uuid
+import httpx
 from typing import Dict, Any, List, Optional
 import logging
 
@@ -14,36 +15,30 @@ from models import (
     WorkflowState, WorkflowStatus, StageInfo, 
     WorkflowStatusEnum, StageStatusEnum, TestModeConfig
 )
-from executors.planning import PlanningExecutor
-from executors.search import SearchExecutor
-from executors.discussion import DiscussionExecutor
-from executors.drafting import DraftingExecutor
-from executors.review import ReviewExecutor
-from executors.rewrite import RewriteExecutor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Agent service URLs
+AGENT_SERVICES = {
+    "planning": "http://localhost:8001",
+    "search": "http://localhost:8002", 
+    "discussion": "http://localhost:8003",
+    "drafting": "http://localhost:8004",
+    "review": "http://localhost:8005",
+    "rewrite": "http://localhost:8006"
+}
+
 class WorkflowManager:
-    """In-memory workflow manager"""
+    """Task assignment workflow manager"""
     
     def __init__(self):
         # In-memory storage
         self.workflows: Dict[str, WorkflowState] = {}
         self.test_mode = TestModeConfig(enabled=True)
         
-        # Initialize stage executors
-        self.executors = {
-            "planning": PlanningExecutor(),
-            "search": SearchExecutor(),
-            "discussion": DiscussionExecutor(),
-            "drafting": DraftingExecutor(),
-            "review": ReviewExecutor(),
-            "rewrite": RewriteExecutor()
-        }
-        
-        logger.info("🚀 WorkflowManager initialized with in-memory storage")
+        logger.info("🚀 WorkflowManager initialized with task assignment to agent services")
     
     def create_workflow(self, topic: str, description: str, workflow_type: str = "enhanced") -> str:
         """Create a new workflow"""
@@ -65,21 +60,21 @@ class WorkflowManager:
         logger.info(f"📋 Created workflow {workflow_id}: {topic}")
         return workflow_id
     
-    async def execute_workflow(self, workflow_id: str):
-        """Execute a workflow sequentially"""
+    async def execute_workflow_with_agents(self, workflow_id: str):
+        """Execute workflow by assigning tasks to agent services"""
         try:
             workflow = self.workflows[workflow_id]
             workflow.status = WorkflowStatusEnum.RUNNING
             workflow.updated_at = time.time()
             
-            logger.info(f"🚀 Starting workflow execution: {workflow_id}")
+            logger.info(f"🚀 Starting workflow execution with agent services: {workflow_id}")
             logger.info(f"📝 Topic: {workflow.topic}")
             logger.info(f"📋 Stages: {workflow.stages}")
             
-            # Execute stages sequentially
+            # Execute stages sequentially by assigning tasks to agents
             for stage_index, stage_name in enumerate(workflow.stages):
                 try:
-                    logger.info(f"🔄 Executing stage {stage_index + 1}/{len(workflow.stages)}: {stage_name}")
+                    logger.info(f"🔄 Assigning task to agent {stage_index + 1}/{len(workflow.stages)}: {stage_name}")
                     
                     # Update workflow state
                     workflow.current_stage = stage_index
@@ -87,8 +82,8 @@ class WorkflowManager:
                     workflow.stage_times[stage_name] = {"start": time.time()}
                     workflow.updated_at = time.time()
                     
-                    # Execute stage
-                    result = await self._execute_stage(workflow_id, stage_name, workflow)
+                    # Assign task to agent service
+                    result = await self._assign_task_to_agent(workflow_id, stage_name, workflow)
                     
                     # Update stage result
                     workflow.stage_results[stage_name] = result
@@ -96,7 +91,7 @@ class WorkflowManager:
                     workflow.stage_times[stage_name]["end"] = time.time()
                     workflow.updated_at = time.time()
                     
-                    logger.info(f"✅ Stage {stage_name} completed successfully")
+                    logger.info(f"✅ Stage {stage_name} completed by agent service")
                     
                 except Exception as e:
                     logger.error(f"❌ Stage {stage_name} failed: {str(e)}")
@@ -117,31 +112,50 @@ class WorkflowManager:
                 self.workflows[workflow_id].status = WorkflowStatusEnum.FAILED
                 self.workflows[workflow_id].updated_at = time.time()
     
-    async def _execute_stage(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
-        """Execute a single stage"""
+    async def _assign_task_to_agent(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
+        """Assign task to agent service"""
         try:
-            executor = self.executors[stage_name]
+            agent_url = AGENT_SERVICES.get(stage_name)
+            if not agent_url:
+                raise Exception(f"Agent service not found for stage: {stage_name}")
             
-            # Prepare context
-            context = {
+            # Prepare task data
+            task_data = {
+                "task_id": f"{workflow_id}_{stage_name}",
                 "workflow_id": workflow_id,
+                "stage_name": stage_name,
                 "topic": workflow.topic,
                 "description": workflow.description,
                 "previous_results": workflow.stage_results,
-                "test_mode": self.test_mode.enabled
+                "context": {
+                    "workflow_type": workflow.workflow_type,
+                    "current_stage": workflow.current_stage,
+                    "total_stages": len(workflow.stages)
+                }
             }
             
-            # Execute stage
-            result = await executor.execute(context)
+            logger.info(f"📤 Assigning task to {stage_name} agent at {agent_url}")
+            logger.info(f"📋 Task data: {task_data}")
             
-            # Add test mode delay if enabled
-            if self.test_mode.enabled:
-                await asyncio.sleep(self.test_mode.mock_delay)
-            
-            return result
-            
+            # Send task to agent service
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{agent_url}/execute",
+                    json=task_data,
+                    timeout=300.0  # 5 minutes timeout
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    logger.info(f"✅ Agent {stage_name} completed task successfully")
+                    return result
+                else:
+                    error_msg = f"Agent {stage_name} failed with status {response.status_code}: {response.text}"
+                    logger.error(error_msg)
+                    raise Exception(error_msg)
+                    
         except Exception as e:
-            logger.error(f"❌ Stage {stage_name} execution failed: {str(e)}")
+            logger.error(f"❌ Failed to assign task to agent {stage_name}: {str(e)}")
             raise
     
     def get_workflow_status(self, workflow_id: str) -> WorkflowStatus:
