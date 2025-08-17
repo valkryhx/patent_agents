@@ -83,3 +83,9 @@
 2025-08-17 06:01:21 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2979
 2025-08-17 06:01:23 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 3000
 2025-08-17 06:01:32 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2313
+2025-08-17 06:02:21 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3575
+2025-08-17 06:02:32 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 2909
+2025-08-17 06:02:41 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 3000
+2025-08-17 06:03:03 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 4000
+2025-08-17 06:03:21 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 4170
+2025-08-17 06:03:32 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3504
