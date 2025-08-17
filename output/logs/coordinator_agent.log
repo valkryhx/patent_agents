@@ -138,3 +138,9 @@
 2025-08-17 05:43:01 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '2eaf9484-c50e-49ce-97d4-baa54ec17750'}
 2025-08-17 05:43:01 INFO agent.coordinator_agent: 📊 监控工作流
 2025-08-17 05:43:09 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 700
+2025-08-17 05:43:19 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 800
+2025-08-17 05:43:30 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 900
+2025-08-17 05:43:31 INFO agent.coordinator_agent: 🎯 协调器收到任务: monitor_workflow
+2025-08-17 05:43:31 INFO agent.coordinator_agent:    任务数据: {'type': 'monitor_workflow', 'workflow_id': '2eaf9484-c50e-49ce-97d4-baa54ec17750'}
+2025-08-17 05:43:31 INFO agent.coordinator_agent: 📊 监控工作流
+2025-08-17 05:43:40 INFO agent.coordinator_agent: 🔄 coordinator_agent 消息循环活跃 - 循环次数: 1000
