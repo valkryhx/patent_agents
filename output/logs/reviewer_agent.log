@@ -23,3 +23,6 @@
 2025-08-17 09:44:37 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 4763
 2025-08-17 09:45:00 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息循环活跃 - 循环次数: 5000
 2025-08-17 09:45:37 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 5359
+2025-08-17 09:46:37 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 5955
+2025-08-17 09:46:41 INFO agent.reviewer_agent: 🔄 reviewer_agent 消息循环活跃 - 循环次数: 6000
+2025-08-17 09:47:37 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 6550
