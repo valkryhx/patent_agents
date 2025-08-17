@@ -9,3 +9,5 @@
 2025-08-17 09:31:04 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 1
 2025-08-17 09:31:05 INFO agent.writer_agent: ✅ writer_agent 启动成功，状态: idle
 2025-08-17 09:31:05 INFO agent.writer_agent:    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-17 09:32:04 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 588
+2025-08-17 09:32:45 INFO agent.writer_agent: 🔄 writer_agent 消息循环活跃 - 循环次数: 1000
