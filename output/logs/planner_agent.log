@@ -35,3 +35,21 @@
 2025-08-17 08:11:10 INFO agent.planner_agent: 📤 planner_agent 发送完成消息到协调器
 2025-08-17 08:11:10 INFO agent.planner_agent: ✅ planner_agent 任务执行完成: patent_planning
 2025-08-17 08:12:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 595
+2025-08-17 08:12:47 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 08:13:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 1189
+2025-08-17 08:14:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 1785
+2025-08-17 08:14:28 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 08:15:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2380
+2025-08-17 08:16:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2974
+2025-08-17 08:16:09 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3000
+2025-08-17 08:17:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3569
+2025-08-17 08:17:50 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 4000
+2025-08-17 08:18:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4164
+2025-08-17 08:19:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4760
+2025-08-17 08:19:31 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 5000
+2025-08-17 08:20:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5355
+2025-08-17 08:21:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5951
+2025-08-17 08:21:12 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 6000
+2025-08-17 08:22:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 6545
+2025-08-17 08:22:52 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 7000
+2025-08-17 08:23:07 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 7140
