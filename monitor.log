@@ -30,3 +30,148 @@
 
 ⏰ 等待3分钟后再次检查...
 ==========================================
+
+=== 2025-08-17 06:20:12 工作流进度汇报 ===
+
+📊 整体进度:
+   已生成文档数量: 0
+
+🤖 智能体状态:
+   coordinator:
+     2025-08-17 06:17:27 INFO agent.coordinator_agent: ✅ 专利工作流启动成功
+   planner:
+     2025-08-17 06:20:11 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 1788
+   searcher:
+     2025-08-17 06:20:11 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1787
+   discusser:
+     2025-08-17 06:20:11 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 1786
+   writer:
+     2025-08-17 06:20:11 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 1785
+   reviewer:
+     2025-08-17 06:20:11 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 1784
+   rewriter:
+     2025-08-17 06:20:11 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1783
+
+🔍 最新任务执行:
+   output/logs/discusser_agent.log:2025-08-17 06:19:15 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+   output/logs/discusser_agent.log:2025-08-17 06:19:35 INFO agent.discusser_agent: ✅ discusser_agent 任务执行成功
+   output/logs/discusser_agent.log:2025-08-17 06:19:35 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+
+⏰ 等待3分钟后再次检查...
+==========================================
+
+=== 2025-08-17 06:23:12 工作流进度汇报 ===
+
+📊 整体进度:
+   已生成文档数量: 0
+
+🤖 智能体状态:
+   coordinator:
+     2025-08-17 06:17:27 INFO agent.coordinator_agent: ✅ 专利工作流启动成功
+   planner:
+     2025-08-17 06:23:11 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3575
+   searcher:
+     2025-08-17 06:23:11 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 3574
+   discusser:
+     2025-08-17 06:23:11 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 3573
+   writer:
+     2025-08-17 06:23:11 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 3572
+   reviewer:
+     2025-08-17 06:23:11 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 3571
+   rewriter:
+     2025-08-17 06:23:11 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 3570
+
+🔍 最新任务执行:
+   output/logs/discusser_agent.log:2025-08-17 06:20:20 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行成功
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+
+⏰ 等待3分钟后再次检查...
+==========================================
+
+=== 2025-08-17 06:26:12 工作流进度汇报 ===
+
+📊 整体进度:
+   已生成文档数量: 0
+
+🤖 智能体状态:
+   coordinator:
+     2025-08-17 06:17:27 INFO agent.coordinator_agent: ✅ 专利工作流启动成功
+   planner:
+     2025-08-17 06:26:11 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5364
+   searcher:
+     2025-08-17 06:26:11 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 5363
+   discusser:
+     2025-08-17 06:26:11 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 5362
+   writer:
+     2025-08-17 06:26:11 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 5361
+   reviewer:
+     2025-08-17 06:26:11 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 5360
+   rewriter:
+     2025-08-17 06:26:11 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 5359
+
+🔍 最新任务执行:
+   output/logs/discusser_agent.log:2025-08-17 06:20:20 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行成功
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+
+⏰ 等待3分钟后再次检查...
+==========================================
+
+=== 2025-08-17 06:29:12 工作流进度汇报 ===
+
+📊 整体进度:
+   已生成文档数量: 0
+
+🤖 智能体状态:
+   coordinator:
+     2025-08-17 06:17:27 INFO agent.coordinator_agent: ✅ 专利工作流启动成功
+   planner:
+     2025-08-17 06:29:11 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 7152
+   searcher:
+     2025-08-17 06:29:11 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 7151
+   discusser:
+     2025-08-17 06:29:11 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 7150
+   writer:
+     2025-08-17 06:29:11 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 7149
+   reviewer:
+     2025-08-17 06:29:11 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 7148
+   rewriter:
+     2025-08-17 06:29:11 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 7147
+
+🔍 最新任务执行:
+   output/logs/discusser_agent.log:2025-08-17 06:20:20 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行成功
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+
+⏰ 等待3分钟后再次检查...
+==========================================
+
+=== 2025-08-17 06:33:03 工作流进度汇报 ===
+
+📊 整体进度:
+   已生成文档数量: 0
+
+🤖 智能体状态:
+   coordinator:
+     2025-08-17 06:33:03 INFO agent.coordinator_agent: 💓 coordinator_agent 心跳 - 状态: idle - 循环次数: 32
+   planner:
+     2025-08-17 06:33:03 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 9163
+   searcher:
+     2025-08-17 06:33:03 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 9162
+   discusser:
+     2025-08-17 06:33:03 INFO agent.discusser_agent: 💓 discusser_agent 心跳 - 状态: idle - 循环次数: 9160
+   writer:
+     2025-08-17 06:33:03 INFO agent.writer_agent: 💓 writer_agent 心跳 - 状态: idle - 循环次数: 9159
+   reviewer:
+     2025-08-17 06:33:03 INFO agent.reviewer_agent: 💓 reviewer_agent 心跳 - 状态: idle - 循环次数: 9159
+   rewriter:
+     2025-08-17 06:33:03 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 9158
+
+🔍 最新任务执行:
+   output/logs/discusser_agent.log:2025-08-17 06:20:20 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行成功
+   output/logs/discusser_agent.log:2025-08-17 06:20:31 INFO agent.discusser_agent: ✅ discusser_agent 任务执行完成: innovation_discussion
+
+⏰ 等待3分钟后再次检查...
+==========================================
