@@ -44,3 +44,4 @@
 2025-08-17 09:42:49 INFO agent.searcher_agent: 📤 searcher_agent 发送完成消息到协调器
 2025-08-17 09:42:49 INFO agent.searcher_agent: ✅ searcher_agent 任务执行完成: prior_art_search
 2025-08-17 09:43:19 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 4000
+2025-08-17 09:43:36 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 4160
