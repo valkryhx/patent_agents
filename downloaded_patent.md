@@ -1,0 +1,1 @@
+{"detail":"Failed to download patent file: name 'os' is not defined"}

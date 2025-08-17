@@ -1,0 +1,34 @@
+{
+  "stages": {
+    "planning": {
+      "filename": "planning_1755456128.md",
+      "timestamp": 1755456128,
+      "generated_at": "2025-08-17 18:42:08"
+    },
+    "search": {
+      "filename": "search_1755456130.md",
+      "timestamp": 1755456130,
+      "generated_at": "2025-08-17 18:42:10"
+    },
+    "discussion": {
+      "filename": "discussion_1755456132.md",
+      "timestamp": 1755456132,
+      "generated_at": "2025-08-17 18:42:12"
+    },
+    "drafting": {
+      "filename": "drafting_1755456134.md",
+      "timestamp": 1755456134,
+      "generated_at": "2025-08-17 18:42:14"
+    },
+    "review": {
+      "filename": "review_1755456136.md",
+      "timestamp": 1755456136,
+      "generated_at": "2025-08-17 18:42:16"
+    },
+    "rewrite": {
+      "filename": "rewrite_1755456138.md",
+      "timestamp": 1755456138,
+      "generated_at": "2025-08-17 18:42:18"
+    }
+  }
+}

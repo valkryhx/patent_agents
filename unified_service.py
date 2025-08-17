@@ -5,7 +5,7 @@ Hosts coordinator and all agent services on one port with different URL paths
 """
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 import uvicorn
@@ -14,6 +14,8 @@ import uuid
 import asyncio
 import logging
 import httpx # Added for patent-specific API calls
+import os
+import json
 
 from models import WorkflowRequest, WorkflowResponse, WorkflowStatus, WorkflowState, WorkflowStatusEnum, StageStatusEnum
 from workflow_manager import WorkflowManager
@@ -45,6 +47,291 @@ workflow_manager = WorkflowManager()
 # PATENT-SPECIFIC API ENDPOINTS
 # ============================================================================
 
+async def create_workflow_directory(workflow_id: str, topic: str) -> str:
+    """Create a directory for storing individual stage results"""
+    try:
+        # Create workflow-specific directory
+        safe_topic = "".join(c for c in topic if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        safe_topic = safe_topic.replace(' ', '_')[:50]  # Limit length and replace spaces
+        
+        dir_name = f"{workflow_id}_{safe_topic}"
+        dir_path = f"workflow_stages/{dir_name}"
+        
+        # Create directory if it doesn't exist
+        os.makedirs(dir_path, exist_ok=True)
+        
+        # Create a metadata file
+        metadata = {
+            "workflow_id": workflow_id,
+            "topic": topic,
+            "created_at": time.strftime('%Y-%m-%d %H:%M:%S'),
+            "stages": ["planning", "search", "discussion", "drafting", "review", "rewrite"]
+        }
+        
+        with open(f"{dir_path}/metadata.json", 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
+        
+        logger.info(f"📁 Created workflow directory: {dir_path}")
+        return dir_path
+        
+    except Exception as e:
+        logger.error(f"Failed to create workflow directory: {e}")
+        raise
+
+async def save_stage_result(workflow_id: str, topic: str, stage: str, result: Any, test_mode: bool = False) -> str:
+    """Save individual stage result to file"""
+    try:
+        # Get or create workflow directory
+        safe_topic = "".join(c for c in topic if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        safe_topic = safe_topic.replace(' ', '_')[:50]
+        dir_name = f"{workflow_id}_{safe_topic}"
+        dir_path = f"workflow_stages/{dir_name}"
+        
+        # Create directory if it doesn't exist
+        os.makedirs(dir_path, exist_ok=True)
+        
+        # Create stage result file
+        timestamp = int(time.time())
+        filename = f"{stage}_{timestamp}.md"
+        file_path = f"{dir_path}/{filename}"
+        
+        # Generate stage content
+        stage_content = generate_stage_content(stage, result, test_mode)
+        
+        # Save to file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(stage_content)
+        
+        # Update stage index
+        await update_stage_index(dir_path, stage, filename, timestamp)
+        
+        logger.info(f"💾 Saved {stage} stage result: {file_path}")
+        return file_path
+        
+    except Exception as e:
+        logger.error(f"Failed to save {stage} stage result: {e}")
+        raise
+
+def generate_stage_content(stage: str, result: Any, test_mode: bool = False) -> str:
+    """Generate content for individual stage result"""
+    content = []
+    
+    # Header
+    content.append(f"# {stage.title()} 阶段结果")
+    content.append(f"")
+    content.append(f"**阶段**: {stage}")
+    content.append(f"**生成时间**: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    content.append(f"**模式**: {'测试模式' if test_mode else '真实模式'}")
+    content.append(f"")
+    
+    if test_mode:
+        # Test mode content
+        content.append("## 📝 测试模式结果")
+        content.append("")
+        content.append(f"{result}")
+        content.append("")
+        content.append("**注意**: 这是测试模式生成的内容，用于验证功能。")
+    else:
+        # Real mode content
+        content.append("## 🔍 详细结果")
+        content.append("")
+        if isinstance(result, dict):
+            for key, value in result.items():
+                content.append(f"### {key}")
+                content.append(f"{value}")
+                content.append("")
+        else:
+            content.append(f"{result}")
+    
+    return "\n".join(content)
+
+async def update_stage_index(dir_path: str, stage: str, filename: str, timestamp: int):
+    """Update stage index file"""
+    try:
+        index_file = f"{dir_path}/stage_index.json"
+        
+        # Load existing index or create new one
+        if os.path.exists(index_file):
+            with open(index_file, 'r', encoding='utf-8') as f:
+                index = json.load(f)
+        else:
+            index = {"stages": {}}
+        
+        # Update stage information
+        index["stages"][stage] = {
+            "filename": filename,
+            "timestamp": timestamp,
+            "generated_at": time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Save updated index
+        with open(index_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, ensure_ascii=False, indent=2)
+            
+    except Exception as e:
+        logger.error(f"Failed to update stage index: {e}")
+
+async def save_patent_to_file(workflow_id: str, topic: str, results: Dict[str, Any]) -> str:
+    """Save patent results to a file and return the file path"""
+    try:
+        # Create patent content
+        patent_content = generate_patent_content(topic, results)
+        
+        # Create filename
+        timestamp = int(time.time())
+        filename = f"patent_{workflow_id}_{timestamp}.md"
+        file_path = f"patent_files/{filename}"
+        
+        # Save to file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(patent_content)
+        
+        return file_path
+    except Exception as e:
+        logger.error(f"Failed to save patent to file: {e}")
+        raise
+
+def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
+    """Generate formatted patent content from workflow results"""
+    content = []
+    
+    # Header
+    content.append(f"# 专利撰写结果")
+    content.append(f"")
+    content.append(f"**主题**: {topic}")
+    content.append(f"**生成时间**: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+    content.append(f"**工作流ID**: {list(results.keys())[0] if results else 'Unknown'}")
+    content.append(f"")
+    
+    # Check if this is test mode (simple string results) or real mode (complex dict results)
+    is_test_mode = any(isinstance(result, str) for result in results.values())
+    
+    if is_test_mode:
+        # Test mode - generate simple content from mock results
+        content.append("## 📝 测试模式专利内容")
+        content.append("")
+        content.append("**注意**: 这是测试模式生成的内容，用于验证工作流功能。")
+        content.append("")
+        
+        for stage, result in results.items():
+            content.append(f"### {stage.title()} 阶段")
+            content.append(f"{result}")
+            content.append("")
+        
+        content.append("## 🔄 真实模式说明")
+        content.append("")
+        content.append("在真实模式下，每个阶段将包含详细的专利内容：")
+        content.append("- **规划阶段**: 策略分析、开发阶段规划")
+        content.append("- **搜索阶段**: 现有技术搜索结果、新颖性评分")
+        content.append("- **讨论阶段**: 创新点、技术洞察")
+        content.append("- **草稿阶段**: 专利标题、摘要、权利要求、详细描述")
+        content.append("- **审查阶段**: 质量评分、审查反馈")
+        content.append("- **重写阶段**: 改进后的专利内容")
+        
+    else:
+        # Real mode - generate detailed content from agent results
+        # Planning stage
+        if "planning" in results:
+            planning = results["planning"].get("result", {})
+            content.append("## 1. 专利规划阶段")
+            content.append("")
+            if "strategy" in planning:
+                strategy = planning["strategy"]
+                content.append(f"### 策略分析")
+                content.append(f"- **新颖性评分**: {strategy.get('novelty_score', 'N/A')}")
+                content.append(f"- **创造性评分**: {strategy.get('inventive_step_score', 'N/A')}")
+                content.append(f"- **可专利性评估**: {strategy.get('patentability_assessment', 'N/A')}")
+                content.append("")
+                content.append(f"### 开发阶段")
+                for phase in strategy.get('development_phases', []):
+                    content.append(f"- **{phase.get('phase_name', 'Unknown')}**: {phase.get('duration_estimate', 'N/A')}")
+                content.append("")
+        
+        # Search stage
+        if "search" in results:
+            search = results["search"].get("result", {})
+            content.append("## 2. 现有技术搜索")
+            content.append("")
+            content.append(f"- **找到相关专利**: {search.get('patents_found', 0)} 件")
+            content.append(f"- **新颖性评分**: {search.get('novelty_score', 'N/A')}")
+            content.append(f"- **风险等级**: {search.get('risk_level', 'N/A')}")
+            content.append("")
+            if "search_results" in search and "results" in search["search_results"]:
+                content.append("### 相关专利")
+                for patent in search["search_results"]["results"]:
+                    content.append(f"- **{patent.get('title', 'Unknown')}** (ID: {patent.get('patent_id', 'N/A')})")
+                    content.append(f"  - 相关性: {patent.get('relevance_score', 'N/A')}")
+                content.append("")
+        
+        # Discussion stage
+        if "discussion" in results:
+            discussion = results["discussion"].get("result", {})
+            content.append("## 3. 创新讨论")
+            content.append("")
+            if "innovations" in discussion:
+                content.append("### 创新点")
+                for innovation in discussion["innovations"]:
+                    content.append(f"- {innovation}")
+                content.append("")
+            if "technical_insights" in discussion:
+                content.append("### 技术洞察")
+                for insight in discussion["technical_insights"]:
+                    content.append(f"- {insight}")
+                content.append("")
+        
+        # Drafting stage
+        if "drafting" in results:
+            drafting = results["drafting"].get("result", {})
+            content.append("## 4. 专利草稿")
+            content.append("")
+            content.append(f"### 专利标题")
+            content.append(f"{drafting.get('title', 'N/A')}")
+            content.append("")
+            content.append(f"### 专利摘要")
+            content.append(f"{drafting.get('abstract', 'N/A')}")
+            content.append("")
+            if "claims" in drafting:
+                content.append("### 权利要求")
+                for i, claim in enumerate(drafting["claims"], 1):
+                    content.append(f"{i}. {claim}")
+                content.append("")
+            if "detailed_description" in drafting:
+                content.append("### 详细描述")
+                content.append(f"{drafting.get('detailed_description', 'N/A')}")
+                content.append("")
+        
+        # Review stage
+        if "review" in results:
+            review = results["review"].get("result", {})
+            content.append("## 5. 质量审查")
+            content.append("")
+            content.append(f"- **质量评分**: {review.get('quality_score', 'N/A')}")
+            content.append(f"- **一致性评分**: {review.get('consistency_score', 'N/A')}")
+            content.append("")
+            if "feedback" in review:
+                content.append("### 审查反馈")
+                for feedback in review["feedback"]:
+                    content.append(f"- {feedback}")
+                content.append("")
+        
+        # Rewrite stage
+        if "rewrite" in results:
+            rewrite = results["rewrite"].get("result", {})
+            content.append("## 6. 最终专利")
+            content.append("")
+            content.append(f"### 改进后的专利标题")
+            content.append(f"{rewrite.get('title', 'N/A')}")
+            content.append("### 改进后的专利摘要")
+            content.append(f"{rewrite.get('abstract', 'N/A')}")
+            content.append("")
+            if "improvements" in rewrite:
+                content.append("### 主要改进")
+                for improvement in rewrite["improvements"]:
+                    content.append(f"- {improvement}")
+                content.append("")
+    
+    return "\n".join(content)
+
 async def execute_patent_workflow(workflow_id: str, topic: str, description: str, test_mode: bool):
     """Execute the complete patent workflow"""
     try:
@@ -54,6 +341,10 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
         
         workflow = app.state.workflows[workflow_id]
         workflow["status"] = "running"
+        
+        # Create workflow directory for stage results
+        workflow_dir = await create_workflow_directory(workflow_id, topic)
+        workflow["workflow_directory"] = workflow_dir
         
         # Execute each stage
         stages = ["planning", "search", "discussion", "drafting", "review", "rewrite"]
@@ -79,6 +370,15 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                 workflow["stages"][stage]["completed_at"] = time.time()
                 workflow["results"][stage] = stage_result
                 
+                # Immediately save stage result to file
+                try:
+                    stage_file_path = await save_stage_result(workflow_id, topic, stage, stage_result, test_mode)
+                    workflow["stages"][stage]["file_path"] = stage_file_path
+                    logger.info(f"💾 Stage {stage} result saved: {stage_file_path}")
+                except Exception as save_error:
+                    logger.error(f"⚠️ Failed to save {stage} stage result: {save_error}")
+                    workflow["stages"][stage]["file_path"] = None
+                
                 logger.info(f"✅ {stage} stage completed for workflow {workflow_id}")
                 
             except Exception as e:
@@ -91,6 +391,18 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
         # All stages completed successfully
         workflow["status"] = "completed"
         workflow["completed_at"] = time.time()
+        
+        # Save patent to file
+        try:
+            patent_file_path = await save_patent_to_file(workflow_id, topic, workflow["results"])
+            workflow["patent_file_path"] = patent_file_path
+            workflow["download_url"] = f"/download/patent/{workflow_id}"
+            logger.info(f"💾 Patent saved to file: {patent_file_path}")
+        except Exception as e:
+            logger.error(f"❌ Failed to save patent to file: {e}")
+            workflow["patent_file_path"] = None
+            workflow["download_url"] = None
+        
         logger.info(f"🎉 Patent workflow {workflow_id} completed successfully")
         
     except Exception as e:
@@ -242,7 +554,9 @@ async def get_patent_workflow_results(workflow_id: str):
             "description": workflow["description"],
             "status": workflow["status"],
             "results": workflow["results"],
-            "completed_at": workflow.get("completed_at")
+            "completed_at": workflow.get("completed_at"),
+            "patent_file_path": workflow.get("patent_file_path"),
+            "download_url": workflow.get("download_url")
         }
     except HTTPException:
         raise
@@ -299,6 +613,104 @@ async def delete_patent_workflow(workflow_id: str):
     except Exception as e:
         logger.error(f"Failed to delete patent workflow: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
+
+@app.get("/workflow/{workflow_id}/stages")
+async def get_workflow_stages(workflow_id: str):
+    """Get all stage files for a workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        workflow_dir = workflow.get("workflow_directory")
+        
+        if not workflow_dir or not os.path.exists(workflow_dir):
+            raise HTTPException(status_code=404, detail="Workflow directory not found")
+        
+        # Read stage index
+        index_file = f"{workflow_dir}/stage_index.json"
+        if os.path.exists(index_file):
+            with open(index_file, 'r', encoding='utf-8') as f:
+                stage_index = json.load(f)
+        else:
+            stage_index = {"stages": {}}
+        
+        # Read metadata
+        metadata_file = f"{workflow_dir}/metadata.json"
+        metadata = {}
+        if os.path.exists(metadata_file):
+            with open(metadata_file, 'r', encoding='utf-8') as f:
+                metadata = json.load(f)
+        
+        # List all files in directory
+        files = []
+        if os.path.exists(workflow_dir):
+            for filename in os.listdir(workflow_dir):
+                if filename.endswith('.md'):
+                    file_path = f"{workflow_dir}/{filename}"
+                    file_stat = os.stat(file_path)
+                    files.append({
+                        "filename": filename,
+                        "size": file_stat.st_size,
+                        "modified": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_stat.st_mtime))
+                    })
+        
+        return {
+            "workflow_id": workflow_id,
+            "topic": workflow.get("topic"),
+            "workflow_directory": workflow_dir,
+            "metadata": metadata,
+            "stage_index": stage_index,
+            "files": files
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get workflow stages: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get workflow stages: {str(e)}")
+
+@app.get("/download/patent/{workflow_id}")
+async def download_patent_file(workflow_id: str):
+    """Download patent file for a completed workflow"""
+    try:
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        if workflow["status"] != "completed":
+            raise HTTPException(status_code=400, detail="Workflow is not yet completed")
+        
+        patent_file_path = workflow.get("patent_file_path")
+        if not patent_file_path:
+            raise HTTPException(status_code=404, detail="Patent file not found")
+        
+        # Check if file exists
+        if not os.path.exists(patent_file_path):
+            raise HTTPException(status_code=404, detail="Patent file not found on disk")
+        
+        # Return file for download
+        try:
+            return FileResponse(
+                path=patent_file_path,
+                filename=f"patent_{workflow_id}.md",
+                media_type="text/markdown"
+            )
+        except Exception as file_error:
+            logger.error(f"FileResponse error: {file_error}")
+            # Fallback: return file content as text
+            with open(patent_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return JSONResponse(
+                content={"file_content": content, "filename": f"patent_{workflow_id}.md"},
+                headers={"Content-Disposition": f"attachment; filename=patent_{workflow_id}.md"}
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download patent file: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to download patent file: {str(e)}")
 
 @app.get("/patents")
 async def list_patent_workflows():
@@ -516,7 +928,9 @@ async def get_workflow_results(workflow_id: str):
                     "status": workflow["status"],
                     "results": workflow["results"],
                     "completed_at": workflow.get("completed_at"),
-                    "test_mode": workflow["test_mode"]
+                    "test_mode": workflow["test_mode"],
+                    "patent_file_path": workflow.get("patent_file_path"),
+                    "download_url": workflow.get("download_url")
                 }
         
         # Use regular workflow manager
@@ -1817,6 +2231,8 @@ if __name__ == "__main__":
     print("   - POST /coordinator/workflow/start - Start patent workflow")
     print("   - GET /coordinator/workflow/{workflow_id}/status - Get patent workflow status")
     print("   - GET /coordinator/workflow/{workflow_id}/results - Get patent workflow results")
+    print("   - GET /workflow/{workflow_id}/stages - Get workflow stage files")
+    print("   - GET /download/patent/{workflow_id} - Download patent file")
     print("   - POST /coordinator/workflow/{workflow_id}/restart - Restart patent workflow")
     print("   - DELETE /coordinator/workflow/{workflow_id} - Delete patent workflow")
     print("   - GET /coordinator/workflows - List all patent workflows")
