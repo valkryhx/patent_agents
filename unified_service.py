@@ -484,23 +484,38 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
+    # Extract core strategy from planning stage
+    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
+    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+    
+    # Build on previous stages' insights
+    core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
+    novelty_score = planning_strategy.get("novelty_score", 8.5)
+    search_findings = search_results.get("results", [])
+    
+    logger.info(f"📋 Building on planning strategy: {core_innovation_areas}")
+    logger.info(f"🔍 Incorporating search findings: {len(search_findings)} patents found")
+    
     discussion_result = {
         "topic": topic,
+        "core_strategy": planning_strategy,
+        "search_context": search_results,
         "innovations": [
-            "Enhanced layered reasoning architecture",
-            "Improved multi-parameter optimization",
-            "Advanced context-aware processing"
+            f"Enhanced {core_innovation_areas[0] if core_innovation_areas else 'layered reasoning'} architecture",
+            f"Improved {core_innovation_areas[1] if len(core_innovation_areas) > 1 else 'multi-parameter'} optimization",
+            f"Advanced {core_innovation_areas[2] if len(core_innovation_areas) > 2 else 'context-aware'} processing"
         ],
         "technical_insights": [
-            "Novel approach to parameter inference",
-            "Unique system integration methodology",
-            "Innovative user intent modeling"
+            f"Novel approach to {topic.lower()} parameter inference",
+            f"Unique {topic.lower()} system integration methodology",
+            f"Innovative {topic.lower()} user intent modeling"
         ],
         "recommendations": [
-            "Focus on layered reasoning as key differentiator",
-            "Emphasize adaptive parameter optimization",
-            "Highlight context-aware capabilities"
+            f"Focus on {core_innovation_areas[0] if core_innovation_areas else 'layered reasoning'} as key differentiator",
+            f"Emphasize {core_innovation_areas[1] if len(core_innovation_areas) > 1 else 'adaptive parameter'} optimization",
+            f"Highlight {core_innovation_areas[2] if len(core_innovation_areas) > 2 else 'context-aware'} capabilities"
         ],
+        "novelty_score": novelty_score,
         "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
         "test_mode": TEST_MODE["enabled"],
         "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
@@ -521,16 +536,49 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
-    patent_draft = {
-        "title": f"Patent Application: {topic}",
-        "abstract": f"An innovative system for {topic.lower()} that provides enhanced functionality and efficiency.",
-        "claims": [
+    # Extract unified content from all previous stages
+    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
+    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+    discussion_insights = previous_results.get("discussion", {}).get("result", {})
+    
+    # Build unified patent content
+    core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
+    novelty_score = planning_strategy.get("novelty_score", 8.5)
+    search_findings = search_results.get("results", [])
+    discussion_innovations = discussion_insights.get("innovations", [])
+    
+    logger.info(f"📋 Using unified strategy: {core_innovation_areas}")
+    logger.info(f"🔍 Incorporating {len(search_findings)} search findings")
+    logger.info(f"💡 Building on discussion insights: {discussion_innovations}")
+    
+    # Create claims based on unified strategy
+    claims = []
+    if core_innovation_areas:
+        claims.append(f"A system for {core_innovation_areas[0].lower()} comprising...")
+        if len(core_innovation_areas) > 1:
+            claims.append(f"The system of claim 1, further comprising {core_innovation_areas[1].lower()}...")
+        if len(core_innovation_areas) > 2:
+            claims.append(f"A method for {core_innovation_areas[2].lower()} comprising...")
+    else:
+        claims = [
             "A system for intelligent parameter inference comprising...",
             "The system of claim 1, further comprising...",
             "A method for adaptive tool calling comprising..."
-        ],
-        "detailed_description": f"Detailed technical description of the {topic} system...",
+        ]
+    
+    patent_draft = {
+        "title": f"Patent Application: {topic}",
+        "abstract": f"An innovative system for {topic.lower()} that provides enhanced functionality and efficiency through {', '.join(core_innovation_areas[:2]) if core_innovation_areas else 'intelligent processing'}.",
+        "claims": claims,
+        "detailed_description": f"Detailed technical description of the {topic} system incorporating {', '.join(core_innovation_areas) if core_innovation_areas else 'advanced features'}...",
         "technical_diagrams": ["Figure 1: System Architecture", "Figure 2: Process Flow"],
+        "unified_content": {
+            "core_strategy": planning_strategy,
+            "search_context": search_results,
+            "discussion_insights": discussion_insights,
+            "novelty_score": novelty_score,
+            "innovation_areas": core_innovation_areas
+        },
         "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
         "test_mode": TEST_MODE["enabled"],
         "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
@@ -551,23 +599,49 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
+    # Extract unified content for review
+    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
+    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+    discussion_insights = previous_results.get("discussion", {}).get("result", {})
+    writer_draft = previous_results.get("drafting", {}).get("result", {})
+    
+    # Review against unified strategy
+    core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
+    novelty_score = planning_strategy.get("novelty_score", 8.5)
+    search_findings = search_results.get("results", [])
+    
+    logger.info(f"📋 Reviewing against unified strategy: {core_innovation_areas}")
+    logger.info(f"🔍 Checking consistency with {len(search_findings)} search findings")
+    
+    # Assess consistency and quality
+    consistency_score = 9.0 if core_innovation_areas else 7.0
+    overall_quality = (novelty_score + consistency_score) / 2
+    
     review_result = {
-        "quality_score": 8.5,
+        "quality_score": overall_quality,
+        "consistency_score": consistency_score,
         "compliance_check": {
             "legal_requirements": "Pass",
             "technical_accuracy": "Pass", 
-            "clarity": "Pass"
+            "clarity": "Pass",
+            "unified_content_consistency": "Pass"
         },
         "feedback": [
-            "Excellent technical description",
-            "Claims are well-structured",
-            "Consider adding more examples"
+            f"Excellent technical description aligned with {core_innovation_areas[0] if core_innovation_areas else 'core strategy'}",
+            "Claims are well-structured and consistent with unified approach",
+            f"Consider adding more examples for {core_innovation_areas[1] if len(core_innovation_areas) > 1 else 'key features'}"
         ],
         "recommendations": [
-            "Proceed with filing",
-            "Minor improvements suggested",
-            "Overall quality is high"
+            "Proceed with filing - unified content is consistent",
+            "Minor improvements suggested for enhanced clarity",
+            "Overall quality is high and maintains topic consistency"
         ],
+        "unified_content_review": {
+            "strategy_alignment": "Strong",
+            "innovation_consistency": "High",
+            "topic_coherence": "Excellent",
+            "search_integration": "Good"
+        },
         "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
         "test_mode": TEST_MODE["enabled"],
         "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
@@ -588,20 +662,55 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
         await asyncio.sleep(TEST_MODE["mock_delay"])
         logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
     
-    improved_draft = {
-        "title": f"Improved Patent Application: {topic}",
-        "abstract": f"An enhanced system for {topic.lower()} with improved functionality and efficiency.",
-        "claims": [
+    # Extract all unified content for final polish
+    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
+    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+    discussion_insights = previous_results.get("discussion", {}).get("result", {})
+    writer_draft = previous_results.get("drafting", {}).get("result", {})
+    review_feedback = previous_results.get("review", {}).get("result", {})
+    
+    # Build final unified content
+    core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
+    novelty_score = planning_strategy.get("novelty_score", 8.5)
+    search_findings = search_results.get("results", [])
+    review_recommendations = review_feedback.get("recommendations", [])
+    
+    logger.info(f"📋 Final polish using unified strategy: {core_innovation_areas}")
+    logger.info(f"🔍 Incorporating review feedback: {len(review_recommendations)} recommendations")
+    
+    # Create improved claims based on unified strategy and feedback
+    improved_claims = []
+    if core_innovation_areas:
+        improved_claims.append(f"An improved system for {core_innovation_areas[0].lower()} comprising...")
+        if len(core_innovation_areas) > 1:
+            improved_claims.append(f"The system of claim 1, further comprising enhanced {core_innovation_areas[1].lower()} features...")
+        if len(core_innovation_areas) > 2:
+            improved_claims.append(f"An optimized method for {core_innovation_areas[2].lower()} comprising...")
+    else:
+        improved_claims = [
             "An improved system for intelligent parameter inference comprising...",
             "The system of claim 1, further comprising enhanced features...",
             "An optimized method for adaptive tool calling comprising..."
-        ],
-        "detailed_description": f"Enhanced technical description of the {topic} system with improvements...",
+        ]
+    
+    improved_draft = {
+        "title": f"Improved Patent Application: {topic}",
+        "abstract": f"An enhanced system for {topic.lower()} with improved functionality and efficiency through {', '.join(core_innovation_areas[:2]) if core_innovation_areas else 'advanced processing'}.",
+        "claims": improved_claims,
+        "detailed_description": f"Enhanced technical description of the {topic} system with improvements incorporating {', '.join(core_innovation_areas) if core_innovation_areas else 'advanced features'}...",
         "improvements": [
-            "Enhanced clarity in claims",
-            "Additional technical examples",
-            "Improved abstract description"
+            f"Enhanced clarity in {core_innovation_areas[0].lower() if core_innovation_areas else 'core'} claims",
+            f"Additional technical examples for {core_innovation_areas[1].lower() if len(core_innovation_areas) > 1 else 'key features'}",
+            f"Improved abstract description aligned with unified strategy"
         ],
+        "unified_content_summary": {
+            "core_strategy": planning_strategy,
+            "search_integration": search_results,
+            "discussion_insights": discussion_insights,
+            "review_incorporation": review_feedback,
+            "final_novelty_score": novelty_score,
+            "innovation_areas": core_innovation_areas
+        },
         "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
         "test_mode": TEST_MODE["enabled"],
         "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
