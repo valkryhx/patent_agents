@@ -491,6 +491,14 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                     # Real mode - call actual agent
                     stage_result = await execute_stage_with_agent(stage, topic, description, test_mode, workflow_id)
                 
+                # Check if stage execution failed
+                if isinstance(stage_result, dict) and stage_result.get("error"):
+                    logger.error(f"❌ {stage} stage execution failed: {stage_result}")
+                    workflow["stages"][stage]["status"] = "failed"
+                    workflow["stages"][stage]["error"] = stage_result.get("message", "Unknown error")
+                    workflow["results"][stage] = stage_result
+                    continue  # Skip to next stage instead of marking as completed
+                
                 workflow["stages"][stage]["status"] = "completed"
                 workflow["stages"][stage]["completed_at"] = time.time()
                 workflow["results"][stage] = stage_result
@@ -623,11 +631,22 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
                     agent_result["test_mode"] = test_mode
                 return agent_result
             else:
-                return f"{stage} failed: {response.status_code}"
+                logger.error(f"Agent {agent} returned status {response.status_code}: {response.text}")
+                # Return a proper error structure instead of string
+                return {
+                    "error": True,
+                    "status_code": response.status_code,
+                    "message": f"{stage} failed: {response.status_code}",
+                    "details": response.text
+                }
                 
     except Exception as e:
         logger.error(f"Failed to execute {stage} stage: {e}")
-        return f"{stage} failed: {str(e)}"
+        return {
+            "error": True,
+            "exception": str(e),
+            "message": f"{stage} failed: {str(e)}"
+        }
 
 @app.post("/patent/generate", response_model=WorkflowResponse)
 async def generate_patent(request: WorkflowRequest, background_tasks: BackgroundTasks):
