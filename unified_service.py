@@ -678,7 +678,7 @@ async def discussion_health():
     return {
         "status": "healthy",
         "service": "discussion_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["innovation_discussion", "idea_generation", "technical_analysis"],
         "timestamp": time.time()
     }
@@ -688,7 +688,7 @@ async def discussion_execute(request: TaskRequest):
     """Execute discussion agent task"""
     try:
         logger.info(f"💬 Discussion Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_discussion_task(request)
         return TaskResponse(
@@ -709,7 +709,7 @@ async def writer_health():
     return {
         "status": "healthy",
         "service": "writer_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["patent_drafting", "technical_writing", "claim_writing", "legal_compliance"],
         "timestamp": time.time()
     }
@@ -719,7 +719,7 @@ async def writer_execute(request: TaskRequest):
     """Execute writer agent task"""
     try:
         logger.info(f"✍️ Writer Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_writer_task(request)
         return TaskResponse(
@@ -740,7 +740,7 @@ async def reviewer_health():
     return {
         "status": "healthy",
         "service": "reviewer_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["quality_review", "compliance_check", "feedback_generation"],
         "timestamp": time.time()
     }
@@ -750,7 +750,7 @@ async def reviewer_execute(request: TaskRequest):
     """Execute reviewer agent task"""
     try:
         logger.info(f"🔍 Reviewer Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_reviewer_task(request)
         return TaskResponse(
@@ -771,7 +771,7 @@ async def rewriter_health():
     return {
         "status": "healthy",
         "service": "rewriter_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["patent_rewriting", "improvement_generation", "final_polish"],
         "timestamp": time.time()
     }
@@ -781,7 +781,7 @@ async def rewriter_execute(request: TaskRequest):
     """Execute rewriter agent task"""
     try:
         logger.info(f"✏️ Rewriter Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_rewriter_task(request)
         return TaskResponse(
@@ -806,7 +806,7 @@ async def compressor_health():
     return {
         "status": "healthy",
         "service": "compression_agent",
-        "test_mode": TEST_MODE["enabled"],
+        "test_mode": False,  # Health check always shows real mode
         "capabilities": ["context_compression", "content_summarization", "key_insight_extraction", "unified_content_preservation"],
         "timestamp": time.time()
     }
@@ -816,7 +816,7 @@ async def compressor_execute(request: TaskRequest):
     """Execute compression agent task"""
     try:
         logger.info(f"🗜️ Compression Agent received task: {request.task_id}")
-        logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+        logger.info(f"🔧 Test mode: {request.test_mode}")
         
         result = await execute_compression_task(request)
         return TaskResponse(
@@ -982,9 +982,9 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
             f"Highlight {core_innovation_areas[2] if len(core_innovation_areas) > 2 else 'context-aware'} capabilities"
         ],
         "novelty_score": novelty_score,
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0
     }
     
     return discussion_result
@@ -995,12 +995,12 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting patent drafting for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Check if compressed context is available (look for any compression result)
     compressed_context = None
@@ -1077,9 +1077,9 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
             "novelty_score": novelty_score,
             "innovation_areas": core_innovation_areas
         },
-        "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
-        "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "execution_time": 0.5 if request.test_mode else 1.0,
+        "test_mode": request.test_mode,
+        "mock_delay_applied": 0.5 if request.test_mode else 0
     }
     
     return patent_draft
@@ -1090,12 +1090,12 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting quality review for: {topic}")
-    logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔧 Test mode: {request.test_mode}")
     
     # Add test mode delay
-    if TEST_MODE["enabled"]:
-        await asyncio.sleep(TEST_MODE["mock_delay"])
-        logger.info(f"⏱️ Test mode delay: {TEST_MODE['mock_delay']}s")
+    if request.test_mode:
+        await asyncio.sleep(0.5)  # Simulate processing time
+        logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Check if compressed context is available (look for any compression result)
     compressed_context = None
