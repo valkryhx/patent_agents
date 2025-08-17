@@ -1,0 +1,35 @@
+{
+  "stages": {
+    "planning": {
+      "filename": "planning_1755456933.md",
+      "timestamp": 1755456933,
+      "generated_at": "2025-08-17 18:55:33"
+    },
+    "search": {
+      "filename": "search_1755456935.md",
+      "timestamp": 1755456935,
+      "generated_at": "2025-08-17 18:55:35"
+    },
+    "discussion": {
+      "filename": "discussion_1755456937.md",
+      "timestamp": 1755456937,
+      "generated_at": "2025-08-17 18:55:37"
+    },
+    "drafting": {
+      "filename": "drafting_1755456939.md",
+      "timestamp": 1755456939,
+      "generated_at": "2025-08-17 18:55:39"
+    },
+    "review": {
+      "filename": "review_1755456941.md",
+      "timestamp": 1755456941,
+      "generated_at": "2025-08-17 18:55:41"
+    },
+    "rewrite": {
+      "filename": "rewrite_1755456943.md",
+      "timestamp": 1755456943,
+      "generated_at": "2025-08-17 18:55:43"
+    }
+  },
+  "final_patent": null
+}
