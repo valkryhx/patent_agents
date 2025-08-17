@@ -88,8 +88,9 @@ class WorkflowManager:
                         logger.info(f"🗜️ Context size large, triggering optional compression before {stage_name}")
                         try:
                             compression_result = await self._assign_compression_task(workflow_id, f"compression_before_{stage_name}", workflow)
-                            # Store compression result for later use
-                            workflow.stage_results[f"compression_before_{stage_name}"] = compression_result
+                            # Store compression result for later use with isolation
+                            isolated_compression_result = self._isolate_stage_result(workflow_id, f"compression_before_{stage_name}", compression_result)
+                            workflow.stage_results[f"compression_before_{stage_name}"] = isolated_compression_result
                             logger.info(f"✅ Compression completed successfully before {stage_name}")
                         except Exception as e:
                             logger.warning(f"⚠️ Compression failed before {stage_name}, continuing with full context: {str(e)}")
@@ -97,8 +98,9 @@ class WorkflowManager:
                     # Assign task to agent service
                     result = await self._assign_task_to_agent(workflow_id, stage_name, workflow)
                     
-                    # Update stage result
-                    workflow.stage_results[stage_name] = result
+                    # Update stage result with workflow isolation
+                    isolated_result = self._isolate_stage_result(workflow_id, stage_name, result)
+                    workflow.stage_results[stage_name] = isolated_result
                     workflow.stage_statuses[stage_name] = StageStatusEnum.COMPLETED
                     workflow.stage_times[stage_name]["end"] = time.time()
                     workflow.updated_at = time.time()
@@ -125,21 +127,30 @@ class WorkflowManager:
                 self.workflows[workflow_id].updated_at = time.time()
     
     async def _assign_compression_task(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
-        """Assign compression task to compression agent"""
+        """Assign compression task to compression agent with workflow isolation"""
         try:
             agent_url = AGENT_SERVICES.get("compressor")  # Use compression agent URL
+            
+            # Validate workflow ID and ensure context isolation
+            if workflow.workflow_id != workflow_id:
+                raise Exception(f"Workflow ID mismatch: expected {workflow_id}, got {workflow.workflow_id}")
             
             # Determine compression context based on stage
             compression_context = self._prepare_compression_context(stage_name, workflow)
             
-            # Prepare task data for compression
+            # Add workflow isolation to compression context
+            compression_context["workflow_id"] = workflow_id
+            compression_context["isolation_level"] = "workflow_specific"
+            compression_context["context_timestamp"] = time.time()
+            
+            # Prepare task data for compression with workflow isolation
             task_data = {
-                "task_id": f"{workflow_id}_{stage_name}",
-                "workflow_id": workflow_id,
+                "task_id": f"{workflow_id}_{stage_name}_{int(time.time())}",  # Add timestamp for uniqueness
+                "workflow_id": workflow_id,  # Ensure workflow ID is passed
                 "stage_name": stage_name,
                 "topic": workflow.topic,
                 "description": workflow.description,
-                "previous_results": workflow.stage_results,
+                "previous_results": self._isolate_workflow_results(workflow_id, workflow.stage_results),
                 "context": compression_context
             }
             
@@ -229,29 +240,32 @@ class WorkflowManager:
             }
     
     async def _assign_task_to_agent(self, workflow_id: str, stage_name: str, workflow: WorkflowState) -> Dict[str, Any]:
-        """Assign task to agent service"""
+        """Assign task to agent service with workflow context isolation"""
         try:
             agent_url = AGENT_SERVICES.get(stage_name)
             if not agent_url:
                 raise Exception(f"Agent service not found for stage: {stage_name}")
             
-            # Prepare task data
+            # Validate workflow ID and ensure context isolation
+            if workflow.workflow_id != workflow_id:
+                raise Exception(f"Workflow ID mismatch: expected {workflow_id}, got {workflow.workflow_id}")
+            
+            # Create isolated context for this specific workflow
+            isolated_context = self._create_isolated_context(workflow_id, workflow, stage_name)
+            
+            # Prepare task data with workflow isolation
             task_data = {
-                "task_id": f"{workflow_id}_{stage_name}",
-                "workflow_id": workflow_id,
+                "task_id": f"{workflow_id}_{stage_name}_{int(time.time())}",  # Add timestamp for uniqueness
+                "workflow_id": workflow_id,  # Ensure workflow ID is passed
                 "stage_name": stage_name,
                 "topic": workflow.topic,
                 "description": workflow.description,
-                "previous_results": workflow.stage_results,
-                "context": {
-                    "workflow_type": workflow.workflow_type,
-                    "current_stage": workflow.current_stage,
-                    "total_stages": len(workflow.stages)
-                }
+                "previous_results": self._isolate_workflow_results(workflow_id, workflow.stage_results),
+                "context": isolated_context
             }
             
-            logger.info(f"📤 Assigning task to {stage_name} agent at {agent_url}")
-            logger.info(f"📋 Task data: {task_data}")
+            logger.info(f"📤 Assigning task to {stage_name} agent for workflow {workflow_id}")
+            logger.info(f"🔒 Using isolated context for workflow {workflow_id}")
             
             # Send task to agent service
             async with httpx.AsyncClient() as client:
@@ -263,7 +277,11 @@ class WorkflowManager:
                 
                 if response.status_code == 200:
                     result = response.json()
-                    logger.info(f"✅ Agent {stage_name} completed task successfully")
+                    # Validate that the response belongs to the correct workflow
+                    if result.get("workflow_id") != workflow_id:
+                        logger.warning(f"⚠️ Response workflow ID mismatch: expected {workflow_id}, got {result.get('workflow_id')}")
+                    
+                    logger.info(f"✅ Agent {stage_name} completed task successfully for workflow {workflow_id}")
                     return result
                 else:
                     error_msg = f"Agent {stage_name} failed with status {response.status_code}: {response.text}"
@@ -271,8 +289,54 @@ class WorkflowManager:
                     raise Exception(error_msg)
                     
         except Exception as e:
-            logger.error(f"❌ Failed to assign task to agent {stage_name}: {str(e)}")
+            logger.error(f"❌ Failed to assign task to agent {stage_name} for workflow {workflow_id}: {str(e)}")
             raise
+    
+    def _create_isolated_context(self, workflow_id: str, workflow: WorkflowState, stage_name: str) -> Dict[str, Any]:
+        """Create isolated context for a specific workflow"""
+        return {
+            "workflow_id": workflow_id,  # Include workflow ID in context
+            "workflow_type": workflow.workflow_type,
+            "current_stage": workflow.current_stage,
+            "total_stages": len(workflow.stages),
+            "stage_name": stage_name,
+            "isolation_level": "workflow_specific",
+            "context_timestamp": time.time(),
+            "workflow_created_at": workflow.created_at,
+            "workflow_updated_at": workflow.updated_at
+        }
+    
+    def _isolate_workflow_results(self, workflow_id: str, stage_results: Dict[str, Any]) -> Dict[str, Any]:
+        """Isolate workflow results to prevent cross-contamination"""
+        isolated_results = {}
+        
+        for stage_name, stage_result in stage_results.items():
+            # Add workflow ID to each stage result for isolation
+            if isinstance(stage_result, dict):
+                isolated_stage_result = stage_result.copy()
+                isolated_stage_result["workflow_id"] = workflow_id
+                isolated_stage_result["isolation_timestamp"] = time.time()
+                isolated_results[stage_name] = isolated_stage_result
+            else:
+                isolated_results[stage_name] = {
+                    "workflow_id": workflow_id,
+                    "result": stage_result,
+                    "isolation_timestamp": time.time()
+                }
+        
+        return isolated_results
+    
+    def _isolate_stage_result(self, workflow_id: str, stage_name: str, result: Dict[str, Any]) -> Dict[str, Any]:
+        """Isolate a single stage result with workflow ID"""
+        isolated_result = result.copy() if isinstance(result, dict) else {"result": result}
+        
+        # Ensure workflow ID is included
+        isolated_result["workflow_id"] = workflow_id
+        isolated_result["stage_name"] = stage_name
+        isolated_result["isolation_timestamp"] = time.time()
+        isolated_result["isolation_level"] = "workflow_specific"
+        
+        return isolated_result
     
     def get_workflow_status(self, workflow_id: str) -> WorkflowStatus:
         """Get workflow status"""

@@ -422,12 +422,19 @@ async def compressor_execute(request: TaskRequest):
 # ============================================================================
 
 async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
-    """Execute planner task using old system prompts"""
+    """Execute planner task using old system prompts with workflow isolation"""
     topic = request.topic
     description = request.description
+    workflow_id = request.workflow_id
+    context = request.context
     
-    logger.info(f"🚀 Starting patent planning for: {topic}")
+    logger.info(f"🚀 Starting patent planning for workflow {workflow_id}: {topic}")
     logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔒 Workflow isolation: {context.get('isolation_level', 'unknown')}")
+    
+    # Validate workflow context
+    if context.get("workflow_id") != workflow_id:
+        logger.warning(f"⚠️ Workflow ID mismatch in context: expected {workflow_id}, got {context.get('workflow_id')}")
     
     # Add test mode delay
     if TEST_MODE["enabled"]:
@@ -459,21 +466,30 @@ async def execute_planner_task(request: TaskRequest) -> Dict[str, Any]:
     }
     
     return {
+        "workflow_id": workflow_id,  # Include workflow ID in result
         "strategy": final_strategy,
         "analysis": analysis,
         "recommendations": analysis.get("recommendations", []),
         "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
         "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0,
+        "isolation_timestamp": time.time()
     }
 
 async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
-    """Execute searcher task using old system prompts"""
+    """Execute searcher task using old system prompts with workflow isolation"""
     topic = request.topic
     description = request.description
+    workflow_id = request.workflow_id
+    context = request.context
     
-    logger.info(f"🚀 Starting prior art search for: {topic}")
+    logger.info(f"🚀 Starting prior art search for workflow {workflow_id}: {topic}")
     logger.info(f"🔧 Test mode: {TEST_MODE['enabled']}")
+    logger.info(f"🔒 Workflow isolation: {context.get('isolation_level', 'unknown')}")
+    
+    # Validate workflow context
+    if context.get("workflow_id") != workflow_id:
+        logger.warning(f"⚠️ Workflow ID mismatch in context: expected {workflow_id}, got {context.get('workflow_id')}")
     
     # Add test mode delay
     if TEST_MODE["enabled"]:
@@ -496,6 +512,7 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     }
     
     return {
+        "workflow_id": workflow_id,  # Include workflow ID in result
         "search_results": search_report,
         "patents_found": len(search_results),
         "novelty_score": novelty_assessment.get("novelty_score", 8.0),
@@ -503,7 +520,8 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
         "recommendations": recommendations,
         "execution_time": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 1.0,
         "test_mode": TEST_MODE["enabled"],
-        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0
+        "mock_delay_applied": TEST_MODE["mock_delay"] if TEST_MODE["enabled"] else 0,
+        "isolation_timestamp": time.time()
     }
 
 async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
