@@ -10,3 +10,10 @@
 2025-08-17 08:01:56 INFO agent.rewriter_agent: ✅ rewriter_agent 启动成功，状态: idle
 2025-08-17 08:01:56 INFO agent.rewriter_agent:    能力: ['patent_rewriting', 'patent_rewrite', 'feedback_implementation', 'quality_improvement', 'compliance_optimization']
 2025-08-17 08:02:56 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 588
+2025-08-17 08:03:37 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 08:03:56 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1184
+2025-08-17 08:04:56 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 1780
+2025-08-17 08:05:18 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 08:05:56 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 2375
+2025-08-17 08:06:56 INFO agent.rewriter_agent: 💓 rewriter_agent 心跳 - 状态: idle - 循环次数: 2970
+2025-08-17 08:06:59 INFO agent.rewriter_agent: 🔄 rewriter_agent 消息循环活跃 - 循环次数: 3000
