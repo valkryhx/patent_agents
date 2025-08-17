@@ -735,7 +735,7 @@ class SearcherAgent(BaseAgent):
                     query=SearchQuery(
                         topic=topic,
                         keywords=["人工智能", "机器学习", "数据处理"],
-                        date_range="2019-2024",
+                        date_range="2019-2025",
                         jurisdiction="US",
                         max_results=50,
                         search_filters={}

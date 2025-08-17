@@ -6,7 +6,7 @@
 ## 测试环境
 - **服务地址**: http://localhost:8000
 - **测试模式**: 启用 (TEST_MODE = true)
-- **测试时间**: 2024年测试
+- **测试时间**: 2025年8月17日测试
 - **工作流数量**: 已启动2个专利工作流
 
 ## 1. 基础接口测试
@@ -415,7 +415,7 @@ curl -s -X POST "http://localhost:8000/agents/planner/execute" \
 
 ---
 
-**测试完成时间**: 2024年测试  
+**测试完成时间**: 2025年8月17日测试  
 **测试人员**: AI Assistant  
 **测试环境**: Linux 6.12.8+  
 **服务版本**: Unified Patent Agent System v2.0.0
