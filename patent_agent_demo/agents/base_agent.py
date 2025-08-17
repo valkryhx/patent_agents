@@ -143,12 +143,14 @@ class BaseAgent:
                     self.agent_logger.error(f"   错误详情: {traceback.format_exc()}")
                     message = None
                 
-                # Add heartbeat to show the loop is running
-                if int(time.time()) % 60 == 0:  # Log every 60 seconds
+                # Add heartbeat to show the loop is running (every minute)
+                current_time = int(time.time())
+                if current_time % 60 == 0 and not hasattr(self, '_last_heartbeat_time') or current_time - getattr(self, '_last_heartbeat_time', 0) >= 60:
                     self.agent_logger.info(f"💓 {self.name} 心跳 - 状态: {self.status.value} - 循环次数: {loop_count}")
+                    self._last_heartbeat_time = current_time
                 
-                # Force log every 100 loops to ensure we see activity
-                if loop_count % 100 == 0:
+                # Log activity every 1000 loops (much less frequent)
+                if loop_count % 1000 == 0:
                     self.agent_logger.info(f"🔄 {self.name} 消息循环活跃 - 循环次数: {loop_count}")
                     
                 # Small delay to prevent busy waiting

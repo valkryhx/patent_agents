@@ -311,9 +311,63 @@ class UltraRealTimeMonitor:
                         
                     except Exception as e:
                         self.logger.error(f"读取文件失败 {file_path}: {e}")
+            
+            # Check agent logs
+            await self._check_agent_logs()
                         
         except Exception as e:
             self.logger.error(f"检查输出文件失败: {e}")
+            
+    async def _check_agent_logs(self):
+        """检查智能体日志文件"""
+        try:
+            logs_dir = os.path.join(self.output_dir, "logs")
+            if not os.path.exists(logs_dir):
+                return
+                
+            # Check each agent log file
+            agent_logs = [
+                "coordinator_agent.log",
+                "planner_agent.log", 
+                "searcher_agent.log",
+                "discusser_agent.log",
+                "writer_agent.log",
+                "reviewer_agent.log",
+                "rewriter_agent.log"
+            ]
+            
+            for log_file in agent_logs:
+                log_path = os.path.join(logs_dir, log_file)
+                if os.path.exists(log_path):
+                    try:
+                        file_stat = os.stat(log_path)
+                        file_size = file_stat.st_size
+                        file_mtime = file_stat.st_mtime
+                        
+                        # Check if log file changed
+                        file_key = log_path
+                        if file_key not in self.last_modified or self.last_modified[file_key] != file_mtime:
+                            self.last_modified[file_key] = file_mtime
+                            
+                            # Read last few lines of the log
+                            try:
+                                with open(log_path, 'r', encoding='utf-8') as f:
+                                    lines = f.readlines()
+                                    if lines:
+                                        last_line = lines[-1].strip()
+                                        # Only log important events (not heartbeat messages)
+                                        if any(keyword in last_line for keyword in ["✅", "❌", "⚠️", "🎯", "🚀", "📤", "📋"]):
+                                            agent_name = log_file.replace("_agent.log", "")
+                                            self.logger.info(f"🤖 {agent_name}: {last_line}")
+                                            
+                            except Exception as e:
+                                pass  # Skip unreadable log files
+                                
+                    except Exception as e:
+                        pass  # Skip files with errors
+                        
+        except Exception as e:
+            self.logger.error(f"检查智能体日志失败: {e}")
             
     def _check_all_files(self):
         """检查所有相关文件的变化"""

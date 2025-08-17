@@ -425,3 +425,30 @@
 2025-08-17 05:51:00 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 694
 2025-08-17 05:51:01 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 700
 2025-08-17 05:51:06 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 4800
+2025-08-17 05:51:11 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 800
+2025-08-17 05:51:16 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 4900
+2025-08-17 05:51:21 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 900
+2025-08-17 05:51:26 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 5000
+2025-08-17 05:51:31 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 05:51:36 INFO agent.searcher_agent: 🔄 searcher_agent 消息循环活跃 - 循环次数: 5100
+2025-08-17 05:52:41 INFO agent.searcher_agent: 🚀 searcher_agent 智能体初始化开始
+2025-08-17 05:52:41 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 05:52:41 INFO agent.searcher_agent:    测试模式: True
+2025-08-17 05:52:41 INFO agent.searcher_agent:    状态: idle
+2025-08-17 05:52:41 INFO agent.searcher_agent: 🧪 searcher_agent 以测试模式初始化
+2025-08-17 05:52:41 INFO agent.searcher_agent: 🔄 searcher_agent 开始启动...
+2025-08-17 05:52:41 INFO agent.searcher_agent: ✅ searcher_agent 已注册到消息总线
+2025-08-17 05:52:41 INFO agent.searcher_agent: 🔄 searcher_agent 消息处理循环开始
+2025-08-17 05:52:41 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-17 05:52:41 INFO agent.searcher_agent: ✅ searcher_agent 启动成功，状态: idle
+2025-08-17 05:52:41 INFO agent.searcher_agent:    能力: ['prior_art_search', 'patent_analysis', 'competitive_research', 'novelty_assessment']
+2025-08-17 05:53:41 INFO agent.searcher_agent: 💓 searcher_agent 心跳 - 状态: idle - 循环次数: 590
+2025-08-17 05:53:49 INFO agent.searcher_agent: 🔄 searcher_agent 开始停止...
+2025-08-17 05:53:49 INFO agent.searcher_agent: 📊 searcher_agent 状态更新为: offline
+2025-08-17 05:53:49 INFO agent.searcher_agent: ✅ searcher_agent 消息处理任务已取消
+2025-08-17 05:53:49 INFO agent.searcher_agent: ✅ searcher_agent 已从消息总线注销
+2025-08-17 05:53:49 INFO agent.searcher_agent: 📊 searcher_agent 性能统计:
+2025-08-17 05:53:49 INFO agent.searcher_agent:    完成任务: 0
+2025-08-17 05:53:49 INFO agent.searcher_agent:    失败任务: 0
+2025-08-17 05:53:49 INFO agent.searcher_agent:    平均执行时间: 0.00秒
+2025-08-17 05:53:49 INFO agent.searcher_agent:    总执行时间: 0.00秒
