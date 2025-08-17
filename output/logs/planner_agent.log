@@ -55,3 +55,24 @@
 2025-08-17 07:17:24 INFO agent.planner_agent: 📤 planner_agent 发送完成消息到协调器
 2025-08-17 07:17:24 INFO agent.planner_agent: ✅ planner_agent 任务执行完成: patent_planning
 2025-08-17 07:18:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 589
+2025-08-17 07:19:01 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 1000
+2025-08-17 07:19:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 1185
+2025-08-17 07:20:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 1782
+2025-08-17 07:20:42 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 07:21:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2378
+2025-08-17 07:22:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 2974
+2025-08-17 07:22:22 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3000
+2025-08-17 07:23:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 3570
+2025-08-17 07:24:03 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 4000
+2025-08-17 07:24:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4165
+2025-08-17 07:25:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 4759
+2025-08-17 07:25:44 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 5000
+2025-08-17 07:26:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5354
+2025-08-17 07:27:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 5949
+2025-08-17 07:27:25 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 6000
+2025-08-17 07:28:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 6544
+2025-08-17 07:29:05 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 7000
+2025-08-17 07:29:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 7140
+2025-08-17 07:30:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 7735
+2025-08-17 07:30:46 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 8000
+2025-08-17 07:31:20 INFO agent.planner_agent: 💓 planner_agent 心跳 - 状态: idle - 循环次数: 8332
