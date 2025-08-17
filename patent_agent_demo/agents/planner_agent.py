@@ -77,7 +77,19 @@ class PlannerAgent(BaseAgent):
                     topic = theme_definition.primary_title
                     description = f"{description} 核心概念：{theme_definition.core_concept}"
                 
+                # 智能生成description：如果没有description或description太简单，通过大模型API生成
+                if not description or description == "No description provided" or description == f"Patent for topic: {topic}":
+                    logger.info(f"Auto-generating detailed description for topic: {topic} using AI model")
+                    generated_description = await self._generate_description_from_topic(topic)
+                    if generated_description:
+                        description = generated_description
+                        logger.info(f"Generated description: {description[:100]}...")
+                    else:
+                        logger.warning(f"Failed to generate description for topic: {topic}, using fallback")
+                        description = f"Patent for topic: {topic}"
+                
                 logger.info(f"Creating patent strategy for: {topic}")
+                logger.info(f"Description: {description[:100]}...")
                 logger.info(f"Starting patent analysis...")
                 
                 # Analyze patent topic using GLM
@@ -589,12 +601,55 @@ class PlannerAgent(BaseAgent):
         # Implementation for timeline creation
         pass
         
+    async def _generate_description_from_topic(self, topic: str) -> str:
+        """Generate detailed technical description based on topic using AI model"""
+        try:
+            logger.info(f"Generating description for topic: {topic} using AI model")
+            
+            # 构建prompt用于大模型生成description
+            prompt = f"""
+请为以下专利主题生成一个详细的技术描述，要求：
+
+1. 描述要专业、准确，体现技术深度
+2. 包含主要技术特点、技术优势和应用领域
+3. 语言要符合专利文档的规范
+4. 长度控制在200-300字左右
+
+专利主题：{topic}
+
+请生成详细的技术描述：
+"""
+            
+            # 调用大模型API生成description
+            if self.openai_client:
+                logger.info(f"Calling AI model to generate description for topic: {topic}")
+                generated_description = await self.openai_client._generate_response(prompt)
+                
+                if generated_description and len(generated_description.strip()) > 50:
+                    logger.info(f"Successfully generated description using AI model, length: {len(generated_description)}")
+                    return generated_description.strip()
+                else:
+                    logger.warning(f"AI model generated description too short or empty: {generated_description}")
+                    return ""
+            else:
+                logger.error("OpenAI client not available for description generation")
+                return ""
+                
+        except Exception as e:
+            logger.error(f"Error generating description from topic using AI model: {e}")
+            return ""
+    
     async def _execute_test_task(self, task_data: Dict[str, Any]) -> TaskResult:
         """Execute a test task with mock data"""
         try:
             task_type = task_data.get("type")
             topic = task_data.get("topic", "测试专利主题")
             description = task_data.get("description", "测试专利描述")
+            
+            # 在test_mode下，如果description太简单，使用简单的fallback，不调用大模型
+            if not description or description == "No description provided" or description == f"Patent for topic: {topic}":
+                logger.info(f"Test mode: using simple fallback description for topic: {topic}")
+                description = f"Patent for topic: {topic}"
             
             if task_type == "patent_planning":
                 # Create mock strategy data

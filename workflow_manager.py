@@ -41,7 +41,7 @@ class WorkflowManager:
         
         logger.info("🚀 WorkflowManager initialized with task assignment to agent services")
     
-    def create_workflow(self, topic: str, description: str, workflow_type: str = "enhanced") -> str:
+    def create_workflow(self, topic: str, description: str, workflow_type: str = "enhanced", test_mode: bool = False) -> str:
         """Create a new workflow"""
         workflow_id = str(uuid.uuid4())
         
@@ -49,7 +49,8 @@ class WorkflowManager:
             workflow_id=workflow_id,
             topic=topic,
             description=description,
-            workflow_type=workflow_type
+            workflow_type=workflow_type,
+            test_mode=test_mode
         )
         
         # Initialize stage statuses
@@ -58,7 +59,7 @@ class WorkflowManager:
         
         self.workflows[workflow_id] = workflow
         
-        logger.info(f"📋 Created workflow {workflow_id}: {topic}")
+        logger.info(f"📋 Created workflow {workflow_id}: {topic} (test_mode: {test_mode})")
         return workflow_id
     
     async def execute_workflow_with_agents(self, workflow_id: str):
@@ -260,6 +261,7 @@ class WorkflowManager:
                 "stage_name": stage_name,
                 "topic": workflow.topic,
                 "description": workflow.description,
+                "test_mode": workflow.test_mode,  # Add test mode to task data
                 "previous_results": self._isolate_workflow_results(workflow_id, workflow.stage_results),
                 "context": isolated_context
             }
@@ -366,6 +368,7 @@ class WorkflowManager:
             workflow_id=workflow.workflow_id,
             topic=workflow.topic,
             status=workflow.status,
+            test_mode=workflow.test_mode,
             current_stage=workflow.current_stage,
             total_stages=len(workflow.stages),
             progress=progress,
@@ -389,7 +392,10 @@ class WorkflowManager:
             workflows.append({
                 "workflow_id": workflow_id,
                 "topic": workflow.topic,
+                "description": workflow.description,
                 "status": workflow.status,
+                "test_mode": workflow.test_mode,
+                "workflow_type": workflow.workflow_type,
                 "current_stage": workflow.current_stage,
                 "total_stages": len(workflow.stages),
                 "created_at": workflow.created_at,

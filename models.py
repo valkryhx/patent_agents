@@ -26,8 +26,9 @@ class StageStatusEnum(str, Enum):
 class WorkflowRequest(BaseModel):
     """Request model for starting a workflow"""
     topic: str = Field(..., description="Patent topic")
-    description: str = Field(..., description="Patent description")
+    description: Optional[str] = Field(default=None, description="Patent description (optional, will auto-generate if not provided)")
     workflow_type: str = Field(default="enhanced", description="Workflow type")
+    test_mode: bool = Field(default=False, description="Enable test mode for faster execution")
 
 class WorkflowResponse(BaseModel):
     """Response model for workflow operations"""
@@ -49,6 +50,7 @@ class WorkflowStatus(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow ID")
     topic: str = Field(..., description="Patent topic")
     status: WorkflowStatusEnum = Field(..., description="Overall workflow status")
+    test_mode: bool = Field(..., description="Test mode enabled")
     current_stage: int = Field(..., description="Current stage index")
     total_stages: int = Field(..., description="Total number of stages")
     progress: float = Field(..., description="Progress percentage (0-100)")
@@ -63,6 +65,7 @@ class WorkflowState(BaseModel):
     topic: str = Field(..., description="Patent topic")
     description: str = Field(..., description="Patent description")
     workflow_type: str = Field(default="enhanced", description="Workflow type")
+    test_mode: bool = Field(default=False, description="Test mode enabled")
     status: WorkflowStatusEnum = Field(default=WorkflowStatusEnum.PENDING, description="Workflow status")
     current_stage: int = Field(default=0, description="Current stage index")
     stages: List[str] = Field(default=[
