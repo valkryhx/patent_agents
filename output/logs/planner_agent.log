@@ -259,3 +259,9 @@ AttributeError: type object 'AgentStatus' has no attribute 'ONLINE'. Did you mea
 2025-08-17 05:47:08 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3100
 2025-08-17 05:47:14 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 1700
 2025-08-17 05:47:18 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3200
+2025-08-17 05:47:24 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 1800
+2025-08-17 05:47:28 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3300
+2025-08-17 05:47:34 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 1900
+2025-08-17 05:47:38 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3400
+2025-08-17 05:47:44 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 2000
+2025-08-17 05:47:48 INFO agent.planner_agent: 🔄 planner_agent 消息循环活跃 - 循环次数: 3500
