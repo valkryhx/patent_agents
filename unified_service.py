@@ -389,100 +389,93 @@ async def set_test_mode(test_config: Dict[str, Any]):
 # Coordinator endpoints
 @app.post("/coordinator/workflow/start", response_model=WorkflowResponse)
 async def start_workflow(request: WorkflowRequest, background_tasks: BackgroundTasks):
-    """Start a new workflow (including patent workflows)"""
+    """Start a new patent workflow"""
     try:
-        logger.info(f"🚀 Starting workflow in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode")
+        logger.info(f"🚀 Starting patent workflow in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode")
         logger.info(f"📝 Topic: {request.topic}")
         logger.info(f"🔧 Test mode enabled: {TEST_MODE['enabled']}")
         
-        # Check if this is a patent workflow
-        if request.workflow_type == "patent":
-            # Use patent-specific workflow execution
-            workflow_id = str(uuid.uuid4())
-            
-            # Initialize patent workflow state
-            workflow_state = {
-                "workflow_id": workflow_id,
-                "topic": request.topic,
-                "description": request.description or f"Patent for topic: {request.topic}",
-                "workflow_type": "patent",
-                "test_mode": request.test_mode,
-                "status": "created",
-                "created_at": time.time(),
-                "stages": {
-                    "planning": {"status": "pending", "started_at": None, "completed_at": None},
-                    "search": {"status": "pending", "started_at": None, "completed_at": None},
-                    "discussion": {"status": "pending", "started_at": None, "completed_at": None},
-                    "drafting": {"status": "pending", "started_at": None, "completed_at": None},
-                    "review": {"status": "pending", "started_at": None, "completed_at": None},
-                    "rewrite": {"status": "pending", "started_at": None, "completed_at": None}
-                },
-                "results": {},
-                "current_stage": "planning"
-            }
-            
-            # Store workflow in memory
-            if not hasattr(app.state, 'workflows'):
-                app.state.workflows = {}
-            app.state.workflows[workflow_id] = workflow_state
-            
-            # Start patent workflow execution in background
-            background_tasks.add_task(execute_patent_workflow, workflow_id, request.topic, request.description, request.test_mode)
-            
-            return WorkflowResponse(
-                workflow_id=workflow_id,
-                status="started",
-                message=f"Patent workflow started successfully for topic: {request.topic} (test_mode: {request.test_mode})"
+        # Only support patent workflows
+        if request.workflow_type != "patent":
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Only patent workflows are supported. Received workflow_type: {request.workflow_type}"
             )
-        else:
-            # Use regular workflow execution
-            workflow_id = workflow_manager.create_workflow(
-                topic=request.topic,
-                description=request.description,
-                workflow_type=request.workflow_type
-            )
-            
-            # Start workflow execution in background
-            background_tasks.add_task(workflow_manager.execute_workflow_with_agents, workflow_id)
-            
-            return WorkflowResponse(
-                workflow_id=workflow_id,
-                status="started",
-                message=f"Workflow started successfully in {'TEST' if TEST_MODE['enabled'] else 'REAL'} mode"
-            )
+        
+        # Create patent workflow
+        workflow_id = str(uuid.uuid4())
+        
+        # Initialize patent workflow state
+        workflow_state = {
+            "workflow_id": workflow_id,
+            "topic": request.topic,
+            "description": request.description or f"Patent for topic: {request.topic}",
+            "workflow_type": "patent",
+            "test_mode": request.test_mode,
+            "status": "created",
+            "created_at": time.time(),
+            "stages": {
+                "planning": {"status": "pending", "started_at": None, "completed_at": None},
+                "search": {"status": "pending", "started_at": None, "completed_at": None},
+                "discussion": {"status": "pending", "started_at": None, "completed_at": None},
+                "drafting": {"status": "pending", "started_at": None, "completed_at": None},
+                "review": {"status": "pending", "started_at": None, "completed_at": None},
+                "rewrite": {"status": "pending", "started_at": None, "completed_at": None}
+            },
+            "results": {},
+            "current_stage": "planning"
+        }
+        
+        # Store workflow in memory
+        if not hasattr(app.state, 'workflows'):
+            app.state.workflows = {}
+        app.state.workflows[workflow_id] = workflow_state
+        
+        # Start patent workflow execution in background
+        background_tasks.add_task(execute_patent_workflow, workflow_id, request.topic, request.description, request.test_mode)
+        
+        return WorkflowResponse(
+            workflow_id=workflow_id,
+            status="started",
+            message=f"Patent workflow started successfully for topic: {request.topic} (test_mode: {request.test_mode})"
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to start workflow: {str(e)}")
+        logger.error(f"Failed to start patent workflow: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start patent workflow: {str(e)}")
 
 @app.get("/coordinator/workflow/{workflow_id}/status", response_model=WorkflowStatus)
 async def get_workflow_status(workflow_id: str):
-    """Get workflow status and progress"""
+    """Get patent workflow status and progress"""
     try:
-        # Check if this is a patent workflow
-        if hasattr(app.state, 'workflows') and workflow_id in app.state.workflows:
-            workflow = app.state.workflows[workflow_id]
-            if workflow.get("workflow_type") == "patent":
-                return {
-                    "workflow_id": workflow_id,
-                    "topic": workflow["topic"],
-                    "description": workflow["description"],
-                    "status": workflow["status"],
-                    "current_stage": workflow["current_stage"],
-                    "stages": workflow["stages"],
-                    "test_mode": workflow["test_mode"],
-                    "created_at": workflow["created_at"]
-                }
+        # Only support patent workflows
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
         
-        # Use regular workflow manager
-        status = workflow_manager.get_workflow_status(workflow_id)
-        return status
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        workflow = app.state.workflows[workflow_id]
+        if workflow.get("workflow_type") != "patent":
+            raise HTTPException(status_code=400, detail="Only patent workflows are supported")
+        
+        return {
+            "workflow_id": workflow_id,
+            "topic": workflow["topic"],
+            "description": workflow["description"],
+            "status": workflow["status"],
+            "current_stage": workflow["current_stage"],
+            "stages": workflow["stages"],
+            "test_mode": workflow["test_mode"],
+            "created_at": workflow["created_at"]
+        }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get status: {str(e)}")
+        logger.error(f"Failed to get patent workflow status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get patent workflow status: {str(e)}")
 
 @app.get("/coordinator/workflow/{workflow_id}/results")
 async def get_workflow_results(workflow_id: str):
-    """Get workflow results"""
+    """Get patent workflow results"""
     try:
         # Check if this is a patent workflow
         if hasattr(app.state, 'workflows') and workflow_id in app.state.workflows:
@@ -516,24 +509,38 @@ async def get_workflow_results(workflow_id: str):
 
 @app.post("/coordinator/workflow/{workflow_id}/restart")
 async def restart_workflow(workflow_id: str, background_tasks: BackgroundTasks):
-    """Restart a failed workflow"""
+    """Restart a patent workflow"""
     try:
-        workflow_manager.reset_workflow(workflow_id)
-        background_tasks.add_task(workflow_manager.execute_workflow_with_agents, workflow_id)
-        return {"workflow_id": workflow_id, "status": "restarted", "message": "Workflow restarted"}
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        # Only support patent workflows
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        if workflow.get("workflow_type") != "patent":
+            raise HTTPException(status_code=400, detail="Only patent workflows are supported")
+        
+        # Reset workflow state
+        workflow["status"] = "restarted"
+        workflow["current_stage"] = "planning"
+        for stage in workflow["stages"]:
+            workflow["stages"][stage] = {"status": "pending", "started_at": None, "completed_at": None}
+        workflow["results"] = {}
+        
+        # Start workflow execution in background
+        background_tasks.add_task(execute_patent_workflow, workflow_id, workflow["topic"], workflow["description"], workflow["test_mode"])
+        
+        return {"workflow_id": workflow_id, "status": "restarted", "message": "Patent workflow restarted"}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to restart workflow: {str(e)}")
+        logger.error(f"Failed to restart patent workflow: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to restart patent workflow: {str(e)}")
 
 @app.get("/coordinator/workflows")
 async def list_workflows():
-    """List all workflows"""
+    """List all patent workflows"""
     try:
-        # Get regular workflows
-        workflows = workflow_manager.list_workflows()
-        
-        # Get patent workflows
+        # Only support patent workflows
         patent_workflows = []
         if hasattr(app.state, 'workflows'):
             for workflow in app.state.workflows.values():
@@ -549,28 +556,35 @@ async def list_workflows():
                         "created_at": workflow["created_at"]
                     })
         
-        # Combine all workflows
-        all_workflows = workflows + patent_workflows
-        
         return {
-            "workflows": all_workflows, 
+            "workflows": patent_workflows, 
             "patent_workflows": patent_workflows,
-            "total_workflows": len(all_workflows),
+            "total_workflows": len(patent_workflows),
             "test_mode": TEST_MODE["enabled"]
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to list workflows: {str(e)}")
+        logger.error(f"Failed to list patent workflows: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to list patent workflows: {str(e)}")
 
 @app.delete("/coordinator/workflow/{workflow_id}")
 async def delete_workflow(workflow_id: str):
-    """Delete a workflow"""
+    """Delete a patent workflow"""
     try:
-        workflow_manager.delete_workflow(workflow_id)
-        return {"workflow_id": workflow_id, "status": "deleted", "message": "Workflow deleted"}
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Workflow not found")
+        # Only support patent workflows
+        if not hasattr(app.state, 'workflows') or workflow_id not in app.state.workflows:
+            raise HTTPException(status_code=404, detail="Patent workflow not found")
+        
+        workflow = app.state.workflows[workflow_id]
+        if workflow.get("workflow_type") != "patent":
+            raise HTTPException(status_code=400, detail="Only patent workflows are supported")
+        
+        del app.state.workflows[workflow_id]
+        return {"workflow_id": workflow_id, "status": "deleted", "message": "Patent workflow deleted"}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to delete workflow: {str(e)}")
+        logger.error(f"Failed to delete patent workflow: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete patent workflow: {str(e)}")
 
 # ============================================================================
 # AGENT ENDPOINTS
@@ -1741,20 +1755,20 @@ if __name__ == "__main__":
     print("📡 Single service will be available at: http://localhost:8000")
     print("📚 API docs will be available at: http://localhost:8000/docs")
     print("🤖 All agents available at:")
-    print("   - Coordinator: /coordinator/*")
+    print("   - Coordinator: /coordinator/* (Patent workflows only)")
     print("   - Planner: /agents/planner/*")
     print("   - Searcher: /agents/searcher/*")
     print("   - Discussion: /agents/discussion/*")
     print("   - Writer: /agents/writer/*")
     print("   - Reviewer: /agents/reviewer/*")
     print("   - Rewriter: /agents/rewriter/*")
-    print("📋 Patent-specific API endpoints:")
-    print("   - POST /patent/generate - Start patent generation workflow")
-    print("   - GET /patent/{workflow_id}/status - Get workflow status")
-    print("   - GET /patent/{workflow_id}/results - Get workflow results")
-    print("   - POST /patent/{workflow_id}/restart - Restart workflow")
-    print("   - DELETE /patent/{workflow_id} - Delete workflow")
-    print("   - GET /patents - List all patent workflows")
+    print("📋 Coordinator API endpoints (Patent workflows only):")
+    print("   - POST /coordinator/workflow/start - Start patent workflow")
+    print("   - GET /coordinator/workflow/{workflow_id}/status - Get patent workflow status")
+    print("   - GET /coordinator/workflow/{workflow_id}/results - Get patent workflow results")
+    print("   - POST /coordinator/workflow/{workflow_id}/restart - Restart patent workflow")
+    print("   - DELETE /coordinator/workflow/{workflow_id} - Delete patent workflow")
+    print("   - GET /coordinator/workflows - List all patent workflows")
     print("🔧 Test mode endpoints:")
     print("   - GET /test-mode - Check test mode status")
     print("   - POST /test-mode - Update test mode settings")
