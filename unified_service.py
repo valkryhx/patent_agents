@@ -1984,17 +1984,17 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     logger.info(f"📋 Building on planning strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating search findings: {len(search_findings)} patents found")
     
-            if GLM_AVAILABLE:
-            try:
-                logger.info("🚀 使用GLM API进行创新讨论分析")
-                glm_client = GLMA2AClient()
-                # 使用_generate_response方法进行讨论分析
-                discussion_result = await glm_client._generate_response(f"创新讨论分析：基于规划策略{planning_strategy}和搜索结果{search_results}")
-                logger.info("✅ GLM API调用成功")
-                return {"discussion": discussion_result}
-            except Exception as e:
-                logger.error(f"❌ GLM API调用失败: {e}")
-                logger.info("🔄 回退到mock数据")
+    if GLM_AVAILABLE:
+        try:
+            logger.info("🚀 使用GLM API进行创新讨论分析")
+            glm_client = GLMA2AClient()
+            # 使用_generate_response方法进行讨论分析
+            discussion_result = await glm_client._generate_response(f"创新讨论分析：基于规划策略{planning_strategy}和搜索结果{search_results}")
+            logger.info("✅ GLM API调用成功")
+            return {"discussion": discussion_result}
+        except Exception as e:
+            logger.error(f"❌ GLM API调用失败: {e}")
+            logger.info("🔄 回退到mock数据")
     
     # Mock fallback
     logger.info("📝 使用mock数据进行创新讨论分析")

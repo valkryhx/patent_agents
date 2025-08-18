@@ -1,0 +1,92 @@
+{
+  "workflow_id": "test_searcher_agent_glm_False",
+  "search_results": {
+    "query": {
+      "topic": "基于语义理解的复杂函数参数智能推断与分层调用重试优化方法",
+      "keywords": [
+        "intelligent",
+        "layered",
+        "reasoning",
+        "multi-parameter",
+        "tool",
+        "adaptive",
+        "calling",
+        "system",
+        "context",
+        "user intent",
+        "inference",
+        "accuracy",
+        "efficiency"
+      ],
+      "date_range": "Last 20 years",
+      "jurisdiction": "Global",
+      "max_results": 50
+    },
+    "results": [
+      {
+        "patent_id": "US1234567",
+        "title": "智能参数推断系统",
+        "abstract": "基于上下文和用户意图自动推断工具调用参数的系统",
+        "filing_date": "2022-01-15",
+        "publication_date": "2023-07-20",
+        "assignee": "科技公司",
+        "relevance_score": 0.85,
+        "similarity_analysis": {
+          "concept_overlap": "高",
+          "technical_similarity": "中等",
+          "implementation_differences": "显著"
+        }
+      }
+    ],
+    "analysis": {
+      "total_patents_found": 1,
+      "high_relevance_count": 1,
+      "medium_relevance_count": 0,
+      "low_relevance_count": 0,
+      "technology_trends": [
+        "Increasing focus on intelligent parameter inference",
+        "Growing adoption of context-aware systems",
+        "Rising interest in adaptive tool calling"
+      ],
+      "competitive_landscape": {
+        "major_players": [
+          "Tech Corp Inc",
+          "Innovation Labs LLC",
+          "Advanced Systems Corp"
+        ],
+        "market_concentration": "Medium",
+        "entry_barriers": "High"
+      },
+      "technical_gaps": [
+        "Limited focus on layered reasoning approaches",
+        "Insufficient attention to user intent modeling",
+        "Lack of comprehensive multi-parameter optimization"
+      ]
+    },
+    "recommendations": [
+      "Proceed with patent filing - strong novelty and inventive step identified",
+      "Focus on layered reasoning architecture as key differentiator",
+      "Emphasize multi-parameter optimization capabilities",
+      "Consider design-around strategies for identified prior art",
+      "Accelerate filing timeline to establish priority",
+      "Include comprehensive technical diagrams and examples"
+    ],
+    "risk_assessment": {},
+    "novelty_score": 8.0
+  },
+  "patents_found": 1,
+  "novelty_score": 8.0,
+  "risk_level": "Low to Medium",
+  "recommendations": [
+    "Proceed with patent filing - strong novelty and inventive step identified",
+    "Focus on layered reasoning architecture as key differentiator",
+    "Emphasize multi-parameter optimization capabilities",
+    "Consider design-around strategies for identified prior art",
+    "Accelerate filing timeline to establish priority",
+    "Include comprehensive technical diagrams and examples"
+  ],
+  "execution_time": 0.5,
+  "test_mode": true,
+  "mock_delay_applied": 0.5,
+  "isolation_timestamp": 1755517957.8355696
+}
