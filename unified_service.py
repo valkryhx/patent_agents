@@ -2012,99 +2012,105 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     return discussion_result
 
 async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
-    """Execute writer task"""
+    """Execute writer task using the actual Writer Agent"""
     topic = request.topic
     previous_results = request.previous_results
     
     logger.info(f"🚀 Starting patent drafting for: {topic}")
     logger.info(f"🔧 Test mode: {request.test_mode}")
     
-    # Add test mode delay
-    if request.test_mode:
-        await asyncio.sleep(0.5)  # Simulate processing time
-        logger.info(f"⏱️ Test mode delay: 0.5s")
-    
-    # Check if compressed context is available (look for any compression result)
-    compressed_context = None
-    for key, value in previous_results.items():
-        if key.startswith("compression_before_"):
-            compressed_context = value.get("result", {}).get("compressed_context", {})
-            if compressed_context:
-                break
-    
-    # Initialize variables
-    core_strategy = {}
-    key_insights = []
-    critical_findings = []
-    unified_theme = topic
-    search_results = {}
-    discussion_insights = {}
-    planning_strategy = {}  # Initialize planning_strategy
-    
-    if compressed_context:
-        logger.info(f"🗜️ Using compressed context for drafting")
-        # Use compressed context
-        core_strategy = compressed_context.get("core_strategy", {})
-        key_insights = compressed_context.get("key_insights", [])
-        critical_findings = compressed_context.get("critical_findings", [])
-        unified_theme = compressed_context.get("unified_theme", topic)
-    else:
-        logger.info(f"📋 Using full context for drafting")
-        # Extract unified content from all previous stages
-        planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
-        search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
-        discussion_insights = previous_results.get("discussion", {}).get("result", {})
+    try:
+        # Import and initialize Writer Agent
+        from patent_agent_demo.agents.writer_agent import WriterAgent
         
-        # Build unified patent content
-        core_strategy = planning_strategy
-        key_insights = []
-        critical_findings = []
-        unified_theme = topic
-    
-    # Build unified patent content
-    core_innovation_areas = core_strategy.get("key_innovation_areas", [])
-    novelty_score = core_strategy.get("novelty_score", 8.5)
-    search_findings = search_results.get("results", []) if search_results else []
-    discussion_innovations = key_insights
-    
-    logger.info(f"📋 Using unified strategy: {core_innovation_areas}")
-    logger.info(f"🔍 Incorporating {len(search_findings)} search findings")
-    logger.info(f"💡 Building on discussion insights: {discussion_innovations}")
-    
-    # Create claims based on unified strategy
-    claims = []
-    if core_innovation_areas:
-        claims.append(f"A system for {core_innovation_areas[0].lower()} comprising...")
-        if len(core_innovation_areas) > 1:
-            claims.append(f"The system of claim 1, further comprising {core_innovation_areas[1].lower()}...")
-        if len(core_innovation_areas) > 2:
-            claims.append(f"A method for {core_innovation_areas[2].lower()} comprising...")
-    else:
-        claims = [
-            "A system for intelligent parameter inference comprising...",
-            "The system of claim 1, further comprising...",
-            "A method for adaptive tool calling comprising..."
-        ]
-    
-    patent_draft = {
-        "title": f"Patent Application: {topic}",
-        "abstract": f"An innovative system for {topic.lower()} that provides enhanced functionality and efficiency through {', '.join(core_innovation_areas[:2]) if core_innovation_areas else 'intelligent processing'}.",
-        "claims": claims,
-        "detailed_description": f"Detailed technical description of the {topic} system incorporating {', '.join(core_innovation_areas) if core_innovation_areas else 'advanced features'}...",
-        "technical_diagrams": ["Figure 1: System Architecture", "Figure 2: Process Flow"],
-        "unified_content": {
-            "core_strategy": core_strategy,
-            "search_context": search_results,
-            "discussion_insights": discussion_insights,
-            "novelty_score": novelty_score,
-            "innovation_areas": core_innovation_areas
-        },
-        "execution_time": 0.5 if request.test_mode else 1.0,
-        "test_mode": request.test_mode,
-        "mock_delay_applied": 0.5 if request.test_mode else 0
-    }
-    
-    return patent_draft
+        # Create Writer Agent instance
+        writer_agent = WriterAgent(test_mode=request.test_mode)
+        await writer_agent.start()
+        
+        logger.info(f"✅ Writer Agent initialized successfully")
+        
+        # Prepare task data for Writer Agent
+        task_data = {
+            "type": "patent_drafting",
+            "topic": topic,
+            "description": f"Patent application for {topic}",
+            "previous_results": previous_results,
+            "workflow_id": getattr(request, 'workflow_id', ''),
+            "test_mode": request.test_mode
+        }
+        
+        logger.info(f"📋 Executing Writer Agent with task data: {task_data}")
+        
+        # Execute the task using Writer Agent
+        result = await writer_agent.execute_task(task_data)
+        
+        if result.success:
+            logger.info(f"✅ Writer Agent completed successfully")
+            logger.info(f"📊 Generated content length: {len(str(result.data))}")
+            
+            # Extract patent draft from result
+            patent_draft = result.data.get("patent_draft")
+            if patent_draft:
+                # Convert PatentDraft object to dict if needed
+                if hasattr(patent_draft, '__dict__'):
+                    patent_draft_dict = {
+                        "title": getattr(patent_draft, 'title', f"Patent Application: {topic}"),
+                        "abstract": getattr(patent_draft, 'abstract', ''),
+                        "claims": getattr(patent_draft, 'claims', []),
+                        "detailed_description": getattr(patent_draft, 'detailed_description', ''),
+                        "background": getattr(patent_draft, 'background', ''),
+                        "summary": getattr(patent_draft, 'summary', ''),
+                        "technical_diagrams": getattr(patent_draft, 'technical_diagrams', []),
+                        "drawings_description": getattr(patent_draft, 'drawings_description', ''),
+                        "writing_metrics": result.data.get("writing_metrics", {}),
+                        "quality_score": result.data.get("quality_score", 0),
+                        "compliance_check": result.data.get("compliance_check", {}),
+                        "test_mode": request.test_mode,
+                        "agent_generated": True
+                    }
+                else:
+                    patent_draft_dict = patent_draft
+                
+                logger.info(f"📄 Patent draft generated with {len(patent_draft_dict.get('detailed_description', ''))} characters")
+                return patent_draft_dict
+            else:
+                logger.warning(f"⚠️ No patent_draft in Writer Agent result")
+                return {
+                    "title": f"Patent Application: {topic}",
+                    "abstract": f"Generated by Writer Agent for {topic}",
+                    "claims": ["Claim 1: A method for " + topic.lower()],
+                    "detailed_description": "Content generated by Writer Agent",
+                    "test_mode": request.test_mode,
+                    "agent_generated": True,
+                    "error": "No patent_draft in result"
+                }
+        else:
+            logger.error(f"❌ Writer Agent failed: {result.error_message}")
+            return {
+                "title": f"Patent Application: {topic}",
+                "abstract": f"Error in generation for {topic}",
+                "claims": ["Claim 1: A method for " + topic.lower()],
+                "detailed_description": f"Error occurred: {result.error_message}",
+                "test_mode": request.test_mode,
+                "agent_generated": False,
+                "error": result.error_message
+            }
+            
+    except Exception as e:
+        logger.error(f"❌ Error in execute_writer_task: {e}")
+        import traceback
+        logger.error(f"📋 Traceback: {traceback.format_exc()}")
+        
+        # Fallback to simple generation
+        return {
+            "title": f"Patent Application: {topic}",
+            "abstract": f"Fallback generation for {topic}",
+            "claims": ["Claim 1: A method for " + topic.lower()],
+            "detailed_description": f"Fallback content due to error: {str(e)}",
+            "test_mode": request.test_mode,
+            "agent_generated": False,
+            "error": str(e)
+        }
 
 async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     """Execute reviewer task"""

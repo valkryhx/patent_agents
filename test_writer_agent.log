@@ -1,0 +1,1098 @@
+2025-08-16 21:24:14,987 - __main__ - INFO - 🎯 开始Writer Agent独立测试
+2025-08-16 21:24:14,987 - __main__ - INFO - 
+==================================================
+2025-08-16 21:24:14,987 - __main__ - INFO - 测试1: Writer Agent基本功能
+2025-08-16 21:24:14,987 - __main__ - INFO - ==================================================
+2025-08-16 21:24:14,987 - __main__ - INFO - 🚀 开始独立测试Writer Agent
+2025-08-16 21:24:15,010 - __main__ - ERROR - ❌ 测试过程中发生错误: No module named 'openai'
+2025-08-16 21:24:15,011 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_agent_solo.py", line 34, in test_writer_agent
+    from patent_agent_demo.agents.writer_agent import WriterAgent
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 7, in <module>
+    from .planner_agent import PlannerAgent
+  File "/workspace/patent_agent_demo/agents/planner_agent.py", line 12, in <module>
+    from ..openai_client import OpenAIClient
+  File "/workspace/patent_agent_demo/openai_client.py", line 11, in <module>
+    from openai import OpenAI
+ModuleNotFoundError: No module named 'openai'
+
+2025-08-16 21:24:15,011 - __main__ - INFO - 
+==================================================
+2025-08-16 21:24:15,011 - __main__ - INFO - 测试2: LLM调用功能
+2025-08-16 21:24:15,011 - __main__ - INFO - ==================================================
+2025-08-16 21:24:15,011 - __main__ - INFO - 🧪 测试Writer Agent的LLM调用功能
+2025-08-16 21:24:15,011 - __main__ - ERROR - ❌ LLM调用测试失败: No module named 'openai'
+2025-08-16 21:24:15,011 - __main__ - INFO - 
+==================================================
+2025-08-16 21:24:15,011 - __main__ - INFO - 测试总结
+2025-08-16 21:24:15,011 - __main__ - INFO - ==================================================
+2025-08-16 21:24:15,011 - __main__ - INFO - ❌ 所有测试失败
+2025-08-16 21:24:15,011 - __main__ - INFO - ❌ 基本功能测试: 失败
+2025-08-16 21:24:15,012 - __main__ - INFO - ❌ LLM调用测试: 失败
+2025-08-16 21:24:15,012 - __main__ - INFO - 💡 建议: 全面检查Writer Agent配置和代码
+2025-08-16 21:24:28,128 - __main__ - INFO - 🎯 开始Writer Agent独立测试
+2025-08-16 21:24:28,128 - __main__ - INFO - 
+==================================================
+2025-08-16 21:24:28,128 - __main__ - INFO - 测试1: Writer Agent基本功能
+2025-08-16 21:24:28,128 - __main__ - INFO - ==================================================
+2025-08-16 21:24:28,128 - __main__ - INFO - 🚀 开始独立测试Writer Agent
+2025-08-16 21:24:28,420 - __main__ - ERROR - ❌ 测试过程中发生错误: No module named 'aiohttp'
+2025-08-16 21:24:28,421 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_agent_solo.py", line 34, in test_writer_agent
+    from patent_agent_demo.agents.writer_agent import WriterAgent
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 11, in <module>
+    from .reviewer_agent import ReviewerAgent
+  File "/workspace/patent_agent_demo/agents/reviewer_agent.py", line 10, in <module>
+    import aiohttp
+ModuleNotFoundError: No module named 'aiohttp'
+
+2025-08-16 21:24:28,421 - __main__ - INFO - 
+==================================================
+2025-08-16 21:24:28,421 - __main__ - INFO - 测试2: LLM调用功能
+2025-08-16 21:24:28,421 - __main__ - INFO - ==================================================
+2025-08-16 21:24:28,421 - __main__ - INFO - 🧪 测试Writer Agent的LLM调用功能
+2025-08-16 21:24:28,421 - agent.writer_agent - INFO - 🚀 writer_agent 智能体初始化开始
+2025-08-16 21:24:28,421 - agent.writer_agent - INFO -    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-16 21:24:28,421 - agent.writer_agent - INFO -    测试模式: False
+2025-08-16 21:24:28,421 - agent.writer_agent - INFO -    状态: idle
+2025-08-16 21:24:28,421 - agent.writer_agent - INFO - 🔄 writer_agent 开始启动...
+2025-08-16 21:24:28,421 - patent_agent_demo.message_bus - INFO - Agent writer_agent registered with capabilities: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-16 21:24:28,421 - agent.writer_agent - INFO - ✅ writer_agent 已注册到消息总线
+2025-08-16 21:24:28,421 - agent.writer_agent - INFO - 🔄 writer_agent 消息处理循环开始
+2025-08-16 21:24:28,421 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:28,421 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:28,422 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:28,422 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:28,422 - agent.writer_agent - INFO - 💓 writer_agent 心跳 - 状态: idle - 循环次数: 1
+2025-08-16 21:24:28,522 - agent.writer_agent - INFO - ✅ writer_agent 启动成功，状态: idle
+2025-08-16 21:24:28,522 - agent.writer_agent - INFO -    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-16 21:24:28,522 - patent_agent_demo.openai_client - ERROR - Failed to load OpenAI API key: [Errno 2] No such file or directory: '/workspace/patent_agent_demo/private_openai_key'
+2025-08-16 21:24:28,523 - patent_agent_demo.openai_client - INFO - GLM fallback client initialized successfully
+2025-08-16 21:24:28,523 - patent_agent_demo.agents.writer_agent - INFO - Writer Agent started successfully
+2025-08-16 21:24:28,523 - __main__ - INFO - 📝 测试LLM调用: 请为'智能参数推断系统'写一个简短的专利摘要，包含技术特点和创新点。
+2025-08-16 21:24:28,523 - patent_agent_demo.openai_client - WARNING - OpenAI not available, using GLM fallback directly
+2025-08-16 21:24:28,523 - patent_agent_demo.openai_client - INFO - Using GLM-4.5-flash fallback directly
+2025-08-16 21:24:28,525 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:28,525 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:28,525 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:28,525 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:28,625 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:28,625 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:28,625 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:28,625 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:28,726 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:28,726 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:28,726 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:28,726 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:28,826 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:28,826 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:28,826 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:28,826 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:28,926 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:28,926 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:28,926 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:28,926 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,027 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,027 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,027 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,027 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,127 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,127 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,127 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,127 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,227 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,228 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,228 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,228 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,328 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,328 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,328 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,328 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,428 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,428 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,428 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,428 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,529 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,529 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,529 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,529 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,629 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,629 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,629 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,629 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,729 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,730 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,730 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,730 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,830 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,830 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,830 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,830 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:29,930 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:29,930 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:29,930 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:29,930 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,031 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,031 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,031 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,031 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,131 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,131 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,131 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,131 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,231 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,231 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,231 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,231 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,332 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,332 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,332 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,332 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,432 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,432 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,432 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,432 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,533 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,533 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,533 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,533 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,633 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,633 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,633 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,633 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,733 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,733 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,733 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,733 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,834 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,834 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,834 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,834 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:30,934 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:30,934 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:30,934 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:30,934 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:31,034 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:31,034 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:31,034 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:31,034 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:31,135 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:31,135 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:31,135 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:31,135 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:31,235 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:31,235 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:31,235 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:31,235 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:31,335 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:31,335 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:31,336 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:31,336 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-16 21:24:31,436 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-16 21:24:31,436 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-16 21:24:31,436 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-16 21:24:31,436 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:38,375 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:38,375 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:38,375 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:38,375 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:38,375 - agent.writer_agent - INFO - 💓 writer_agent 心跳 - 状态: idle - 循环次数: 32
+2025-08-18 09:24:38,476 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:38,476 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:38,476 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:38,476 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:38,576 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:38,576 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:38,576 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:38,576 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:38,676 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:38,676 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:38,676 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:38,676 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:38,777 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:38,777 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:38,777 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:38,777 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:38,877 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:38,877 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:38,877 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:38,877 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:38,977 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:38,977 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:38,977 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:38,977 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,078 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,078 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,078 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,078 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,178 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,178 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,178 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,178 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,278 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,279 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,279 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,279 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,379 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,379 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,379 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,379 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,479 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,479 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,479 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,479 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,580 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,580 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,580 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,580 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,680 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,680 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,680 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,680 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,780 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,780 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,780 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,780 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,881 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,881 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,881 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,881 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:39,981 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:39,981 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:39,981 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:39,981 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,081 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,081 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,081 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,081 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,182 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,182 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,182 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,182 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,282 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,282 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,282 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,282 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,382 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,382 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,383 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,383 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,483 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,483 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,483 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,483 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,583 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,583 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,583 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,583 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,683 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,684 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,684 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,684 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,784 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,784 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,784 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,784 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,884 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,884 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,884 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,884 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:40,984 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:40,985 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:40,985 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:40,985 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,085 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,085 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,085 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,085 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,185 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,185 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,185 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,185 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,286 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,286 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,286 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,286 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,386 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,386 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,386 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,386 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,486 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,486 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,486 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,486 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,587 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,587 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,587 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,587 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,687 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,687 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,687 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,687 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,787 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,787 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,787 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,787 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,888 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,888 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,888 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,888 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:41,988 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:41,988 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:41,988 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:41,988 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,088 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,088 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,088 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,088 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,189 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,189 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,189 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,189 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,289 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,289 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,289 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,289 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,389 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,389 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,389 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,389 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,490 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,490 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,490 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,490 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,590 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,590 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,590 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,590 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,690 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,690 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,691 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,691 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,791 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,791 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,791 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,791 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,891 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,891 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,891 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,891 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:42,992 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:42,992 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:42,992 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:42,992 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,092 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,092 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,092 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,092 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,192 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,192 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,192 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,192 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,293 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,293 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,293 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,293 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,393 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,393 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,393 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,393 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,493 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,493 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,493 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,493 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,594 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,594 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,594 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,594 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,694 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,694 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,694 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,694 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,794 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,794 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,795 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,795 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,895 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,895 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,895 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,895 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:43,995 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:43,995 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:43,995 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:43,995 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,095 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,096 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,096 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,096 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,196 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,196 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,196 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,196 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,296 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,296 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,296 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,296 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,397 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,397 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,397 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,397 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,497 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,497 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,497 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,497 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,597 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,598 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,598 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,598 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,698 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,698 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,698 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,698 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,798 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,798 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,798 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,798 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,899 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,899 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,899 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,899 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:44,999 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:44,999 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:44,999 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:44,999 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,099 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,100 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,100 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,100 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,200 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,200 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,200 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,200 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,300 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,300 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,300 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,300 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,401 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,401 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,401 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,401 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,501 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,501 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,501 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,501 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,601 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,601 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,601 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,601 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,702 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,702 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,702 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,702 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,802 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,802 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,802 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,802 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:45,902 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:45,902 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:45,902 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:45,902 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,003 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,003 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,003 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,003 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,103 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,103 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,103 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,103 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,204 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,204 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,204 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,204 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,304 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,304 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,304 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,304 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,404 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,404 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,404 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,404 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,505 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,505 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,505 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,505 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,605 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,605 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,605 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,605 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,705 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,705 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,705 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,705 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,806 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,806 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,806 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,806 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:46,906 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:46,906 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:46,906 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:46,906 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,006 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,006 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,006 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,006 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,107 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,107 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,107 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,107 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,207 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,207 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,207 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,207 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,308 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,308 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,308 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,308 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,408 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,408 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,408 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,408 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,508 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,508 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,508 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,508 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,609 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,609 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,609 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,609 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,709 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,709 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,709 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,709 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,809 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,809 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,809 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,809 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:47,910 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:47,910 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:47,910 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:47,910 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,010 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,010 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,010 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,010 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,110 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,111 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,111 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,111 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,211 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,211 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,211 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,211 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,311 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,311 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,311 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,311 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,412 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,412 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,412 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,412 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,512 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,512 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,512 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,512 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,612 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,612 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,612 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,612 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,713 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,713 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,713 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,713 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,813 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,813 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,813 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,813 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:48,913 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:48,913 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:48,913 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:48,914 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,014 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,014 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,014 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,014 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,114 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,114 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,114 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,114 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,215 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,215 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,215 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,215 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,315 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,315 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,315 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,315 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,415 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,415 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,415 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,415 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,516 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,516 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,516 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,516 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,616 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,616 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,616 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,616 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,716 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,716 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,716 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,716 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,817 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,817 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,817 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,817 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:49,917 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:49,917 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:49,917 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:49,917 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,017 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,018 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,018 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,018 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,118 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,118 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,118 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,118 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,218 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,218 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,218 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,218 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,319 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,319 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,319 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,319 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,419 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,419 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,419 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,419 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,519 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,519 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,519 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,519 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,620 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,620 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,620 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,620 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,720 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,720 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,720 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,720 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,820 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,820 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,820 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,820 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:50,921 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:50,921 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:50,921 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:50,921 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,021 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,021 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,021 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,021 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,121 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,121 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,122 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,122 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,222 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,222 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,222 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,222 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,322 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,322 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,322 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,322 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,422 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,423 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,423 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,423 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,523 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,523 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,523 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,523 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,623 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,623 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,623 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,623 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,724 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,724 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,724 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,724 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,824 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,824 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,824 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,824 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:51,924 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:51,924 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:51,924 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:51,924 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,025 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,025 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,025 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,025 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,125 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,125 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,125 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,125 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,225 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,225 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,226 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,226 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,326 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,326 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,326 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,326 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,426 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,426 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,426 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,426 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,526 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,527 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,527 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,527 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,627 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,627 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,627 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,627 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,727 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,727 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,727 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,727 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,828 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,828 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,828 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,828 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:52,928 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:52,928 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:52,928 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:52,928 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,028 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,028 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,028 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,028 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,129 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,129 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,129 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,129 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,229 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,229 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,229 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,229 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,329 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,330 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,330 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,330 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,430 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,430 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,430 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,430 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,530 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,530 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,530 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,530 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,631 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,631 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,631 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,631 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,731 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,731 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,731 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,731 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,831 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,832 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,832 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,832 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:53,932 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:53,932 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:53,932 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:53,932 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,032 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,032 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,032 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,032 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,133 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,133 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,133 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,133 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,233 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,233 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,233 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,233 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,333 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,333 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,333 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,333 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,434 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,434 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,434 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,434 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,534 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,534 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,534 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,534 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,634 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,634 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,634 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,634 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,735 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,735 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,735 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,735 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,835 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,835 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,835 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,835 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:54,935 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:54,935 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:54,935 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:54,935 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,036 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,036 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,036 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,036 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,136 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,136 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,136 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,136 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,236 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,236 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,236 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,236 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,337 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,337 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,337 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,337 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,437 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,437 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,437 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,437 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,537 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,537 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,537 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,537 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,638 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,638 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,638 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,638 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,738 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,738 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,738 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,738 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,838 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,839 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,839 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,839 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:55,939 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:55,939 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:55,939 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:55,939 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,039 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,039 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,039 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,039 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,139 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,140 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,140 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,140 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,240 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,240 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,240 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,240 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,340 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,340 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,340 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,340 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,441 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,441 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,441 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,441 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,541 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,541 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,541 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,541 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,641 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,641 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,641 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,641 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,742 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,742 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,742 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,742 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,842 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,842 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,842 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,842 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:56,943 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:56,943 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:56,943 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:56,943 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,043 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,043 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,043 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,043 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,143 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,143 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,143 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,144 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,244 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,244 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,244 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,244 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,344 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,344 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,344 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,344 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,444 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,445 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,445 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,445 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,545 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,545 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,545 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,545 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,645 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,645 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,645 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,645 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,746 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,746 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,746 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,746 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,846 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,846 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,846 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,846 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:57,946 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:57,946 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:57,946 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:57,946 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,047 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,047 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,047 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,047 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,147 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,147 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,147 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,147 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,247 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,247 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,247 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,247 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,348 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,348 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,348 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,348 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,448 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,448 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,448 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,448 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,548 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,548 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,548 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,548 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,649 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,649 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,649 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,649 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,749 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,749 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,749 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,749 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,849 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,849 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,849 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,849 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:58,950 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:58,950 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:58,950 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:58,950 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:59,050 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:59,050 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:59,050 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:59,050 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:59,150 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:59,151 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:59,151 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:59,151 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:59,251 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:59,251 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:59,251 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:59,251 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:59,351 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 检查队列大小: 0
+2025-08-18 09:24:59,351 - patent_agent_demo.message_bus - INFO - MessageBusBroker instance ID: 139781219153776
+2025-08-18 09:24:59,351 - patent_agent_demo.message_bus - INFO - Queue instance ID for writer_agent: 139781197919776
+2025-08-18 09:24:59,351 - patent_agent_demo.message_bus - INFO - GET: Agent writer_agent 队列为空
+2025-08-18 09:24:59,418 - __main__ - INFO - ✅ LLM调用成功，响应长度: 321 字符
+2025-08-18 09:24:59,418 - __main__ - INFO - 📄 响应内容: # 智能参数推断系统专利摘要
+
+本发明公开了一种智能参数推断系统，属于人工智能与物联网技术领域。该系统通过多源数据采集模块实时获取系统运行数据，结合深度学习算法构建参数推断模型，实现对复杂系统关键参数的智能推断。系统特点包括：1) 采用自适应学习机制，能够根据环境变化自动优化推断模型；2) 引入边缘计算与云计算协同架构，实现低延迟高精度推断；3) 设计参数置信度评估模块，提高推断结果可靠性。创新点...
+2025-08-18 09:24:59,418 - __main__ - INFO - 
+==================================================
+2025-08-18 09:24:59,418 - __main__ - INFO - 测试总结
+2025-08-18 09:24:59,418 - __main__ - INFO - ==================================================
+2025-08-18 09:24:59,418 - __main__ - INFO - ⚠️ 部分测试通过
+2025-08-18 09:24:59,418 - __main__ - INFO - ❌ 基本功能测试: 失败
+2025-08-18 09:24:59,418 - __main__ - INFO - ✅ LLM调用测试: 通过
+2025-08-18 09:24:59,418 - __main__ - INFO - 💡 建议: 检查Writer Agent内部逻辑
+2025-08-18 09:25:58,559 - __main__ - INFO - 🎯 开始Writer Agent独立测试
+2025-08-18 09:25:58,559 - __main__ - INFO - 
+==================================================
+2025-08-18 09:25:58,559 - __main__ - INFO - 测试1: Writer Agent基本功能
+2025-08-18 09:25:58,559 - __main__ - INFO - ==================================================
+2025-08-18 09:25:58,559 - __main__ - INFO - 🚀 开始独立测试Writer Agent
+2025-08-18 09:25:58,846 - __main__ - ERROR - ❌ 测试过程中发生错误: No module named 'aiohttp'
+2025-08-18 09:25:58,847 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_agent_solo.py", line 34, in test_writer_agent
+    from patent_agent_demo.agents.writer_agent import WriterAgent
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 11, in <module>
+    from .reviewer_agent import ReviewerAgent
+  File "/workspace/patent_agent_demo/agents/reviewer_agent.py", line 10, in <module>
+    import aiohttp
+ModuleNotFoundError: No module named 'aiohttp'
+
+2025-08-18 09:25:58,847 - __main__ - INFO - 
+==================================================
+2025-08-18 09:25:58,847 - __main__ - INFO - 测试2: LLM调用功能
+2025-08-18 09:25:58,847 - __main__ - INFO - ==================================================
+2025-08-18 09:25:58,847 - __main__ - INFO - 🧪 测试Writer Agent的LLM调用功能
+2025-08-18 09:25:58,847 - agent.writer_agent - INFO - 🚀 writer_agent 智能体初始化开始
+2025-08-18 09:25:58,847 - agent.writer_agent - INFO -    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-18 09:25:58,847 - agent.writer_agent - INFO -    测试模式: False
+2025-08-18 09:25:58,848 - agent.writer_agent - INFO -    状态: idle
+2025-08-18 09:25:58,848 - patent_agent_demo.openai_client - ERROR - Failed to load OpenAI API key: [Errno 2] No such file or directory: '/workspace/patent_agent_demo/private_openai_key'
+2025-08-18 09:25:58,848 - patent_agent_demo.openai_client - INFO - GLM fallback client initialized successfully
+2025-08-18 09:25:58,848 - __main__ - INFO - 📝 测试LLM调用: 请为'智能参数推断系统'写一个简短的专利摘要，包含技术特点和创新点。
+2025-08-18 09:25:58,848 - patent_agent_demo.openai_client - WARNING - OpenAI not available, using GLM fallback directly
+2025-08-18 09:25:58,848 - patent_agent_demo.openai_client - INFO - Using GLM-4.5-flash fallback directly
+2025-08-18 09:26:19,047 - __main__ - INFO - ✅ LLM调用成功，响应长度: 329 字符
+2025-08-18 09:26:19,047 - __main__ - INFO - 📄 响应内容: # 智能参数推断系统专利摘要
+
+本发明公开了一种智能参数推断系统，属于人工智能与参数优化技术领域。该系统通过构建多层神经网络架构，结合强化学习与贝叶斯推断算法，实现对复杂系统中关键参数的自动推断与动态优化。本发明的技术特点在于：1) 采用自适应参数调整机制，能够根据系统反馈实时优化参数配置；2) 引入多源数据融合技术，提高参数推断的准确性和鲁棒性；3) 设计了参数重要性评估模块，实现关键参数的优先...
+2025-08-18 09:26:19,047 - __main__ - INFO - 
+==================================================
+2025-08-18 09:26:19,047 - __main__ - INFO - 测试3: 直接测试核心方法
+2025-08-18 09:26:19,047 - __main__ - INFO - ==================================================
+2025-08-18 09:26:19,047 - __main__ - INFO - 🔧 直接测试Writer Agent核心方法
+2025-08-18 09:26:19,048 - agent.writer_agent - INFO - 🚀 writer_agent 智能体初始化开始
+2025-08-18 09:26:19,048 - agent.writer_agent - INFO -    能力: ['patent_drafting', 'technical_writing', 'claim_writing', 'legal_compliance']
+2025-08-18 09:26:19,048 - agent.writer_agent - INFO -    测试模式: True
+2025-08-18 09:26:19,048 - agent.writer_agent - INFO -    状态: idle
+2025-08-18 09:26:19,048 - agent.writer_agent - INFO - 🧪 writer_agent 以测试模式初始化
+2025-08-18 09:26:19,048 - patent_agent_demo.openai_client - ERROR - Failed to load OpenAI API key: [Errno 2] No such file or directory: '/workspace/patent_agent_demo/private_openai_key'
+2025-08-18 09:26:19,048 - patent_agent_demo.openai_client - INFO - GLM fallback client initialized successfully
+2025-08-18 09:26:19,048 - __main__ - INFO - 📝 测试_write_detailed_sections方法
+2025-08-18 09:26:19,048 - patent_agent_demo.agents.writer_agent - INFO - Starting _write_detailed_sections for topic: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 09:26:19,048 - patent_agent_demo.agents.writer_agent - INFO - Step 1: Generating patent outline
+2025-08-18 09:26:19,048 - patent_agent_demo.openai_client - WARNING - OpenAI not available, using GLM fallback directly
+2025-08-18 09:26:19,048 - patent_agent_demo.openai_client - INFO - Using GLM-4.5-flash fallback directly
