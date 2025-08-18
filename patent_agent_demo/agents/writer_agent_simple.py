@@ -63,6 +63,7 @@ class WriterAgentSimple:
         try:
             self.logger.info(f"🔄 {self.name} 开始启动...")
             self.openai_client = OpenAIClient()
+            # OpenAIClient不需要start方法，直接初始化即可
             self.logger.info(f"✅ {self.name} 启动成功")
         except Exception as e:
             self.logger.error(f"❌ {self.name} 启动失败: {e}")

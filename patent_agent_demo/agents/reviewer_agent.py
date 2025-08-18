@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from .base_agent import BaseAgent, TaskResult
 from ..openai_client import OpenAIClient
 from ..google_a2a_client import PatentDraft
-from ..glm_wrapper import GLMClient
+# from ..glm_wrapper import GLMClient  # 注释掉错误的导入
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,19 @@ class EnhancedReviewerAgent:
     
     def __init__(self):
         self.searcher = EnhancedDuckDuckGoSearcher()
-        self.llm_client = GLMClient()
+        # self.llm_client = GLMClient()  # 暂时注释掉，使用OpenAIClient替代
+        self.llm_client = None  # 将在需要时初始化
+    
+    async def _get_llm_client(self):
+        """获取LLM客户端，如果未初始化则初始化"""
+        if self.llm_client is None:
+            try:
+                self.llm_client = OpenAIClient()
+                # OpenAIClient不需要start方法，直接初始化即可
+            except Exception as e:
+                logger.error(f"LLM客户端初始化失败: {e}")
+                raise
+        return self.llm_client
     
     async def comprehensive_review(self, 
                                  chapter_3_content: str, 
@@ -170,7 +182,8 @@ class EnhancedReviewerAgent:
 """
         
         try:
-            response = await self.llm_client.call_glm_api(prompt)
+            llm_client = await self._get_llm_client()
+            response = await llm_client._generate_response(prompt)
             keywords = self._parse_keywords_from_response(response)
             return keywords
         except Exception as e:
@@ -289,7 +302,8 @@ class EnhancedReviewerAgent:
 """
         
         try:
-            response = await self.llm_client.call_glm_api(prompt)
+            llm_client = await self._get_llm_client()
+            response = await llm_client._generate_response(prompt)
             return self._parse_novelty_analysis(response)
         except Exception as e:
             logger.error(f"新颖性分析失败: {e}")
@@ -377,7 +391,8 @@ class EnhancedReviewerAgent:
 """
         
         try:
-            response = await self.llm_client.call_glm_api(prompt)
+            llm_client = await self._get_llm_client()
+            response = await llm_client._generate_response(prompt)
             return self._parse_inventiveness_analysis(response)
         except Exception as e:
             logger.error(f"创造性分析失败: {e}")
@@ -463,7 +478,8 @@ class EnhancedReviewerAgent:
 """
         
         try:
-            response = await self.llm_client.call_glm_api(prompt)
+            llm_client = await self._get_llm_client()
+            response = await llm_client._generate_response(prompt)
             return self._parse_utility_analysis(response)
         except Exception as e:
             logger.error(f"实用性分析失败: {e}")
@@ -554,7 +570,8 @@ class EnhancedReviewerAgent:
 """
         
         try:
-            response = await self.llm_client.call_glm_api(prompt)
+            llm_client = await self._get_llm_client()
+            response = await llm_client._generate_response(prompt)
             return self._parse_critical_analysis(response)
         except Exception as e:
             logger.error(f"批判性分析失败: {e}")
@@ -657,7 +674,8 @@ class EnhancedReviewerAgent:
 """
         
         try:
-            response = await self.llm_client.call_glm_api(prompt)
+            llm_client = await self._get_llm_client()
+            response = await llm_client._generate_response(prompt)
             return self._parse_improvement_suggestions(response)
         except Exception as e:
             logger.error(f"生成改进建议失败: {e}")
@@ -750,7 +768,8 @@ class EnhancedReviewerAgent:
 """
         
         try:
-            response = await self.llm_client.call_glm_api(prompt)
+            llm_client = await self._get_llm_client()
+            response = await llm_client._generate_response(prompt)
             return self._parse_overall_assessment(response)
         except Exception as e:
             logger.error(f"生成总体评估失败: {e}")
