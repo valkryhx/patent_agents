@@ -41,9 +41,15 @@ class SimpleDuckDuckGoSearcher:
             }
             
             async with session.get(self.base_url, params=params) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    return self._parse_search_results(data, max_results)
+                if response.status in [200, 202]:  # DuckDuckGo API返回202是正常的
+                    # DuckDuckGo返回的Content-Type是application/x-javascript，需要手动解析
+                    text = await response.text()
+                    try:
+                        data = json.loads(text)
+                        return self._parse_search_results(data, max_results)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"JSON解析失败: {e}")
+                        return []
                 else:
                     logger.error(f"DuckDuckGo检索失败: {response.status}")
                     return []
@@ -75,6 +81,30 @@ class SimpleDuckDuckGoSearcher:
                 "content": data["Abstract"],
                 "source": "DuckDuckGo Abstract"
             })
+        
+        # 解析Infobox信息
+        if "Infobox" in data and data["Infobox"]:
+            infobox = data["Infobox"]
+            if "content" in infobox:
+                for item in infobox["content"][:max_results]:
+                    if isinstance(item, dict) and "label" in item and "value" in item:
+                        results.append({
+                            "title": f"{item['label']}: {item['value']}",
+                            "url": "",
+                            "content": f"{item['label']}: {item['value']}",
+                            "source": "DuckDuckGo Infobox"
+                        })
+        
+        # 解析Results
+        if "Results" in data and data["Results"]:
+            for result in data["Results"][:max_results]:
+                if isinstance(result, dict) and "Text" in result:
+                    results.append({
+                        "title": result.get("Text", ""),
+                        "url": result.get("FirstURL", ""),
+                        "content": result.get("Text", ""),
+                        "source": "DuckDuckGo Results"
+                    })
         
         return results[:max_results]
     
