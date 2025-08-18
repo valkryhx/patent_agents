@@ -400,20 +400,53 @@ def generate_patent_content(topic: str, results: Dict[str, Any]) -> str:
             drafting = results["drafting"]
             content.append("## 4. 专利草稿")
             content.append("")
-            content.append(f"### 专利标题")
-            content.append(f"{drafting.get('title', 'N/A')}")
-            content.append("")
-            content.append(f"### 专利摘要")
-            content.append(f"{drafting.get('abstract', 'N/A')}")
-            content.append("")
-            if "claims" in drafting:
-                content.append("### 权利要求")
-                for i, claim in enumerate(drafting["claims"], 1):
-                    content.append(f"{i}. {claim}")
-                content.append("")
-            if "detailed_description" in drafting:
-                content.append("### 详细描述")
-                content.append(f"{drafting.get('detailed_description', 'N/A')}")
+            
+            # 检查drafting的数据结构
+            if isinstance(drafting, dict):
+                # 如果是字典，尝试不同的字段名
+                if "patent_draft" in drafting:
+                    # writer_agent返回的TaskResult结构
+                    patent_draft = drafting["patent_draft"]
+                    if hasattr(patent_draft, 'title'):
+                        content.append(f"### 专利标题")
+                        content.append(f"{getattr(patent_draft, 'title', 'N/A')}")
+                        content.append("")
+                    if hasattr(patent_draft, 'abstract'):
+                        content.append(f"### 专利摘要")
+                        content.append(f"{getattr(patent_draft, 'abstract', 'N/A')}")
+                        content.append("")
+                    if hasattr(patent_draft, 'detailed_description'):
+                        content.append(f"### 详细描述")
+                        content.append(f"{getattr(patent_draft, 'detailed_description', 'N/A')}")
+                        content.append("")
+                    if hasattr(patent_draft, 'claims'):
+                        content.append(f"### 权利要求")
+                        claims = getattr(patent_draft, 'claims', [])
+                        if isinstance(claims, list):
+                            for i, claim in enumerate(claims, 1):
+                                content.append(f"{i}. {claim}")
+                        content.append("")
+                else:
+                    # 传统的字段结构
+                    content.append(f"### 专利标题")
+                    content.append(f"{drafting.get('title', 'N/A')}")
+                    content.append("")
+                    content.append(f"### 专利摘要")
+                    content.append(f"{drafting.get('abstract', 'N/A')}")
+                    content.append("")
+                    if "claims" in drafting:
+                        content.append("### 权利要求")
+                        for i, claim in enumerate(drafting["claims"], 1):
+                            content.append(f"{i}. {claim}")
+                        content.append("")
+                    if "detailed_description" in drafting:
+                        content.append("### 详细描述")
+                        content.append(f"{drafting.get('detailed_description', 'N/A')}")
+                        content.append("")
+            else:
+                # 如果不是字典，直接显示
+                content.append(f"### 专利草稿内容")
+                content.append(f"{drafting}")
                 content.append("")
         
         # Review stage
