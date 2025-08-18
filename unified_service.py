@@ -1988,9 +1988,8 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
         try:
             logger.info("🚀 使用GLM API进行创新讨论分析")
             glm_client = get_glm_client()
-            discussion_result = await glm_client.analyze_innovation_discussion(
-                topic, planning_strategy, search_results
-            )
+            # 使用现有的analyze_patent_topic方法进行讨论分析
+            discussion_result = glm_client.analyze_patent_topic(topic, f"创新讨论分析：基于规划策略{planning_strategy}和搜索结果{search_results}")
             logger.info("✅ GLM API调用成功")
             return discussion_result
         except Exception as e:
@@ -2182,9 +2181,8 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
         try:
             logger.info("🚀 使用GLM API进行专利质量审查")
             glm_client = get_glm_client()
-            review_result = await glm_client.review_patent_quality(
-                topic, writer_draft, core_strategy, search_results
-            )
+            # 使用现有的analyze_patent_topic方法进行质量审查
+            review_result = glm_client.analyze_patent_topic(topic, f"专利质量审查：基于草稿{writer_draft}和核心策略{core_strategy}")
             logger.info("✅ GLM API调用成功")
             return review_result
         except Exception as e:
@@ -2298,9 +2296,8 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
         try:
             logger.info("🚀 使用GLM API进行专利内容重写优化")
             glm_client = get_glm_client()
-            improved_draft = await glm_client.rewrite_patent_content(
-                topic, writer_draft, review_feedback, core_strategy
-            )
+            # 使用现有的generate_patent_draft方法进行内容重写
+            improved_draft = glm_client.generate_patent_draft(topic, f"专利内容重写：基于草稿{writer_draft}和审查反馈{review_feedback}", core_strategy)
             logger.info("✅ GLM API调用成功")
             return improved_draft
         except Exception as e:
