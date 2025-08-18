@@ -22,7 +22,7 @@ from workflow_manager import WorkflowManager
 
 # 导入GLM客户端
 try:
-    from glm_wrapper import get_glm_client
+    from patent_agent_demo.glm_client import GLMA2AClient
     GLM_AVAILABLE = True
 except ImportError:
     GLM_AVAILABLE = False
@@ -1984,17 +1984,17 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     logger.info(f"📋 Building on planning strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating search findings: {len(search_findings)} patents found")
     
-    if GLM_AVAILABLE:
-        try:
-            logger.info("🚀 使用GLM API进行创新讨论分析")
-            glm_client = get_glm_client()
-            # 使用现有的analyze_patent_topic方法进行讨论分析
-            discussion_result = glm_client.analyze_patent_topic(topic, f"创新讨论分析：基于规划策略{planning_strategy}和搜索结果{search_results}")
-            logger.info("✅ GLM API调用成功")
-            return discussion_result
-        except Exception as e:
-            logger.error(f"❌ GLM API调用失败: {e}")
-            logger.info("🔄 回退到mock数据")
+            if GLM_AVAILABLE:
+            try:
+                logger.info("🚀 使用GLM API进行创新讨论分析")
+                glm_client = GLMA2AClient()
+                # 使用_generate_response方法进行讨论分析
+                discussion_result = await glm_client._generate_response(f"创新讨论分析：基于规划策略{planning_strategy}和搜索结果{search_results}")
+                logger.info("✅ GLM API调用成功")
+                return {"discussion": discussion_result}
+            except Exception as e:
+                logger.error(f"❌ GLM API调用失败: {e}")
+                logger.info("🔄 回退到mock数据")
     
     # Mock fallback
     logger.info("📝 使用mock数据进行创新讨论分析")
@@ -2180,11 +2180,11 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     if GLM_AVAILABLE:
         try:
             logger.info("🚀 使用GLM API进行专利质量审查")
-            glm_client = get_glm_client()
-            # 使用现有的analyze_patent_topic方法进行质量审查
-            review_result = glm_client.analyze_patent_topic(topic, f"专利质量审查：基于草稿{writer_draft}和核心策略{core_strategy}")
+            glm_client = GLMA2AClient()
+            # 使用_generate_response方法进行质量审查
+            review_result = await glm_client._generate_response(f"专利质量审查：基于草稿{writer_draft}和核心策略{core_strategy}")
             logger.info("✅ GLM API调用成功")
-            return review_result
+            return {"review": review_result}
         except Exception as e:
             logger.error(f"❌ GLM API调用失败: {e}")
             logger.info("🔄 回退到mock数据")
@@ -2295,11 +2295,11 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
     if GLM_AVAILABLE:
         try:
             logger.info("🚀 使用GLM API进行专利内容重写优化")
-            glm_client = get_glm_client()
-            # 使用现有的generate_patent_draft方法进行内容重写
-            improved_draft = glm_client.generate_patent_draft(topic, f"专利内容重写：基于草稿{writer_draft}和审查反馈{review_feedback}", core_strategy)
+            glm_client = GLMA2AClient()
+            # 使用_generate_response方法进行内容重写
+            improved_draft = await glm_client._generate_response(f"专利内容重写：基于草稿{writer_draft}和审查反馈{review_feedback}")
             logger.info("✅ GLM API调用成功")
-            return improved_draft
+            return {"rewrite": improved_draft}
         except Exception as e:
             logger.error(f"❌ GLM API调用失败: {e}")
             logger.info("🔄 回退到mock数据")
@@ -2614,10 +2614,10 @@ async def analyze_patent_topic(topic: str, description: str) -> Dict[str, Any]:
     if GLM_AVAILABLE:
         try:
             logger.info("🚀 使用GLM API进行专利主题分析")
-            glm_client = get_glm_client()
-            result = glm_client.analyze_patent_topic(topic, description)
+            glm_client = GLMA2AClient()
+            result = await glm_client._generate_response(f"专利主题分析：{topic} - {description}")
             logger.info("✅ GLM API调用成功")
-            return result
+            return {"analysis": result}
         except Exception as e:
             logger.error(f"❌ GLM API调用失败: {e}")
             logger.info("🔄 回退到mock数据")
@@ -2755,10 +2755,10 @@ async def conduct_prior_art_search(topic: str, keywords: List[str], previous_res
     if GLM_AVAILABLE:
         try:
             logger.info("🚀 使用GLM API进行现有技术检索")
-            glm_client = get_glm_client()
-            result = glm_client.search_prior_art(topic, keywords)
+            glm_client = GLMA2AClient()
+            result = await glm_client._generate_response(f"现有技术检索：{topic} - 关键词：{keywords}")
             logger.info("✅ GLM API调用成功")
-            return result
+            return {"search_results": result}
         except Exception as e:
             logger.error(f"❌ GLM API调用失败: {e}")
             logger.info("🔄 回退到mock数据")
