@@ -1096,3 +1096,95 @@ ModuleNotFoundError: No module named 'aiohttp'
 2025-08-18 09:26:19,048 - patent_agent_demo.agents.writer_agent - INFO - Step 1: Generating patent outline
 2025-08-18 09:26:19,048 - patent_agent_demo.openai_client - WARNING - OpenAI not available, using GLM fallback directly
 2025-08-18 09:26:19,048 - patent_agent_demo.openai_client - INFO - Using GLM-4.5-flash fallback directly
+2025-08-18 09:33:33,095 - __main__ - INFO - 🎯 开始Writer Agent独立测试
+2025-08-18 09:33:33,095 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:33,095 - __main__ - INFO - 测试1: Writer Agent基本功能
+2025-08-18 09:33:33,095 - __main__ - INFO - ==================================================
+2025-08-18 09:33:33,095 - __main__ - INFO - 🚀 开始独立测试Writer Agent
+2025-08-18 09:33:33,392 - __main__ - ERROR - ❌ 测试过程中发生错误: No module named 'aiohttp'
+2025-08-18 09:33:33,393 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_agent_solo.py", line 34, in test_writer_agent
+    from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 11, in <module>
+    from .reviewer_agent import ReviewerAgent
+  File "/workspace/patent_agent_demo/agents/reviewer_agent.py", line 10, in <module>
+    import aiohttp
+ModuleNotFoundError: No module named 'aiohttp'
+
+2025-08-18 09:33:33,393 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:33,393 - __main__ - INFO - 测试2: LLM调用功能
+2025-08-18 09:33:33,393 - __main__ - INFO - ==================================================
+2025-08-18 09:33:33,393 - __main__ - INFO - 🧪 测试Writer Agent的LLM调用功能
+2025-08-18 09:33:33,394 - __main__ - ERROR - ❌ LLM调用测试失败: No module named 'aiohttp'
+2025-08-18 09:33:33,394 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:33,394 - __main__ - INFO - 测试3: 直接测试核心方法
+2025-08-18 09:33:33,394 - __main__ - INFO - ==================================================
+2025-08-18 09:33:33,394 - __main__ - INFO - 🔧 直接测试Writer Agent核心方法
+2025-08-18 09:33:33,394 - __main__ - ERROR - ❌ 直接测试失败: No module named 'aiohttp'
+2025-08-18 09:33:33,394 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_agent_solo.py", line 221, in test_writer_agent_direct
+    from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 11, in <module>
+    from .reviewer_agent import ReviewerAgent
+  File "/workspace/patent_agent_demo/agents/reviewer_agent.py", line 10, in <module>
+    import aiohttp
+ModuleNotFoundError: No module named 'aiohttp'
+
+2025-08-18 09:33:33,394 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:33,394 - __main__ - INFO - 测试总结
+2025-08-18 09:33:33,394 - __main__ - INFO - ==================================================
+2025-08-18 09:33:33,394 - __main__ - INFO - ❌ 所有测试失败
+2025-08-18 09:33:33,394 - __main__ - INFO - ❌ 基本功能测试: 失败
+2025-08-18 09:33:33,394 - __main__ - INFO - ❌ LLM调用测试: 失败
+2025-08-18 09:33:33,394 - __main__ - INFO - ❌ 核心方法测试: 失败
+2025-08-18 09:33:33,394 - __main__ - INFO - 💡 建议: 全面检查Writer Agent配置和代码
+2025-08-18 09:33:42,559 - __main__ - INFO - 🎯 开始Writer Agent独立测试
+2025-08-18 09:33:42,559 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:42,559 - __main__ - INFO - 测试1: Writer Agent基本功能
+2025-08-18 09:33:42,559 - __main__ - INFO - ==================================================
+2025-08-18 09:33:42,559 - __main__ - INFO - 🚀 开始独立测试Writer Agent
+2025-08-18 09:33:42,872 - __main__ - ERROR - ❌ 测试过程中发生错误: No module named 'patent_agent_demo.glm_wrapper'
+2025-08-18 09:33:42,873 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_agent_solo.py", line 34, in test_writer_agent
+    from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 11, in <module>
+    from .reviewer_agent import ReviewerAgent
+  File "/workspace/patent_agent_demo/agents/reviewer_agent.py", line 19, in <module>
+    from ..glm_wrapper import GLMClient
+ModuleNotFoundError: No module named 'patent_agent_demo.glm_wrapper'
+
+2025-08-18 09:33:42,873 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:42,873 - __main__ - INFO - 测试2: LLM调用功能
+2025-08-18 09:33:42,873 - __main__ - INFO - ==================================================
+2025-08-18 09:33:42,873 - __main__ - INFO - 🧪 测试Writer Agent的LLM调用功能
+2025-08-18 09:33:42,873 - __main__ - ERROR - ❌ LLM调用测试失败: No module named 'patent_agent_demo.glm_wrapper'
+2025-08-18 09:33:42,873 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:42,873 - __main__ - INFO - 测试3: 直接测试核心方法
+2025-08-18 09:33:42,873 - __main__ - INFO - ==================================================
+2025-08-18 09:33:42,873 - __main__ - INFO - 🔧 直接测试Writer Agent核心方法
+2025-08-18 09:33:42,874 - __main__ - ERROR - ❌ 直接测试失败: No module named 'patent_agent_demo.glm_wrapper'
+2025-08-18 09:33:42,874 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_agent_solo.py", line 221, in test_writer_agent_direct
+    from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 11, in <module>
+    from .reviewer_agent import ReviewerAgent
+  File "/workspace/patent_agent_demo/agents/reviewer_agent.py", line 19, in <module>
+    from ..glm_wrapper import GLMClient
+ModuleNotFoundError: No module named 'patent_agent_demo.glm_wrapper'
+
+2025-08-18 09:33:42,874 - __main__ - INFO - 
+==================================================
+2025-08-18 09:33:42,874 - __main__ - INFO - 测试总结
+2025-08-18 09:33:42,874 - __main__ - INFO - ==================================================
+2025-08-18 09:33:42,874 - __main__ - INFO - ❌ 所有测试失败
+2025-08-18 09:33:42,874 - __main__ - INFO - ❌ 基本功能测试: 失败
+2025-08-18 09:33:42,874 - __main__ - INFO - ❌ LLM调用测试: 失败
+2025-08-18 09:33:42,874 - __main__ - INFO - ❌ 核心方法测试: 失败
+2025-08-18 09:33:42,874 - __main__ - INFO - 💡 建议: 全面检查Writer Agent配置和代码

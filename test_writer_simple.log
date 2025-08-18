@@ -1,0 +1,21 @@
+2025-08-18 09:36:33,250 - __main__ - INFO - 🎯 开始简化版Writer Agent测试
+2025-08-18 09:36:33,250 - __main__ - INFO - 🚀 开始测试简化版Writer Agent
+2025-08-18 09:36:33,252 - __main__ - ERROR - ❌ 测试过程中发生错误: attempted relative import beyond top-level package
+2025-08-18 09:36:33,253 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test_writer_simple_direct.py", line 32, in test_writer_agent_simple
+    from agents.writer_agent_simple import WriterAgentSimple
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 6, in <module>
+    from .base_agent import BaseAgent
+  File "/workspace/patent_agent_demo/agents/base_agent.py", line 15, in <module>
+    from ..message_bus import (
+        MessageBusBroker, Message, MessageType, AgentStatus, message_bus_config
+    )
+ImportError: attempted relative import beyond top-level package
+
+2025-08-18 09:36:33,253 - __main__ - INFO - 
+==================================================
+2025-08-18 09:36:33,253 - __main__ - INFO - 测试总结
+2025-08-18 09:36:33,253 - __main__ - INFO - ==================================================
+2025-08-18 09:36:33,253 - __main__ - INFO - ❌ 测试失败
+2025-08-18 09:36:33,253 - __main__ - INFO - ❌ 基本功能测试: 失败
+2025-08-18 09:36:33,253 - __main__ - INFO - 💡 建议: 检查Writer Agent配置和代码

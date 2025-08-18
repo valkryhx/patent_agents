@@ -30,12 +30,12 @@ async def test_writer_agent():
     try:
         logger.info("🚀 开始独立测试Writer Agent")
         
-        # 导入Writer Agent
-        from patent_agent_demo.agents.writer_agent import WriterAgent
+        # 导入简化版Writer Agent
+        from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
         
-        # 创建Writer Agent实例（测试模式）
-        logger.info("📋 创建Writer Agent实例")
-        writer_agent = WriterAgent(test_mode=True)
+        # 创建简化版Writer Agent实例（测试模式）
+        logger.info("📋 创建简化版Writer Agent实例")
+        writer_agent = WriterAgentSimple(test_mode=True)
         
         # 手动初始化OpenAI客户端，避免启动消息处理循环
         logger.info("🔧 初始化OpenAI客户端")
@@ -183,11 +183,11 @@ async def test_writer_agent_llm_calls():
     try:
         logger.info("🧪 测试Writer Agent的LLM调用功能")
         
-        # 导入Writer Agent
-        from patent_agent_demo.agents.writer_agent import WriterAgent
+        # 导入简化版Writer Agent
+        from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
         
-        # 创建Writer Agent实例（真实模式）
-        writer_agent = WriterAgent(test_mode=False)
+        # 创建简化版Writer Agent实例（真实模式）
+        writer_agent = WriterAgentSimple(test_mode=False)
         
         # 手动初始化OpenAI客户端
         from patent_agent_demo.openai_client import OpenAIClient
@@ -217,11 +217,11 @@ async def test_writer_agent_direct():
     try:
         logger.info("🔧 直接测试Writer Agent核心方法")
         
-        # 导入Writer Agent
-        from patent_agent_demo.agents.writer_agent import WriterAgent
+        # 导入简化版Writer Agent
+        from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
         
-        # 创建Writer Agent实例（测试模式）
-        writer_agent = WriterAgent(test_mode=True)
+        # 创建简化版Writer Agent实例（测试模式）
+        writer_agent = WriterAgentSimple(test_mode=True)
         
         # 手动初始化OpenAI客户端
         from patent_agent_demo.openai_client import OpenAIClient

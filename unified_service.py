@@ -2020,11 +2020,11 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
     logger.info(f"🔧 Test mode: {request.test_mode}")
     
     try:
-        # Import and initialize Writer Agent
-        from patent_agent_demo.agents.writer_agent import WriterAgent
+        # Import and initialize Simplified Writer Agent
+        from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
         
-        # Create Writer Agent instance
-        writer_agent = WriterAgent(test_mode=request.test_mode)
+        # Create Simplified Writer Agent instance
+        writer_agent = WriterAgentSimple(test_mode=request.test_mode)
         await writer_agent.start()
         
         logger.info(f"✅ Writer Agent initialized successfully")
