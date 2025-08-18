@@ -248,50 +248,50 @@ class DiscusserAgent(BaseAgent):
     async def _generate_alternative_approaches(self, agenda_item: str, topic: str) -> List[str]:
         """Generate alternative approaches for an agenda item using optimized prompts"""
         try:
-            # Use optimized prompt with structured analysis
+            # 基于专利审核要素和Anthropic技巧的优化提示词
             prompt = f"""<system>
-你是一位专业的专利讨论专家，擅长技术分析和观点交流。
+你是一位专业的专利讨论专家，负责技术方案的深度分析和创新点识别。
 
-<expertise>
-- 技术方案的深入分析
-- 创新点的识别和评估
-- 技术路线的比较和选择
-- 风险因素的识别和评估
-- 优化建议的提出和论证
+<role_definition>
+- 技术方案分析师：深入分析技术实现方式和创新价值
+- 创新点识别专家：基于专利"三性"标准识别核心创新
+- 技术路线规划师：设计多种可行的技术实施路径
 
 <discussion_principles>
-- 客观性：基于事实进行分析
-- 全面性：考虑多个角度和因素
-- 深入性：深入分析技术细节
-- 建设性：提供有价值的建议
-- 逻辑性：推理过程清晰合理
+- 客观性：基于事实和专利标准进行分析
+- 全面性：考虑技术、法律、商业等多个维度
+- 深入性：深入分析技术细节和实现方式
+- 建设性：提供有价值的优化建议和改进方案
+- 逻辑性：推理过程清晰合理，结论有据可依
 
-<thinking_process>
-在进行技术讨论时，请按照以下步骤进行：
-1. 理解讨论主题和目标
-2. 收集和分析相关信息
-3. 从多个角度进行分析
-4. 形成自己的观点和判断
-5. 提供建设性的建议和意见
-</thinking_process>
+<patent_standards>
+基于专利"三性"标准进行技术分析：
+- 新颖性：技术方案是否前所未有，与现有技术的区别
+- 创造性：技术突破是否显著，是否带来实质性进步
+- 实用性：技术方案是否可实现，是否具有应用价值
 </system>
 
 <task>
-请为议程项目生成2-3个替代方案。
+请为议程项目生成2-3个高质量的替代技术方案。
 
 <context>
 议程项目：{agenda_item}
 专利主题：{topic}
 
 <thinking_process>
-让我按照以下步骤来生成替代方案：
+让我按照以下步骤进行深度分析：
 
-1. 首先，我需要理解议程项目的具体要求...
-2. 然后，分析不同的技术视角和方法...
-3. 接着，考虑各种可能的技术路线...
-4. 最后，生成最有价值的替代方案...
+1. 首先，基于专利"三性"标准分析议程项目的技术价值...
+2. 然后，从不同技术视角设计多种实现方案...
+3. 接着，评估各方案的新颖性、创造性和实用性...
+4. 最后，生成最具创新性和可行性的替代方案...
 
 </thinking_process>
+
+<output_requirements>
+- 每个替代方案分析：≥800字，包含技术描述、创新点、实施路径
+- 技术深度：详细描述实现方式、关键技术、技术优势
+- 创新价值：基于专利标准评估各方案的创新性和保护价值
 
 <output_format>
 请按照以下XML格式输出结果：
@@ -299,26 +299,44 @@ class DiscusserAgent(BaseAgent):
 <alternative_approaches>
     <approach>
         <name>替代方案1名称</name>
-        <description>方案描述</description>
-        <advantages>优势分析</advantages>
-        <considerations>考虑因素</considerations>
-        <implementation>实施建议</implementation>
+        <description>方案详细描述（≥300字）</description>
+        <technical_implementation>技术实现方式（≥200字）</technical_implementation>
+        <innovation_points>创新点分析（≥200字）</innovation_points>
+        <advantages>技术优势（≥200字）</advantages>
+        <considerations>实施考虑因素（≥200字）</considerations>
+        <implementation_path>实施路径建议（≥200字）</implementation_path>
+        <patentability_assessment>专利性评估（≥200字）</patentability_assessment>
     </approach>
+    
     <approach>
         <name>替代方案2名称</name>
-        <description>方案描述</description>
-        <advantages>优势分析</advantages>
-        <considerations>考虑因素</considerations>
-        <implementation>实施建议</implementation>
+        <description>方案详细描述（≥300字）</description>
+        <technical_implementation>技术实现方式（≥200字）</technical_implementation>
+        <innovation_points>创新点分析（≥200字）</innovation_points>
+        <advantages>技术优势（≥200字）</advantages>
+        <considerations>实施考虑因素（≥200字）</considerations>
+        <implementation_path>实施路径建议（≥200字）</implementation_path>
+        <patentability_assessment>专利性评估（≥200字）</patentability_assessment>
+    </approach>
+    
+    <approach>
+        <name>替代方案3名称</name>
+        <description>方案详细描述（≥300字）</description>
+        <technical_implementation>技术实现方式（≥200字）</technical_implementation>
+        <innovation_points>创新点分析（≥200字）</innovation_points>
+        <advantages>技术优势（≥200字）</advantages>
+        <considerations>实施考虑因素（≥200字）</considerations>
+        <implementation_path>实施路径建议（≥200字）</implementation_path>
+        <patentability_assessment>专利性评估（≥200字）</patentability_assessment>
     </approach>
 </alternative_approaches>
 
-<constraints>
-- 考虑不同的技术视角和方法论
-- 提供具体、可实施的方案
-- 分析各方案的优缺点
-- 确保方案的创新性和可行性
-</constraints>"""
+<quality_standards>
+- 技术准确性：每个方案的技术描述必须准确、可实现
+- 创新价值：基于专利标准评估，确保具有保护价值
+- 内容深度：达到字数要求，提供充分的技术细节
+- 逻辑性：分析过程逻辑清晰，结论有据可依
+</quality_standards>"""
             
             response = await self.openai_client._generate_response(prompt)
             

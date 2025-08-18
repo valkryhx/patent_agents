@@ -215,31 +215,49 @@ class WriterAgent(BaseAgent):
             # 优化1: 减少字数要求，从≥2000字改为≥800字
             # 优化2: 合并多个API调用，减少网络延迟
             
-            # Outline first - 使用优化的提示词
+            # 基于专利交底书模板和审核要素的优化提示词
             outline_prompt = f"""<system>
-你是一位专业的专利撰写专家，拥有丰富的技术文档撰写经验。
+你是一位专业的专利撰写专家，负责生成高质量的专利文档。
 
-<expertise>
-- 技术方案的系统性描述
-- 专利文档的结构化撰写
-- 技术细节的准确表达
-- 法律要求的合规性把控
-- 创新点的突出性展示
+<role_definition>
+- 专利文档架构师：设计完整的专利结构和内容框架
+- 技术方案描述专家：详细阐述技术实现方式和流程
+- 法律合规专家：确保符合中国专利法要求
 
-<writing_principles>
-- 清晰准确：技术描述无歧义，逻辑严密
-- 结构完整：覆盖所有必要章节，层次分明
-- 术语统一：保持概念一致性，避免混淆
-- 创新突出：明确技术贡献，突出创新亮点
+<writing_standards>
+- 语言：全程使用中文，符合中国专利法要求
+- 结构：每个大章节≥1000字，使用子章节组织（1.1, 1.2等）
+- 深度：技术方案详细阐述，占总篇幅50%以上
+- 格式：符合专利交底书标准模板要求
 
-<thinking_process>
-在创建专利大纲时，请按照以下步骤进行：
-1. 理解技术方案的核心创新点
-2. 确定目标读者和写作目的
-3. 设计清晰的结构框架
-4. 为每个章节规划详细内容
-5. 确保逻辑连贯和完整性
-</thinking_process>
+<patent_structure>
+基于专利交底书标准模板的11个主要部分：
+1. 发明名称 - 清楚、简要、全面反映技术方案主题
+2. 技术领域 - 选择所属技术领域，可多选按相关性排序
+3. 现有技术的技术方案 - 公知技术+最接近技术方案
+4. 现有技术的缺点及要解决的技术问题 - 技术性缺点+改进需求
+5. 技术方案的详细阐述 - 重点内容，占总篇幅50%以上
+6. 关键点和欲保护点 - 按重要性排序的区别点
+7. 技术优点 - 与现有技术相比的技术优势
+8. 发散思维及规避方案思考 - 可能的规避方案
+9. 商业价值 - 市场前景和应用广泛程度
+10. 侵权证据可获得性/标准进展情况 - 侵权证据获取手段
+11. 其他有助于理解的技术资料 - 相关术语、协议、标准等
+
+<chapter_requirements>
+## 第五章 技术方案详细阐述（重点章节）
+- 5.1 系统架构设计 ≥1500字
+- 5.2 核心算法实现 ≥1500字  
+- 5.3 数据流程设计 ≥1500字
+- 5.4 接口规范定义 ≥1500字
+
+<content_elements>
+每个子章节必须包含：
+1. 实现方式详细阐述
+2. Mermaid架构图/流程图
+3. 核心伪代码实现
+4. 伪代码详细解读
+5. 技术优势说明
 </system>
 
 <task>
@@ -254,10 +272,10 @@ class WriterAgent(BaseAgent):
 <thinking_process>
 让我按照以下步骤来创建专利大纲：
 
-1. 首先，我需要理解技术方案的核心内容...
-2. 然后，确定专利文档的标准结构...
-3. 接着，为每个章节设计详细的内容框架...
-4. 最后，确保整体逻辑的连贯性和完整性...
+1. 首先，理解技术方案的核心创新点和技术特点...
+2. 然后，基于专利交底书标准模板设计完整结构...
+3. 接着，为每个章节规划详细的内容框架和字数要求...
+4. 最后，确保第五章技术方案详细阐述达到深度要求...
 
 </thinking_process>
 
@@ -267,52 +285,65 @@ class WriterAgent(BaseAgent):
 <patent_outline>
     <title_section>
         <title>专利标题</title>
-        <abstract>摘要要点</abstract>
+        <abstract>摘要要点（≤150字）</abstract>
     </title_section>
     
     <technical_field>
-        <description>技术领域描述</description>
-        <background_issues>背景技术问题</background_issues>
+        <description>技术领域描述（≥200字）</description>
+        <background_issues>背景技术问题（≥300字）</background_issues>
     </technical_field>
     
     <background_art>
-        <existing_solutions>现有技术方案</existing_solutions>
-        <limitations>现有技术局限性</limitations>
-        <improvement_needs>改进需求</improvement_needs>
+        <existing_solutions>现有技术方案（≥400字）</existing_solutions>
+        <limitations>现有技术局限性（≥300字）</limitations>
+        <improvement_needs>改进需求（≥200字）</improvement_needs>
     </background_art>
     
     <summary_of_invention>
-        <core_concept>核心概念</core_concept>
-        <technical_advantages>技术优势</technical_advantages>
-        <innovation_points>创新点</innovation_points>
+        <core_concept>核心概念（≥300字）</core_concept>
+        <technical_advantages>技术优势（≥400字）</technical_advantages>
+        <innovation_points>创新点（≥300字）</innovation_points>
     </summary_of_invention>
     
     <detailed_description>
-        <overview>总体概述</overview>
-        <embodiments>
-            <embodiment>
-                <name>实施方式1</name>
-                <description>详细描述</description>
-                <components>主要组件</components>
-                <workflow>工作流程</workflow>
-            </embodiment>
-        </embodiments>
-        <technical_details>技术细节</technical_details>
+        <overview>总体概述（≥500字）</overview>
+        <subchapters>
+            <subchapter>
+                <number>5.1 系统架构设计</number>
+                <content_plan>内容规划（≥1500字）</content_plan>
+                <required_elements>实现方式+架构图+伪代码+解读+优势</required_elements>
+            </subchapter>
+            <subchapter>
+                <number>5.2 核心算法实现</number>
+                <content_plan>内容规划（≥1500字）</content_plan>
+                <required_elements>实现方式+流程图+伪代码+解读+优势</required_elements>
+            </subchapter>
+            <subchapter>
+                <number>5.3 数据流程设计</number>
+                <content_plan>内容规划（≥1500字）</content_plan>
+                <required_elements>实现方式+数据流图+伪代码+解读+优势</required_elements>
+            </subchapter>
+            <subchapter>
+                <number>5.4 接口规范定义</number>
+                <content_plan>内容规划（≥1500字）</content_plan>
+                <required_elements>实现方式+接口图+伪代码+解读+优势</required_elements>
+            </subchapter>
+        </subchapters>
     </detailed_description>
     
     <claims>
         <independent_claims>
             <claim>
                 <number>权利要求1</number>
-                <scope>保护范围</scope>
-                <key_elements>关键要素</key_elements>
+                <scope>保护范围（≥200字）</scope>
+                <key_elements>关键要素（≥300字）</key_elements>
             </claim>
         </independent_claims>
         <dependent_claims>
             <claim>
-                <number>从属权利要求</number>
+                <number>从属权利要求2-4</number>
                 <reference>引用关系</reference>
-                <additional_features>附加特征</additional_features>
+                <additional_features>附加特征（每个≥150字）</additional_features>
             </claim>
         </dependent_claims>
     </claims>

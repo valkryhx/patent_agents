@@ -307,35 +307,29 @@ class PlannerAgent(BaseAgent):
                                        analysis: PatentAnalysis) -> List[str]:
         """Identify key areas of innovation using optimized prompts"""
         try:
-            # Use optimized prompt with chain-of-thought reasoning
+            # 基于专利审核要素和Anthropic技巧的优化提示词
             prompt = f"""<system>
-你是一位资深的专利策略专家，拥有15年以上的专利撰写和策略规划经验。
+你是一位专业的专利策略分析师，负责专利撰写的整体规划和策略制定。
 
-<expertise>
-- 专利可行性分析和风险评估
-- 创新点识别和技术路线规划  
-- 专利布局策略制定
-- 竞争分析和市场定位
-- 技术发展趋势预测
+<role_definition>
+- 专利性评估专家：基于新颖性、创造性、实用性进行深度分析
+- 技术架构师：设计完整的技术方案和实施路径
+- 质量把控师：确保满足专利审核的所有要求
+
+<patent_standards>
+- 新颖性：技术方案在世界范围内前所未有，不属于现有技术
+- 创造性：与现有技术相比具有突出的实质性特点和显著进步
+- 实用性：能够制造或使用，并产生积极的技术、经济或社会效果
 
 <work_style>
 - 系统性思考：从整体到细节，从宏观到微观
 - 数据驱动：基于事实分析，避免主观判断
 - 前瞻性规划：考虑长期发展和技术演进
 - 风险意识：主动识别潜在问题和风险点
-
-<thinking_process>
-在分析创新领域时，请按照以下步骤进行思考：
-1. 理解技术方案的核心内容和技术特点
-2. 分析现有技术的局限性和改进空间
-3. 识别技术方案中的独特创新点
-4. 评估各创新点的技术价值和商业潜力
-5. 确定最具保护价值的创新领域
-</thinking_process>
 </system>
 
 <task>
-请为专利主题"{topic}"识别关键的创新领域。
+请为专利主题"{topic}"进行全面的创新领域分析和策略规划。
 
 <context>
 专利描述：{description}
@@ -343,34 +337,52 @@ class PlannerAgent(BaseAgent):
 创造性评分：{analysis.inventive_step_score}/10
 
 <thinking_process>
-让我按照以下步骤来识别创新领域：
+让我按照以下步骤进行深度分析：
 
-1. 首先，我需要分析这个技术方案的核心内容...
-2. 然后，识别其中最具创新性的技术要素...
-3. 接着，评估各创新点的技术价值和保护必要性...
-4. 最后，确定3-5个最关键的创新领域...
+1. 首先，分析技术方案的核心内容和技术特点...
+2. 然后，基于专利"三性"标准评估创新价值...
+3. 接着，识别最具保护价值的技术突破点...
+4. 最后，制定完整的专利保护策略...
 
 </thinking_process>
+
+<output_requirements>
+- 创新领域分析：≥1000字，包含技术突破、创新价值、保护必要性
+- 技术路线规划：≥1000字，包含实施路径、关键技术、发展阶段
+- 竞争策略制定：≥1000字，包含市场定位、竞争优势、风险应对
 
 <output_format>
 请按照以下XML格式输出结果：
 
-<innovation_areas>
-    <area>
-        <name>创新领域名称</name>
-        <description>创新点描述</description>
-        <technical_value>技术价值评估</technical_value>
+<innovation_analysis>
+    <core_innovation>
+        <name>核心创新领域名称</name>
+        <description>创新点详细描述（≥300字）</description>
+        <novelty_analysis>新颖性分析（≥200字）</novelty_analysis>
+        <inventiveness_analysis>创造性分析（≥200字）</inventiveness_analysis>
+        <utility_analysis>实用性分析（≥200字）</utility_analysis>
         <protection_priority>保护优先级 (High/Medium/Low)</protection_priority>
-        <competitive_advantage>竞争优势分析</competitive_advantage>
-    </area>
-</innovation_areas>
+    </core_innovation>
+    
+    <technical_roadmap>
+        <implementation_path>技术实施路径（≥500字）</implementation_path>
+        <key_technologies>关键技术要素（≥300字）</key_technologies>
+        <development_stages>发展阶段规划（≥200字）</development_stages>
+    </technical_roadmap>
+    
+    <competitive_strategy>
+        <market_positioning>市场定位分析（≥300字）</market_positioning>
+        <competitive_advantages>竞争优势分析（≥400字）</competitive_advantages>
+        <risk_mitigation>风险应对策略（≥300字）</risk_mitigation>
+    </competitive_strategy>
+</innovation_analysis>
 
-<constraints>
-- 确保识别准确、全面、客观
-- 重点关注技术方案的核心创新点
-- 考虑技术价值和商业潜力
-- 提供具体的创新点描述和评估
-</constraints>"""
+<quality_standards>
+- 内容深度：每个分析部分必须达到字数要求
+- 技术准确性：基于专利审核标准进行专业评估
+- 逻辑性：分析过程逻辑清晰，结论有据可依
+- 实用性：策略建议具有可操作性和指导价值
+</quality_standards>"""
             
             response = await self.openai_client._generate_response(prompt)
             

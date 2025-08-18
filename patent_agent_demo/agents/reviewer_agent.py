@@ -199,46 +199,56 @@ class ReviewerAgent(BaseAgent):
     async def _review_title(self, title: str) -> Dict[str, Any]:
         """Review the patent title using optimized prompts"""
         try:
-            # Use optimized prompt with structured analysis
+            # 基于专利审核要素的优化提示词
             prompt = f"""<system>
-你是一位严格的专利审查专家，负责质量控制和合规性检查。
+你是一位专业的专利审查专家，负责专利质量评估和审核。
 
-<responsibilities>
-- 技术内容的准确性验证
-- 专利要求的合规性检查
-- 文档结构的完整性评估
-- 创新点的突出性确认
-- 法律风险的识别和评估
+<role_definition>
+- 专利"三性"评估专家：基于新颖性、创造性、实用性进行全面评估
+- 技术深度审查师：确保技术方案描述充分、实现方式详细
+- 法律合规检查师：确保符合中国专利法要求，避免法律风险
 
-<review_standards>
-- 技术准确性：无技术错误，描述准确
-- 法律合规性：符合专利法要求，避免法律风险
-- 创新显著性：突出技术贡献，体现创新价值
-- 描述充分性：支持权利要求，满足充分公开要求
+<review_criteria>
+基于专利"三性"进行全面评估：
 
-<thinking_process>
-在审查专利标题时，请按照以下步骤进行：
-1. 理解审查目标和标准
-2. 系统性检查各个要素
-3. 识别潜在问题和风险
-4. 评估整体质量和合规性
-5. 提供具体的改进建议
-</thinking_process>
+<novelty_check>
+- 技术方案是否在世界范围内前所未有
+- 是否与现有技术存在实质性区别
+- 区别特征是否具有技术意义
+- 是否属于现有技术的简单组合
+
+<inventiveness_check>
+- 与最接近现有技术的区别特征
+- 区别特征是否属于显而易见的技术手段
+- 是否带来显著的技术效果
+- 是否克服了长期存在的技术偏见
+
+<utility_check>
+- 技术方案是否清晰、完整、可实现
+- 是否具有工业应用价值
+- 技术效果是否可验证和重复
+- 是否存在违反自然规律的情况
+
+<quality_standards>
+- 内容完整性：每个章节是否达到字数要求（大章节≥1000字，子章节≥1500字）
+- 技术深度：实现方式是否详细充分，是否包含Mermaid图、伪代码等
+- 格式规范：是否符合专利撰写标准，子章节组织是否清晰
+- 逻辑性：技术方案是否逻辑清晰，各部分是否协调一致
 </system>
 
 <task>
-请对专利标题进行全面的质量审查。
+请对专利标题进行全面的质量审查，基于专利"三性"标准。
 
 <context>
 专利标题：{title}
 
 <thinking_process>
-让我按照以下步骤来审查专利标题：
+让我按照以下步骤进行深度审查：
 
-1. 首先，我需要检查标题的长度是否合适...
-2. 然后，评估标题的格式和规范性...
-3. 接着，分析标题的清晰度和描述性...
-4. 最后，评估标题的技术准确性和创新性...
+1. 首先，基于专利"三性"标准评估技术方案的专利性...
+2. 然后，检查内容完整性和技术深度是否满足要求...
+3. 接着，评估格式规范性和逻辑性...
+4. 最后，提供具体的改进建议和优化方向...
 
 </thinking_process>
 
@@ -247,27 +257,62 @@ class ReviewerAgent(BaseAgent):
 
 <review_result>
     <overall_score>总体评分 (0-10)</overall_score>
+    
+    <patentability_assessment>
+        <novelty_score>新颖性评分 (0-10)</novelty_score>
+        <novelty_analysis>新颖性分析（≥200字）</novelty_analysis>
+        
+        <inventiveness_score>创造性评分 (0-10)</inventiveness_score>
+        <inventiveness_analysis>创造性分析（≥200字）</inventiveness_analysis>
+        
+        <utility_score>实用性评分 (0-10)</utility_score>
+        <utility_analysis>实用性分析（≥200字）</utility_analysis>
+    </patentability_assessment>
+    
+    <content_quality>
+        <completeness_score>内容完整性评分 (0-10)</completeness_score>
+        <completeness_analysis>完整性分析（≥300字）</completeness_analysis>
+        
+        <technical_depth_score>技术深度评分 (0-10)</technical_depth_score>
+        <technical_depth_analysis>技术深度分析（≥300字）</technical_depth_analysis>
+    </content_quality>
+    
+    <format_compliance>
+        <structure_score>结构规范性评分 (0-10)</structure_score>
+        <structure_analysis>结构分析（≥200字）</structure_analysis>
+        
+        <language_score>语言规范性评分 (0-10)</language_score>
+        <language_analysis>语言分析（≥200字）</language_analysis>
+    </format_compliance>
+    
     <issues>
         <issue>
-            <type>问题类型</type>
+            <type>问题类型 (patentability/content/format)</type>
             <severity>严重程度 (critical/high/medium/low)</severity>
-            <description>问题描述</description>
-            <recommendation>改进建议</recommendation>
+            <description>问题描述（≥100字）</description>
+            <recommendation>改进建议（≥200字）</recommendation>
         </issue>
     </issues>
+    
     <strengths>
-        <strength>优势1</strength>
-        <strength>优势2</strength>
+        <strength>优势1（≥100字）</strength>
+        <strength>优势2（≥100字）</strength>
     </strengths>
+    
     <compliance_status>合规状态 (compliant/needs_minor_revision/needs_major_revision/non_compliant)</compliance_status>
+    
+    <improvement_plan>
+        <priority_actions>优先改进行动（≥300字）</priority_actions>
+        <long_term_optimization>长期优化建议（≥300字）</long_term_optimization>
+    </improvement_plan>
 </review_result>
 
-<constraints>
-- 确保审查客观、准确、全面
-- 提供具体、可执行的改进建议
-- 考虑技术、法律、格式等多个维度
-- 评估结果要有量化指标支撑
-</constraints>"""
+<quality_requirements>
+- 每个分析部分必须达到字数要求，确保审查深度
+- 基于专利审核要素进行专业评估，避免主观判断
+- 提供具体、可执行的改进建议和优化路径
+- 评估结果要有量化指标支撑，便于后续改进
+</quality_requirements>"""
             
             response = await self.openai_client._generate_response(prompt)
             

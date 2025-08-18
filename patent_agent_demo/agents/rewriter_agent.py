@@ -312,69 +312,91 @@ class RewriterAgent(BaseAgent):
     async def _improve_title(self, title: str, recommendation: str) -> str:
         """Improve the patent title using optimized prompts"""
         try:
-            # Use optimized prompt with structured improvement
+            # 基于专利审核要素和Anthropic技巧的优化提示词
             prompt = f"""<system>
-你是一位专业的专利内容优化专家，擅长改进和优化专利文档。
+你是一位专业的专利内容优化专家，负责基于审查反馈改进专利文档。
 
-<expertise>
-- 技术内容的优化和重构
-- 语言表达的改进和润色
-- 结构逻辑的调整和完善
-- 创新点的强化和突出
-- 合规性问题的修正
+<role_definition>
+- 专利内容优化师：基于审查反馈改进技术描述和表达
+- 质量提升专家：确保内容满足专利审核的所有要求
+- 合规性检查师：修正法律合规性问题，确保专利有效性
 
 <optimization_principles>
-- 保持技术准确性：不改变技术实质
-- 提升表达质量：使内容更清晰易懂
-- 强化创新亮点：突出技术贡献
-- 确保合规性：符合法律要求
-- 保持一致性：术语和风格统一
+- 保持技术准确性：不改变技术实质，确保技术方案完整
+- 提升表达质量：使内容更清晰易懂，逻辑更严密
+- 强化创新亮点：突出技术贡献，增强专利性
+- 确保合规性：符合中国专利法要求，避免法律风险
+- 保持一致性：术语和风格统一，结构逻辑清晰
 
-<thinking_process>
-在优化专利标题时，请按照以下步骤进行：
-1. 分析现有标题的优缺点
-2. 识别需要改进的方面
-3. 制定优化策略和方案
-4. 逐步实施改进措施
-5. 验证优化效果和质量
-</thinking_process>
+<patent_standards>
+基于专利"三性"标准进行内容优化：
+- 新颖性：确保技术方案与现有技术的区别更加明确
+- 创造性：强化技术突破的显著性和进步性
+- 实用性：完善技术方案的实现细节和应用价值
 </system>
 
 <task>
-请根据审查建议优化专利标题。
+请根据审查建议优化专利标题，确保满足专利审核要求。
 
 <context>
 当前标题：{title}
 改进建议：{recommendation}
 
 <thinking_process>
-让我按照以下步骤来优化标题：
+让我按照以下步骤进行深度优化：
 
-1. 首先，我需要分析当前标题的问题...
-2. 然后，理解改进建议的具体要求...
-3. 接着，制定优化策略...
-4. 最后，生成改进后的标题...
+1. 首先，基于专利"三性"标准分析当前标题的问题...
+2. 然后，理解审查建议的具体要求和改进方向...
+3. 接着，制定针对性的优化策略和实施方案...
+4. 最后，生成改进后的标题并验证优化效果...
 
 </thinking_process>
+
+<output_requirements>
+- 标题优化：确保更加描述性、清晰和技术准确
+- 创新突出：强化技术方案的创新点和保护价值
+- 合规性：符合专利标题的规范要求和法律标准
 
 <output_format>
 请按照以下XML格式输出结果：
 
 <improved_title>
     <title>改进后的标题</title>
+    
+    <optimization_analysis>
+        <original_issues>原始问题分析（≥200字）</original_issues>
+        <improvement_strategy>优化策略（≥300字）</improvement_strategy>
+        <implementation_plan>实施方案（≥200字）</implementation_plan>
+    </optimization_analysis>
+    
     <improvements>
-        <improvement>改进点1</improvement>
-        <improvement>改进点2</improvement>
+        <improvement>
+            <aspect>改进方面1</aspect>
+            <description>具体改进描述（≥150字）</description>
+            <impact>改进效果和影响（≥100字）</impact>
+        </improvement>
+        <improvement>
+            <aspect>改进方面2</aspect>
+            <description>具体改进描述（≥150字）</description>
+            <impact>改进效果和影响（≥100字）</impact>
+        </improvement>
     </improvements>
-    <rationale>改进理由</rationale>
+    
+    <quality_verification>
+        <novelty_check>新颖性验证（≥150字）</novelty_check>
+        <inventiveness_check>创造性验证（≥150字）</inventiveness_check>
+        <utility_check>实用性验证（≥150字）</utility_check>
+    </quality_verification>
+    
+    <rationale>改进理由和依据（≥300字）</rationale>
 </improved_title>
 
-<constraints>
-- 确保标题更加描述性、清晰和技术准确
-- 保持技术实质不变
-- 符合专利标题的规范要求
-- 突出技术方案的创新点
-</constraints>"""
+<quality_standards>
+- 技术准确性：改进后的标题必须准确反映技术方案
+- 创新突出性：强化技术方案的创新点和保护价值
+- 合规性：符合专利法要求，避免法律风险
+- 表达质量：语言清晰、准确、专业，符合专利撰写规范
+</quality_standards>"""
             
             response = await self.openai_client._generate_response(prompt)
             

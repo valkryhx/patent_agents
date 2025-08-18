@@ -163,51 +163,96 @@ class SearcherAgent(BaseAgent):
     async def _extract_keywords(self, topic: str, description: str = "") -> List[str]:
         """Extract relevant keywords for search using optimized prompts"""
         try:
-            # Use optimized prompt with structured analysis
+            # 基于专利审核要素和Anthropic技巧的优化提示词
             prompt = f"""<system>
-你是一位专业的专利检索专家，擅长信息收集和分析。
+你是一位专业的专利检索专家，负责现有技术检索和专利性评估。
 
-<expertise>
-- 专利文献的检索和分析
-- 技术信息的收集和整理
-- 竞争情报的搜集和评估
-- 技术趋势的分析和预测
-- 相关技术的识别和分类
+<role_definition>
+- 现有技术检索师：全面检索相关专利文献和技术资料
+- 专利性评估专家：基于检索结果评估技术方案的新颖性和创造性
+- 技术趋势分析师：分析技术发展方向和竞争态势
 
 <search_principles>
-- 全面性：覆盖相关技术领域
-- 准确性：确保信息的相关性
-- 时效性：关注最新技术发展
-- 系统性：有序组织和分析信息
-- 实用性：提供有价值的信息
+- 全面性：覆盖全球主要专利数据库和技术领域
+- 准确性：确保检索结果的相关性和准确性
+- 时效性：关注最新技术发展和专利申请动态
+- 系统性：有序组织和分析检索信息
+- 实用性：为专利性评估提供有价值的信息支撑
 
-<thinking_process>
-在进行关键词提取时，请按照以下步骤进行：
-1. 明确检索目标和范围
-2. 分析技术方案的核心要素
-3. 识别关键技术术语和概念
-4. 考虑同义词和相关术语
-5. 整理和优化关键词列表
-</thinking_process>
+<patent_standards>
+基于专利"三性"标准进行检索分析：
+- 新颖性检索：寻找可能破坏新颖性的现有技术
+- 创造性检索：识别最接近的现有技术，评估技术启示
+- 实用性检索：验证技术方案的可行性和应用价值
 </system>
 
 <task>
-请为专利主题"{topic}"提取相关的技术关键词。
+请为专利主题"{topic}"进行全面的技术关键词提取和检索策略规划。
 
 <context>
 专利描述：{description}
 
 <thinking_process>
-让我按照以下步骤来提取关键词：
+让我按照以下步骤进行深度分析：
 
-1. 首先，我需要分析技术方案的核心内容...
-2. 然后，识别关键技术术语和概念...
-3. 接着，考虑同义词和相关术语...
-4. 最后，整理出最相关的关键词...
+1. 首先，基于专利"三性"标准分析技术方案的核心要素...
+2. 然后，识别关键技术术语、概念和技术特征...
+3. 接着，考虑同义词、相关术语和技术变体...
+4. 最后，制定全面的检索策略和关键词组合...
+
 </thinking_process>
 
-请提取10-15个最相关的技术关键词，每个关键词用逗号分隔。
-</task>"""
+<output_requirements>
+- 关键词提取：15-20个核心技术关键词，按重要性排序
+- 检索策略：基于专利"三性"的多维度检索方案
+- 技术分析：识别可能影响专利性的技术领域和方向
+
+<output_format>
+请按照以下XML格式输出结果：
+
+<search_strategy>
+    <core_keywords>
+        <keyword priority="high">核心关键词1</keyword>
+        <keyword priority="high">核心关键词2</keyword>
+        <keyword priority="medium">重要关键词3</keyword>
+        <keyword priority="medium">重要关键词4</keyword>
+        <keyword priority="low">相关关键词5</keyword>
+        <!-- 继续列出15-20个关键词 -->
+    </core_keywords>
+    
+    <search_dimensions>
+        <novelty_search>
+            <focus>新颖性检索重点（≥200字）</focus>
+            <keywords>相关关键词组合</keywords>
+            <databases>建议检索数据库</databases>
+        </novelty_search>
+        
+        <inventiveness_search>
+            <focus>创造性检索重点（≥200字）</focus>
+            <keywords>相关关键词组合</keywords>
+            <databases>建议检索数据库</databases>
+        </inventiveness_search>
+        
+        <utility_search>
+            <focus>实用性检索重点（≥200字）</focus>
+            <keywords>相关关键词组合</keywords>
+            <databases>建议检索数据库</databases>
+        </utility_search>
+    </search_dimensions>
+    
+    <technical_analysis>
+        <related_fields>相关技术领域（≥300字）</related_fields>
+        <potential_prior_art>潜在现有技术分析（≥400字）</potential_art>
+        <risk_assessment>专利性风险评估（≥300字）</risk_assessment>
+    </technical_analysis>
+</search_strategy>
+
+<quality_standards>
+- 关键词准确性：每个关键词必须与技术方案高度相关
+- 检索策略完整性：覆盖专利"三性"的所有评估维度
+- 技术分析深度：提供充分的技术分析和风险评估
+- 实用性：检索策略具有可操作性和指导价值
+</quality_standards>"""
 
             response = await self.openai_client._generate_response(prompt)
             
