@@ -1960,7 +1960,7 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     }
 
 async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
-    """Execute discussion task"""
+    """Execute discussion task using GLM API or fallback to mock"""
     topic = request.topic
     previous_results = request.previous_results
     
@@ -1984,6 +1984,21 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     logger.info(f"📋 Building on planning strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating search findings: {len(search_findings)} patents found")
     
+    if GLM_AVAILABLE:
+        try:
+            logger.info("🚀 使用GLM API进行创新讨论分析")
+            glm_client = get_glm_client()
+            discussion_result = await glm_client.analyze_innovation_discussion(
+                topic, planning_strategy, search_results
+            )
+            logger.info("✅ GLM API调用成功")
+            return discussion_result
+        except Exception as e:
+            logger.error(f"❌ GLM API调用失败: {e}")
+            logger.info("🔄 回退到mock数据")
+    
+    # Mock fallback
+    logger.info("📝 使用mock数据进行创新讨论分析")
     discussion_result = {
         "topic": topic,
         "core_strategy": planning_strategy,
@@ -2113,7 +2128,7 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         }
 
 async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
-    """Execute reviewer task"""
+    """Execute reviewer task using GLM API or fallback to mock"""
     topic = request.topic
     previous_results = request.previous_results
     
@@ -2163,6 +2178,21 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     logger.info(f"📋 Reviewing against unified strategy: {core_innovation_areas}")
     logger.info(f"🔍 Checking consistency with {len(search_findings)} search findings")
     
+    if GLM_AVAILABLE:
+        try:
+            logger.info("🚀 使用GLM API进行专利质量审查")
+            glm_client = get_glm_client()
+            review_result = await glm_client.review_patent_quality(
+                topic, writer_draft, core_strategy, search_results
+            )
+            logger.info("✅ GLM API调用成功")
+            return review_result
+        except Exception as e:
+            logger.error(f"❌ GLM API调用失败: {e}")
+            logger.info("🔄 回退到mock数据")
+    
+    # Mock fallback
+    logger.info("📝 使用mock数据进行专利质量审查")
     # Assess consistency and quality
     consistency_score = 9.0 if core_innovation_areas else 7.0
     overall_quality = (novelty_score + consistency_score) / 2
@@ -2200,7 +2230,7 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     return review_result
 
 async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
-    """Execute rewriter task"""
+    """Execute rewriter task using GLM API or fallback to mock"""
     topic = request.topic
     previous_results = request.previous_results
     
@@ -2264,6 +2294,21 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
     logger.info(f"📋 Final polish using unified strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating review feedback: {len(review_recommendations)} recommendations")
     
+    if GLM_AVAILABLE:
+        try:
+            logger.info("🚀 使用GLM API进行专利内容重写优化")
+            glm_client = get_glm_client()
+            improved_draft = await glm_client.rewrite_patent_content(
+                topic, writer_draft, review_feedback, core_strategy
+            )
+            logger.info("✅ GLM API调用成功")
+            return improved_draft
+        except Exception as e:
+            logger.error(f"❌ GLM API调用失败: {e}")
+            logger.info("🔄 回退到mock数据")
+    
+    # Mock fallback
+    logger.info("📝 使用mock数据进行专利内容重写优化")
     # Create improved claims based on unified strategy and feedback
     improved_claims = []
     if core_innovation_areas:
