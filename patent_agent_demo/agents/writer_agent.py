@@ -607,10 +607,45 @@ def main_process():
             subchapter_tasks = []
             for sc in subchapters:
                 sprompt = f"""
-撰写"具体实施方式-子章节{sc['id']}：{sc['title']}"（中文，≥1200字），主题：{writing_task.topic}
-- 包含：1个mermaid图；2个算法公式；1段Python风格伪代码（≥30行）
-- 描述实施步骤、输入输出、参数条件
-- 保持术语一致
+撰写"具体实施方式-子章节{sc['id']}：{sc['title']}"（中文，≥1500字），主题：{writing_task.topic}
+
+**强制要求（必须包含）：**
+1. **Mermaid图**：必须包含1个完整的mermaid流程图或架构图，格式如下：
+```mermaid
+graph TD
+    A[开始] --> B[处理步骤1]
+    B --> C[处理步骤2]
+    C --> D[结束]
+```
+
+2. **算法公式**：必须包含2个核心算法公式，使用LaTeX格式：
+- 公式1：核心算法数学表达式
+- 公式2：性能评估或优化公式
+
+3. **伪代码**：必须包含1段Python风格伪代码（≥30行），格式如下：
+```python
+def core_algorithm(input_data):
+    # 算法实现
+    result = process_data(input_data)
+    return result
+```
+
+4. **技术细节**：详细描述实施步骤、输入输出、参数条件、技术实现
+
+**输出格式要求：**
+- 先写技术描述
+- 然后插入mermaid图
+- 接着写算法公式
+- 最后提供伪代码
+- 每个部分都要有明确的标题
+
+**质量要求：**
+- 技术描述具体详细，不能只是概念
+- mermaid图要清晰展示技术流程
+- 伪代码要完整可执行
+- 公式要准确表达算法逻辑
+
+请严格按照以上要求生成内容，确保包含所有必需元素。
 """
                 subchapter_tasks.append((sc, sprompt))
             
@@ -656,10 +691,32 @@ def main_process():
                 
             # 优化7: 简化附图说明生成
             drawings_prompt = f"""
-撰写"附图说明"（中文，≥800字）：
-- 3幅图（系统架构、数据流、核心算法）
-- 每幅图提供对应的mermaid示意
-- 指出与步骤/模块的对应关系
+撰写"附图说明"（中文，≥1000字），主题：{writing_task.topic}
+
+**强制要求（必须包含）：**
+1. **系统架构图**：必须包含完整的mermaid系统架构图
+2. **数据流程图**：必须包含完整的mermaid数据流程图
+3. **核心算法图**：必须包含完整的mermaid算法流程图
+
+**每个图的要求：**
+- 使用标准的mermaid语法
+- 包含清晰的节点和连接关系
+- 标注关键的技术组件和流程
+- 与专利内容保持一致
+
+**输出格式：**
+1. 系统架构图说明 + mermaid代码
+2. 数据流程图说明 + mermaid代码
+3. 核心算法图说明 + mermaid代码
+
+**示例格式：**
+```mermaid
+graph TD
+    A[输入层] --> B[处理层]
+    B --> C[输出层]
+```
+
+请严格按照以上要求生成内容，确保包含所有必需的mermaid图。
 """
             drawings_description = await self.openai_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
