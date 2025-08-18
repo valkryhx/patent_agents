@@ -249,44 +249,72 @@ class WriterAgent(BaseAgent):
 12. **其他有助于理解的技术资料** - 相关术语、协议、标准等（≥400字）
 
 <chapter_requirements>
-## 第五章 技术方案详细阐述（重点章节，总字数≥4000字）
+## 第五章 技术方案详细阐述（重点章节，总字数≥6000字）
+
+### 5.0 技术方案总体介绍（≥1000字）
+- 技术方案核心思想概述
+- 整体技术架构图（Mermaid格式，必须包含）
+- 技术方案创新点总结
+- 技术方案优势分析
 
 ### 5.1 系统架构设计（≥1500字）
-- 系统整体架构图（Mermaid格式）
+- 系统整体架构图（Mermaid格式，必须包含）
 - 各模块功能详细描述
 - 模块间交互关系
 - 技术选型说明
 - 架构优势分析
+- 子功能模块架构图（Mermaid格式，必须包含）
+- 核心算法伪代码（必须包含）
 
 ### 5.2 核心算法实现（≥1500字）
-- 核心算法流程图（Mermaid格式）
-- 算法伪代码实现
+- 核心算法流程图（Mermaid格式，必须包含）
+- 算法伪代码实现（必须包含，≥50行）
 - 算法复杂度分析
 - 关键参数说明
 - 算法优化策略
+- 子算法模块图（Mermaid格式，必须包含）
+- 算法实现细节伪代码（必须包含）
 
 ### 5.3 数据流程设计（≥1500字）
-- 数据流程图（Mermaid格式）
+- 数据流程图（Mermaid格式，必须包含）
 - 数据结构定义
 - 数据转换过程
 - 数据验证机制
 - 异常处理策略
+- 数据处理子模块图（Mermaid格式，必须包含）
+- 数据处理伪代码（必须包含）
 
 ### 5.4 接口规范定义（≥1500字）
-- 接口架构图（Mermaid格式）
+- 接口架构图（Mermaid格式，必须包含）
 - API接口规范
 - 通信协议定义
 - 错误码设计
 - 接口安全机制
+- 接口调用流程图（Mermaid格式，必须包含）
+- 接口实现伪代码（必须包含）
 
 <content_elements>
 每个子章节必须包含：
 1. **实现方式详细阐述** - 具体的技术实现方法，包含技术细节
-2. **Mermaid架构图/流程图** - 清晰的可视化图表，展示技术架构
-3. **核心伪代码实现** - 关键算法的伪代码，便于理解实现逻辑
-4. **伪代码详细解读** - 对伪代码的详细解释，说明每个步骤的作用
-5. **技术优势说明** - 该技术方案相比现有技术的优势
-6. **技术细节补充** - 必要的技术参数、配置、约束等详细信息
+2. **整体架构Mermaid图** - 第五章总体介绍时必须包含完整的技术架构图
+3. **子功能模块Mermaid图** - 每个小节都必须包含对应的子功能模块图
+4. **核心伪代码实现** - 关键算法的伪代码，便于理解实现逻辑
+5. **伪代码详细解读** - 对伪代码的详细解释，说明每个步骤的作用
+6. **技术优势说明** - 该技术方案相比现有技术的优势
+7. **技术细节补充** - 必要的技术参数、配置、约束等详细信息
+
+**Mermaid图要求：**
+- 5.0节：整体技术架构图（展示整个系统的架构）
+- 5.1节：系统架构图和子功能模块架构图
+- 5.2节：核心算法流程图和子算法模块图
+- 5.3节：数据流程图和数据处理子模块图
+- 5.4节：接口架构图和接口调用流程图
+
+**伪代码要求：**
+- 每个小节都必须包含≥30行的伪代码
+- 伪代码要完整可执行，包含核心逻辑
+- 要有详细的注释说明
+- 要体现该小节的核心技术实现
 
 <quality_requirements>
 - **字数要求**：每个大章节≥1000字，每个子章节≥1500字
@@ -578,11 +606,54 @@ def main_process():
 - 突出技术优势和创新特色
 </constraints>"""
             
-            # 并发执行背景和摘要生成
+            # 并发执行背景、摘要和第五章总体介绍生成
             background_task = self.openai_client._generate_response(background_prompt)
             summary_task = self.openai_client._generate_response(summary_prompt)
             
-            background, summary = await asyncio.gather(background_task, summary_task)
+            # 生成第五章总体介绍
+            chapter5_overview_prompt = f"""
+撰写"第五章 技术方案详细阐述 - 5.0 技术方案总体介绍"（中文，≥1000字），主题：{writing_task.topic}
+
+**强制要求（必须包含）：**
+
+1. **技术方案核心思想概述**：详细描述技术方案的核心思想、创新点和解决的技术问题
+
+2. **整体技术架构图**：必须包含完整的系统整体架构Mermaid图，格式如下：
+   ```mermaid
+   graph TD
+       A[用户输入层] --> B[语义理解层]
+       B --> C[参数推断层]
+       C --> D[分层调用层]
+       D --> E[重试优化层]
+       E --> F[结果输出层]
+       
+       B --> G[知识图谱模块]
+       C --> H[机器学习模块]
+       D --> I[调度模块]
+       E --> J[监控模块]
+   ```
+
+3. **技术方案创新点总结**：总结技术方案的主要创新点和技术突破
+
+4. **技术方案优势分析**：分析技术方案相比现有技术的优势
+
+**输出格式要求：**
+1. 技术方案核心思想概述（≥300字）
+2. 整体技术架构图（Mermaid格式）
+3. 技术方案创新点总结（≥300字）
+4. 技术方案优势分析（≥300字）
+
+**质量要求：**
+- 技术描述具体详细，不能只是概念
+- Mermaid图要清晰展示整个系统的架构
+- 要体现技术方案的核心创新点
+- 要突出技术方案的优势
+
+请严格按照以上要求生成内容，确保包含所有必需元素。
+"""
+            chapter5_overview_task = self.openai_client._generate_response(chapter5_overview_prompt)
+            
+            background, summary, chapter5_overview = await asyncio.gather(background_task, summary_task, chapter5_overview_task)
             
             detailed_sections["background"] = background
             detailed_sections["summary"] = summary
@@ -595,10 +666,12 @@ def main_process():
                 
             self.agent_logger.info("DETAIL_SECTION start outline/background/summary")
             
-            # 优化4: 减少子章节数量，从4个改为2个，减少字数要求
+            # 优化4: 按照第五章的4个主要小节生成内容
             subchapters = [
-                {"id": "A", "title": "数据获取与证据构建"},
-                {"id": "B", "title": "生成与验证流程"},
+                {"id": "5.1", "title": "系统架构设计", "focus": "系统架构和模块设计"},
+                {"id": "5.2", "title": "核心算法实现", "focus": "核心算法和流程实现"},
+                {"id": "5.3", "title": "数据流程设计", "focus": "数据流程和处理机制"},
+                {"id": "5.4", "title": "接口规范定义", "focus": "接口规范和通信协议"},
             ]
             
             desc_parts: List[str] = []
@@ -607,43 +680,56 @@ def main_process():
             subchapter_tasks = []
             for sc in subchapters:
                 sprompt = f"""
-撰写"具体实施方式-子章节{sc['id']}：{sc['title']}"（中文，≥1500字），主题：{writing_task.topic}
+撰写"第五章 技术方案详细阐述 - {sc['id']} {sc['title']}"（中文，≥1500字），主题：{writing_task.topic}
+
+**重点内容：{sc['focus']}**
 
 **强制要求（必须包含）：**
-1. **Mermaid图**：必须包含1个完整的mermaid流程图或架构图，格式如下：
-```mermaid
-graph TD
-    A[开始] --> B[处理步骤1]
-    B --> C[处理步骤2]
-    C --> D[结束]
-```
 
-2. **算法公式**：必须包含2个核心算法公式，使用LaTeX格式：
-- 公式1：核心算法数学表达式
-- 公式2：性能评估或优化公式
+1. **技术描述**：详细描述{sc['title']}的技术实现方法、核心思想、技术细节
 
-3. **伪代码**：必须包含1段Python风格伪代码（≥30行），格式如下：
-```python
-def core_algorithm(input_data):
-    # 算法实现
-    result = process_data(input_data)
-    return result
-```
+2. **Mermaid图**：必须包含2个完整的mermaid图：
+   - 图1：{sc['title']}的整体架构图
+   - 图2：{sc['title']}的子功能模块图
 
-4. **技术细节**：详细描述实施步骤、输入输出、参数条件、技术实现
+   格式示例：
+   ```mermaid
+   graph TD
+       A[输入模块] --> B[处理模块]
+       B --> C[输出模块]
+       B --> D[子功能模块1]
+       B --> E[子功能模块2]
+   ```
+
+3. **算法公式**：必须包含2个核心算法公式，使用LaTeX格式：
+   - 公式1：{sc['title']}的核心算法数学表达式
+   - 公式2：{sc['title']}的性能评估或优化公式
+
+4. **伪代码**：必须包含1段Python风格伪代码（≥50行），格式如下：
+   ```python
+   def {sc['title'].replace(' ', '_').lower()}_algorithm(input_data):
+       """
+       {sc['title']}核心算法实现
+       """
+       # 算法实现步骤
+       result = process_data(input_data)
+       return result
+   ```
 
 **输出格式要求：**
-- 先写技术描述
-- 然后插入mermaid图
-- 接着写算法公式
-- 最后提供伪代码
-- 每个部分都要有明确的标题
+1. 技术描述（≥500字）
+2. 整体架构Mermaid图
+3. 子功能模块Mermaid图
+4. 算法公式（LaTeX格式）
+5. 伪代码实现（≥50行）
+6. 技术优势分析
 
 **质量要求：**
 - 技术描述具体详细，不能只是概念
-- mermaid图要清晰展示技术流程
-- 伪代码要完整可执行
+- Mermaid图要清晰展示{sc['title']}的架构和流程
+- 伪代码要完整可执行，包含核心逻辑
 - 公式要准确表达算法逻辑
+- 要体现{sc['focus']}的核心技术特点
 
 请严格按照以上要求生成内容，确保包含所有必需元素。
 """
@@ -665,8 +751,9 @@ def core_algorithm(input_data):
                 except Exception:
                     pass
                     
-            # Assemble detailed description
-            detailed_description = ("\n".join(desc_parts)).strip()
+            # Assemble detailed description with chapter 5 overview
+            chapter5_content = f"## 第五章 技术方案详细阐述\n\n### 5.0 技术方案总体介绍\n\n{chapter5_overview}\n\n"
+            detailed_description = chapter5_content + ("\n".join(desc_parts)).strip()
             self.agent_logger.info(f"DETAIL_SECTION assembled length={len(detailed_description)}")
             detailed_sections["detailed_description"] = detailed_description
             try:
