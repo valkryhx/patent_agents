@@ -1,0 +1,29 @@
+{
+  "quality_score": 8.75,
+  "consistency_score": 9.0,
+  "compliance_check": {
+    "legal_requirements": "Pass",
+    "technical_accuracy": "Pass",
+    "clarity": "Pass",
+    "unified_content_consistency": "Pass"
+  },
+  "feedback": [
+    "Excellent technical description aligned with 语义理解",
+    "Claims are well-structured and consistent with unified approach",
+    "Consider adding more examples for 参数推断"
+  ],
+  "recommendations": [
+    "Proceed with filing - unified content is consistent",
+    "Minor improvements suggested for enhanced clarity",
+    "Overall quality is high and maintains topic consistency"
+  ],
+  "unified_content_review": {
+    "strategy_alignment": "Strong",
+    "innovation_consistency": "High",
+    "topic_coherence": "Excellent",
+    "search_integration": "Good"
+  },
+  "execution_time": 0.5,
+  "test_mode": true,
+  "mock_delay_applied": 0.5
+}

@@ -1,0 +1,200 @@
+2025-08-18 10:00:39,579 - __main__ - INFO - 🎯 开始 Discussion Agent 测试
+2025-08-18 10:00:39,579 - __main__ - INFO - ============================================================
+2025-08-18 10:00:39,579 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=False
+2025-08-18 10:00:39,579 - __main__ - INFO - ============================================================
+2025-08-18 10:00:39,601 - __main__ - ERROR - ❌ 测试失败: No module named 'fastapi'
+2025-08-18 10:00:39,602 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test/test_discussion_agent.py", line 36, in test_discussion_agent_glm_false
+    import unified_service
+  File "/workspace/unified_service.py", line 7, in <module>
+    from fastapi import FastAPI, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
+ModuleNotFoundError: No module named 'fastapi'
+
+2025-08-18 10:00:39,602 - __main__ - INFO - ============================================================
+2025-08-18 10:00:39,602 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=True
+2025-08-18 10:00:39,602 - __main__ - INFO - ============================================================
+2025-08-18 10:00:39,603 - __main__ - ERROR - ❌ 测试失败: No module named 'fastapi'
+2025-08-18 10:00:39,603 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test/test_discussion_agent.py", line 130, in test_discussion_agent_glm_true
+    import unified_service
+  File "/workspace/unified_service.py", line 7, in <module>
+    from fastapi import FastAPI, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
+ModuleNotFoundError: No module named 'fastapi'
+
+2025-08-18 10:00:39,603 - __main__ - INFO - 
+============================================================
+2025-08-18 10:00:39,603 - __main__ - INFO - 测试总结
+2025-08-18 10:00:39,603 - __main__ - INFO - ============================================================
+2025-08-18 10:00:39,603 - __main__ - INFO - ❌ 部分测试失败
+2025-08-18 10:00:39,603 - __main__ - INFO - ❌ GLM_AVAILABLE=False 测试: 失败
+2025-08-18 10:00:39,603 - __main__ - INFO - ❌ GLM_AVAILABLE=True 测试: 失败
+2025-08-18 10:00:39,603 - __main__ - INFO - 💡 建议: 检查 Discussion Agent 配置和代码
+2025-08-18 10:00:47,096 - __main__ - INFO - 🎯 开始 Discussion Agent 测试
+2025-08-18 10:00:47,096 - __main__ - INFO - ============================================================
+2025-08-18 10:00:47,096 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=False
+2025-08-18 10:00:47,096 - __main__ - INFO - ============================================================
+2025-08-18 10:00:47,262 - __main__ - ERROR - ❌ 测试失败: No module named 'uvicorn'
+2025-08-18 10:00:47,263 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test/test_discussion_agent.py", line 36, in test_discussion_agent_glm_false
+    import unified_service
+  File "/workspace/unified_service.py", line 11, in <module>
+    import uvicorn
+ModuleNotFoundError: No module named 'uvicorn'
+
+2025-08-18 10:00:47,263 - __main__ - INFO - ============================================================
+2025-08-18 10:00:47,263 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=True
+2025-08-18 10:00:47,263 - __main__ - INFO - ============================================================
+2025-08-18 10:00:47,264 - __main__ - ERROR - ❌ 测试失败: No module named 'uvicorn'
+2025-08-18 10:00:47,264 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test/test_discussion_agent.py", line 130, in test_discussion_agent_glm_true
+    import unified_service
+  File "/workspace/unified_service.py", line 11, in <module>
+    import uvicorn
+ModuleNotFoundError: No module named 'uvicorn'
+
+2025-08-18 10:00:47,264 - __main__ - INFO - 
+============================================================
+2025-08-18 10:00:47,264 - __main__ - INFO - 测试总结
+2025-08-18 10:00:47,264 - __main__ - INFO - ============================================================
+2025-08-18 10:00:47,264 - __main__ - INFO - ❌ 部分测试失败
+2025-08-18 10:00:47,264 - __main__ - INFO - ❌ GLM_AVAILABLE=False 测试: 失败
+2025-08-18 10:00:47,264 - __main__ - INFO - ❌ GLM_AVAILABLE=True 测试: 失败
+2025-08-18 10:00:47,264 - __main__ - INFO - 💡 建议: 检查 Discussion Agent 配置和代码
+2025-08-18 10:00:54,848 - __main__ - INFO - 🎯 开始 Discussion Agent 测试
+2025-08-18 10:00:54,848 - __main__ - INFO - ============================================================
+2025-08-18 10:00:54,848 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=False
+2025-08-18 10:00:54,848 - __main__ - INFO - ============================================================
+2025-08-18 10:00:55,052 - unified_service - INFO - ✅ GLM客户端导入成功
+2025-08-18 10:00:55,053 - workflow_manager - INFO - 🚀 WorkflowManager initialized with task assignment to agent services
+2025-08-18 10:00:55,062 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-18 10:00:55,062 - __main__ - ERROR - ❌ 测试失败: 3 validation errors for TaskRequest
+task_id
+  Field required [type=missing, input_value={'topic': '基于语义...t_discussion_glm_false'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+stage_name
+  Field required [type=missing, input_value={'topic': '基于语义...t_discussion_glm_false'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+description
+  Field required [type=missing, input_value={'topic': '基于语义...t_discussion_glm_false'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-08-18 10:00:55,063 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test/test_discussion_agent.py", line 70, in test_discussion_agent_glm_false
+    request = TaskRequest(
+        topic=test_topic,
+    ...<2 lines>...
+        workflow_id="test_discussion_glm_false"
+    )
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/pydantic/main.py", line 253, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for TaskRequest
+task_id
+  Field required [type=missing, input_value={'topic': '基于语义...t_discussion_glm_false'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+stage_name
+  Field required [type=missing, input_value={'topic': '基于语义...t_discussion_glm_false'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+description
+  Field required [type=missing, input_value={'topic': '基于语义...t_discussion_glm_false'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+
+2025-08-18 10:00:55,063 - __main__ - INFO - ============================================================
+2025-08-18 10:00:55,063 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=True
+2025-08-18 10:00:55,063 - __main__ - INFO - ============================================================
+2025-08-18 10:00:55,063 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-18 10:00:55,063 - __main__ - ERROR - ❌ 测试失败: 3 validation errors for TaskRequest
+task_id
+  Field required [type=missing, input_value={'topic': '基于语义...st_discussion_glm_true'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+stage_name
+  Field required [type=missing, input_value={'topic': '基于语义...st_discussion_glm_true'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+description
+  Field required [type=missing, input_value={'topic': '基于语义...st_discussion_glm_true'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+2025-08-18 10:00:55,064 - __main__ - ERROR - 📋 错误详情: Traceback (most recent call last):
+  File "/workspace/test/test_discussion_agent.py", line 164, in test_discussion_agent_glm_true
+    request = TaskRequest(
+        topic=test_topic,
+    ...<2 lines>...
+        workflow_id="test_discussion_glm_true"
+    )
+  File "/home/ubuntu/.local/lib/python3.13/site-packages/pydantic/main.py", line 253, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for TaskRequest
+task_id
+  Field required [type=missing, input_value={'topic': '基于语义...st_discussion_glm_true'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+stage_name
+  Field required [type=missing, input_value={'topic': '基于语义...st_discussion_glm_true'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+description
+  Field required [type=missing, input_value={'topic': '基于语义...st_discussion_glm_true'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.11/v/missing
+
+2025-08-18 10:00:55,064 - __main__ - INFO - 
+============================================================
+2025-08-18 10:00:55,064 - __main__ - INFO - 测试总结
+2025-08-18 10:00:55,064 - __main__ - INFO - ============================================================
+2025-08-18 10:00:55,064 - __main__ - INFO - ❌ 部分测试失败
+2025-08-18 10:00:55,064 - __main__ - INFO - ❌ GLM_AVAILABLE=False 测试: 失败
+2025-08-18 10:00:55,064 - __main__ - INFO - ❌ GLM_AVAILABLE=True 测试: 失败
+2025-08-18 10:00:55,064 - __main__ - INFO - 💡 建议: 检查 Discussion Agent 配置和代码
+2025-08-18 10:01:37,309 - __main__ - INFO - 🎯 开始 Discussion Agent 测试
+2025-08-18 10:01:37,309 - __main__ - INFO - ============================================================
+2025-08-18 10:01:37,309 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=False
+2025-08-18 10:01:37,309 - __main__ - INFO - ============================================================
+2025-08-18 10:01:37,507 - unified_service - INFO - ✅ GLM客户端导入成功
+2025-08-18 10:01:37,507 - workflow_manager - INFO - 🚀 WorkflowManager initialized with task assignment to agent services
+2025-08-18 10:01:37,516 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-18 10:01:37,516 - __main__ - INFO - 📋 执行 Discussion Agent 任务
+2025-08-18 10:01:37,516 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:37,516 - unified_service - INFO - 🚀 Starting innovation discussion for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:37,516 - unified_service - INFO - 🔧 Test mode: True
+2025-08-18 10:01:38,017 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-18 10:01:38,017 - unified_service - INFO - 📋 Building on planning strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-18 10:01:38,017 - unified_service - INFO - 🔍 Incorporating search findings: 3 patents found
+2025-08-18 10:01:38,017 - unified_service - INFO - 📝 使用mock数据进行创新讨论分析
+2025-08-18 10:01:38,017 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-18 10:01:38,017 - __main__ - INFO - 📊 结果分析:
+2025-08-18 10:01:38,017 - __main__ - INFO -   主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:38,017 - __main__ - INFO -   创新点数量: 3
+2025-08-18 10:01:38,017 - __main__ - INFO -   技术洞察数量: 3
+2025-08-18 10:01:38,017 - __main__ - INFO -   建议数量: 3
+2025-08-18 10:01:38,017 - __main__ - INFO -   新颖性评分: 8.5
+2025-08-18 10:01:38,017 - __main__ - INFO -   测试模式: True
+2025-08-18 10:01:38,017 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-18 10:01:38,017 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-18 10:01:38,018 - __main__ - INFO - 💾 结果已保存到: test_discussion_glm_false_output.json
+2025-08-18 10:01:38,018 - __main__ - INFO - ============================================================
+2025-08-18 10:01:38,018 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=True
+2025-08-18 10:01:38,018 - __main__ - INFO - ============================================================
+2025-08-18 10:01:38,018 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-18 10:01:38,018 - __main__ - INFO - 📋 执行 Discussion Agent 任务
+2025-08-18 10:01:38,018 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:38,018 - unified_service - INFO - 🚀 Starting innovation discussion for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:38,018 - unified_service - INFO - 🔧 Test mode: False
+2025-08-18 10:01:38,018 - unified_service - INFO - 📋 Building on planning strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-18 10:01:38,018 - unified_service - INFO - 🔍 Incorporating search findings: 3 patents found
+2025-08-18 10:01:38,018 - unified_service - INFO - 🚀 使用GLM API进行创新讨论分析
+2025-08-18 10:01:38,018 - unified_service - ERROR - ❌ GLM API调用失败: 'GLMClient' object has no attribute 'analyze_innovation_discussion'
+2025-08-18 10:01:38,018 - unified_service - INFO - 🔄 回退到mock数据
+2025-08-18 10:01:38,018 - unified_service - INFO - 📝 使用mock数据进行创新讨论分析
+2025-08-18 10:01:38,018 - __main__ - INFO - ⏱️ 执行时间: 0.00秒
+2025-08-18 10:01:38,018 - __main__ - INFO - 📊 结果分析:
+2025-08-18 10:01:38,018 - __main__ - INFO -   主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:38,018 - __main__ - INFO -   创新点数量: 3
+2025-08-18 10:01:38,018 - __main__ - INFO -   技术洞察数量: 3
+2025-08-18 10:01:38,018 - __main__ - INFO -   建议数量: 3
+2025-08-18 10:01:38,018 - __main__ - INFO -   新颖性评分: 8.5
+2025-08-18 10:01:38,018 - __main__ - INFO -   测试模式: False
+2025-08-18 10:01:38,018 - __main__ - INFO -   Mock延迟: 0
+2025-08-18 10:01:38,018 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-18 10:01:38,018 - __main__ - INFO - 💾 结果已保存到: test_discussion_glm_true_output.json
+2025-08-18 10:01:38,018 - __main__ - INFO - 
+============================================================
+2025-08-18 10:01:38,018 - __main__ - INFO - 测试总结
+2025-08-18 10:01:38,018 - __main__ - INFO - ============================================================
+2025-08-18 10:01:38,018 - __main__ - INFO - 🎉 所有测试通过！
+2025-08-18 10:01:38,018 - __main__ - INFO - ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-18 10:01:38,018 - __main__ - INFO - ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-18 10:01:38,018 - __main__ - INFO - 💡 建议: Discussion Agent 工作正常

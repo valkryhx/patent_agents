@@ -1,0 +1,61 @@
+2025-08-18 10:01:42,175 - __main__ - INFO - 🎯 开始 Reviewer Agent 测试
+2025-08-18 10:01:42,175 - __main__ - INFO - ============================================================
+2025-08-18 10:01:42,175 - __main__ - INFO - 🧪 测试 Reviewer Agent - GLM_AVAILABLE=False
+2025-08-18 10:01:42,175 - __main__ - INFO - ============================================================
+2025-08-18 10:01:42,371 - unified_service - INFO - ✅ GLM客户端导入成功
+2025-08-18 10:01:42,371 - workflow_manager - INFO - 🚀 WorkflowManager initialized with task assignment to agent services
+2025-08-18 10:01:42,381 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-18 10:01:42,381 - __main__ - INFO - 📋 执行 Reviewer Agent 任务
+2025-08-18 10:01:42,381 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:42,381 - unified_service - INFO - 🚀 Starting quality review for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:42,381 - unified_service - INFO - 🔧 Test mode: True
+2025-08-18 10:01:42,882 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-18 10:01:42,882 - unified_service - INFO - 📋 Using full context for review
+2025-08-18 10:01:42,882 - unified_service - INFO - 📋 Reviewing against unified strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-18 10:01:42,882 - unified_service - INFO - 🔍 Checking consistency with 0 search findings
+2025-08-18 10:01:42,882 - unified_service - INFO - 📝 使用mock数据进行专利质量审查
+2025-08-18 10:01:42,882 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-18 10:01:42,882 - __main__ - INFO - 📊 结果分析:
+2025-08-18 10:01:42,882 - __main__ - INFO -   质量评分: 8.75
+2025-08-18 10:01:42,882 - __main__ - INFO -   一致性评分: 9.0
+2025-08-18 10:01:42,882 - __main__ - INFO -   反馈数量: 3
+2025-08-18 10:01:42,882 - __main__ - INFO -   建议数量: 3
+2025-08-18 10:01:42,882 - __main__ - INFO -   合规检查: {'legal_requirements': 'Pass', 'technical_accuracy': 'Pass', 'clarity': 'Pass', 'unified_content_consistency': 'Pass'}
+2025-08-18 10:01:42,882 - __main__ - INFO -   测试模式: True
+2025-08-18 10:01:42,882 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-18 10:01:42,882 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-18 10:01:42,882 - __main__ - INFO - 💾 结果已保存到: test_reviewer_glm_false_output.json
+2025-08-18 10:01:42,882 - __main__ - INFO - ============================================================
+2025-08-18 10:01:42,882 - __main__ - INFO - 🧪 测试 Reviewer Agent - GLM_AVAILABLE=True
+2025-08-18 10:01:42,882 - __main__ - INFO - ============================================================
+2025-08-18 10:01:42,882 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-18 10:01:42,882 - __main__ - INFO - 📋 执行 Reviewer Agent 任务
+2025-08-18 10:01:42,882 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:42,882 - unified_service - INFO - 🚀 Starting quality review for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-18 10:01:42,882 - unified_service - INFO - 🔧 Test mode: False
+2025-08-18 10:01:42,882 - unified_service - INFO - 📋 Using full context for review
+2025-08-18 10:01:42,882 - unified_service - INFO - 📋 Reviewing against unified strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-18 10:01:42,882 - unified_service - INFO - 🔍 Checking consistency with 0 search findings
+2025-08-18 10:01:42,882 - unified_service - INFO - 🚀 使用GLM API进行专利质量审查
+2025-08-18 10:01:42,882 - unified_service - ERROR - ❌ GLM API调用失败: 'GLMClient' object has no attribute 'review_patent_quality'
+2025-08-18 10:01:42,882 - unified_service - INFO - 🔄 回退到mock数据
+2025-08-18 10:01:42,882 - unified_service - INFO - 📝 使用mock数据进行专利质量审查
+2025-08-18 10:01:42,882 - __main__ - INFO - ⏱️ 执行时间: 0.00秒
+2025-08-18 10:01:42,882 - __main__ - INFO - 📊 结果分析:
+2025-08-18 10:01:42,882 - __main__ - INFO -   质量评分: 8.75
+2025-08-18 10:01:42,882 - __main__ - INFO -   一致性评分: 9.0
+2025-08-18 10:01:42,882 - __main__ - INFO -   反馈数量: 3
+2025-08-18 10:01:42,883 - __main__ - INFO -   建议数量: 3
+2025-08-18 10:01:42,883 - __main__ - INFO -   合规检查: {'legal_requirements': 'Pass', 'technical_accuracy': 'Pass', 'clarity': 'Pass', 'unified_content_consistency': 'Pass'}
+2025-08-18 10:01:42,883 - __main__ - INFO -   测试模式: False
+2025-08-18 10:01:42,883 - __main__ - INFO -   Mock延迟: 0
+2025-08-18 10:01:42,883 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-18 10:01:42,883 - __main__ - INFO - 💾 结果已保存到: test_reviewer_glm_true_output.json
+2025-08-18 10:01:42,883 - __main__ - INFO - 
+============================================================
+2025-08-18 10:01:42,883 - __main__ - INFO - 测试总结
+2025-08-18 10:01:42,883 - __main__ - INFO - ============================================================
+2025-08-18 10:01:42,883 - __main__ - INFO - 🎉 所有测试通过！
+2025-08-18 10:01:42,883 - __main__ - INFO - ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-18 10:01:42,883 - __main__ - INFO - ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-18 10:01:42,883 - __main__ - INFO - 💡 建议: Reviewer Agent 工作正常
