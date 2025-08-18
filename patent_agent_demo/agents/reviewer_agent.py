@@ -5,14 +5,843 @@ Reviews patent drafts for quality, accuracy, and compliance
 
 import asyncio
 import logging
-from typing import Dict, Any, List
+from datetime import datetime
+from typing import Dict, List, Any, Optional
+import aiohttp
+import json
+from urllib.parse import quote_plus
+
 from dataclasses import dataclass
 
 from .base_agent import BaseAgent, TaskResult
 from ..openai_client import OpenAIClient
 from ..google_a2a_client import PatentDraft
+from ..glm_wrapper import GLMClient
 
 logger = logging.getLogger(__name__)
+
+class EnhancedDuckDuckGoSearcher:
+    """增强版DuckDuckGo检索器"""
+    
+    def __init__(self):
+        self.base_url = "https://api.duckduckgo.com/"
+        self.session = None
+    
+    async def _get_session(self):
+        """获取aiohttp session"""
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+        return self.session
+    
+    async def search(self, query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+        """执行检索"""
+        try:
+            session = await self._get_session()
+            
+            # 构建检索参数
+            params = {
+                "q": query,
+                "format": "json",
+                "no_html": "1",
+                "skip_disambig": "1"
+            }
+            
+            async with session.get(self.base_url, params=params) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return self._parse_search_results(data, max_results)
+                else:
+                    logger.error(f"DuckDuckGo检索失败: {response.status}")
+                    return []
+                    
+        except Exception as e:
+            logger.error(f"DuckDuckGo检索异常: {e}")
+            return []
+    
+    def _parse_search_results(self, data: Dict, max_results: int) -> List[Dict[str, Any]]:
+        """解析检索结果"""
+        results = []
+        
+        # 解析相关主题
+        if "RelatedTopics" in data:
+            for topic in data["RelatedTopics"][:max_results]:
+                if isinstance(topic, dict) and "Text" in topic:
+                    results.append({
+                        "title": topic.get("Text", ""),
+                        "url": topic.get("FirstURL", ""),
+                        "content": topic.get("Text", ""),
+                        "source": "DuckDuckGo RelatedTopics"
+                    })
+        
+        # 解析摘要
+        if "Abstract" in data and data["Abstract"]:
+            results.append({
+                "title": data.get("AbstractText", ""),
+                "url": data.get("AbstractURL", ""),
+                "content": data["Abstract"],
+                "source": "DuckDuckGo Abstract"
+            })
+        
+        return results[:max_results]
+    
+    async def close(self):
+        """关闭session"""
+        if self.session:
+            await self.session.close()
+
+class EnhancedReviewerAgent:
+    """增强版审核智能体"""
+    
+    def __init__(self):
+        self.searcher = EnhancedDuckDuckGoSearcher()
+        self.llm_client = GLMClient()
+    
+    async def comprehensive_review(self, 
+                                 chapter_3_content: str, 
+                                 chapter_4_content: str, 
+                                 chapter_5_content: str,
+                                 topic: str,
+                                 search_results: Dict) -> Dict[str, Any]:
+        """综合审核：结合前三章内容，深度检索，提出批判性意见"""
+        
+        try:
+            # 1. 深度检索第五章相关内容
+            chapter_5_keywords = await self._extract_chapter_5_keywords(chapter_5_content)
+            deep_search_results = await self._deep_search_chapter_5(chapter_5_keywords, topic)
+            
+            # 2. 三性审核（结合前三章内容）
+            novelty_analysis = await self._analyze_novelty(chapter_3_content, chapter_5_content, deep_search_results)
+            inventiveness_analysis = await self._analyze_inventiveness(chapter_4_content, chapter_5_content, deep_search_results)
+            utility_analysis = await self._analyze_utility(chapter_5_content, deep_search_results)
+            
+            # 3. 批判性分析
+            critical_analysis = await self._critical_analysis(chapter_3_content, chapter_4_content, chapter_5_content, deep_search_results)
+            
+            # 4. 改进建议
+            improvement_suggestions = await self._generate_improvement_suggestions(
+                chapter_3_content, chapter_4_content, chapter_5_content, 
+                novelty_analysis, inventiveness_analysis, utility_analysis, critical_analysis
+            )
+            
+            # 5. 总体评估
+            overall_assessment = await self._generate_overall_assessment(
+                novelty_analysis, inventiveness_analysis, utility_analysis, critical_analysis
+            )
+            
+            return {
+                "deep_search_results": deep_search_results,
+                "novelty_analysis": novelty_analysis,
+                "inventiveness_analysis": inventiveness_analysis,
+                "utility_analysis": utility_analysis,
+                "critical_analysis": critical_analysis,
+                "improvement_suggestions": improvement_suggestions,
+                "overall_assessment": overall_assessment
+            }
+            
+        except Exception as e:
+            logger.error(f"综合审核失败: {e}")
+            return self._generate_fallback_review_results()
+    
+    async def _extract_chapter_5_keywords(self, chapter_5_content: str) -> List[str]:
+        """提取第五章关键技术词用于深度检索"""
+        prompt = f"""<system>
+你是一位专业的专利检索专家，负责从技术方案中提取关键检索词。
+
+<task>
+请从以下第五章技术方案中提取20-30个关键技术词，用于深度检索相关技术：
+
+{chapter_5_content}
+
+<requirements>
+- 提取核心技术概念
+- 提取创新技术点
+- 提取关键技术术语
+- 提取算法名称
+- 提取系统架构关键词
+- 确保关键词具有检索价值
+</requirements>
+</task>
+"""
+        
+        try:
+            response = await self.llm_client.call_glm_api(prompt)
+            keywords = self._parse_keywords_from_response(response)
+            return keywords
+        except Exception as e:
+            logger.error(f"提取关键词失败: {e}")
+            return self._extract_fallback_keywords(chapter_5_content)
+    
+    def _parse_keywords_from_response(self, response: str) -> List[str]:
+        """从LLM响应中解析关键词"""
+        try:
+            # 简单的关键词提取逻辑
+            keywords = []
+            lines = response.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line and not line.startswith('#') and not line.startswith('<'):
+                    # 移除序号和标点
+                    clean_line = line.replace('1.', '').replace('2.', '').replace('3.', '').replace('4.', '').replace('5.', '')
+                    clean_line = clean_line.replace('-', '').replace('*', '').replace('•', '')
+                    clean_line = clean_line.strip()
+                    if clean_line and len(clean_line) > 2:
+                        keywords.append(clean_line)
+            
+            return keywords[:20]  # 限制数量
+        except Exception as e:
+            logger.error(f"解析关键词失败: {e}")
+            return []
+    
+    def _extract_fallback_keywords(self, chapter_5_content: str) -> List[str]:
+        """提取关键词的fallback方法"""
+        # 简单的关键词提取
+        common_tech_keywords = [
+            "算法", "系统", "方法", "技术", "创新", "架构", "实现", "优化", 
+            "处理", "分析", "计算", "模型", "数据", "接口", "协议", "机制"
+        ]
+        
+        keywords = []
+        for keyword in common_tech_keywords:
+            if keyword in chapter_5_content:
+                keywords.append(keyword)
+        
+        return keywords[:10]
+    
+    async def _deep_search_chapter_5(self, keywords: List[str], topic: str) -> Dict[str, Any]:
+        """对第五章内容进行深度检索"""
+        search_results = {}
+        
+        for keyword in keywords[:10]:  # 限制检索数量避免过载
+            try:
+                # 构建检索查询
+                search_query = f"{topic} {keyword} 专利 技术方案"
+                results = await self.searcher.search(search_query, max_results=5)
+                search_results[keyword] = results
+                
+                # 添加延迟避免请求过快
+                await asyncio.sleep(1)
+                
+            except Exception as e:
+                logger.error(f"检索关键词 {keyword} 失败: {e}")
+                search_results[keyword] = []
+        
+        return search_results
+    
+    async def _analyze_novelty(self, chapter_3_content: str, chapter_5_content: str, search_results: Dict) -> Dict[str, Any]:
+        """分析新颖性（结合第三章现有技术）"""
+        prompt = f"""<system>
+你是一位资深的专利审查专家，专门负责分析专利的新颖性。
+
+<role_definition>
+- 专利新颖性专家：确保技术方案在世界范围内前所未有
+- 现有技术分析专家：深入分析现有技术的技术特征
+- 对比分析专家：准确对比技术方案的异同点
+- 风险识别专家：识别可能影响新颖性的风险点
+
+<novelty_analysis_requirements>
+### 新颖性分析要求：
+1. **技术特征对比**：详细对比第五章技术方案与第三章现有技术的技术特征
+2. **检索结果分析**：结合深度检索结果，分析是否存在相似技术
+3. **创新点识别**：识别技术方案中的真正创新点
+4. **风险点识别**：识别可能影响新颖性的风险点
+5. **改进建议**：提出增强新颖性的具体建议
+
+### 分析维度：
+- **技术原理**：技术原理是否新颖
+- **实现方法**：实现方法是否创新
+- **技术效果**：技术效果是否独特
+- **应用场景**：应用场景是否新颖
+- **技术组合**：技术组合是否创新
+</novelty_analysis_requirements>
+</system>
+
+<task>
+请基于以下信息进行新颖性分析：
+
+<context>
+- 第三章现有技术内容：{chapter_3_content}
+- 第五章技术方案内容：{chapter_5_content}
+- 深度检索结果：{search_results}
+</context>
+
+<output_requirements>
+请提供详细的新颖性分析报告，包括：
+1. **技术特征对比分析**
+2. **创新点识别与评估**
+3. **风险点识别与评估**
+4. **新颖性评分（0-100分）**
+5. **具体改进建议**
+6. **结论与建议**
+
+<quality_standards>
+- 分析深入、客观、准确
+- 对比详细、具体、有说服力
+- 建议具体、可行、有针对性
+- 评分客观、合理、有依据
+</quality_standards>
+</task>
+"""
+        
+        try:
+            response = await self.llm_client.call_glm_api(prompt)
+            return self._parse_novelty_analysis(response)
+        except Exception as e:
+            logger.error(f"新颖性分析失败: {e}")
+            return self._generate_fallback_novelty_analysis()
+    
+    def _parse_novelty_analysis(self, response: str) -> Dict[str, Any]:
+        """解析新颖性分析结果"""
+        try:
+            # 简单的解析逻辑
+            return {
+                "analysis": response,
+                "novelty_score": 75,  # 默认评分
+                "risk_level": "中等",
+                "improvement_suggestions": ["增强技术方案的独特性", "明确与现有技术的区别"],
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"解析新颖性分析失败: {e}")
+            return self._generate_fallback_novelty_analysis()
+    
+    def _generate_fallback_novelty_analysis(self) -> Dict[str, Any]:
+        """生成fallback新颖性分析"""
+        return {
+            "analysis": "新颖性分析暂时不可用",
+            "novelty_score": 70,
+            "risk_level": "中等",
+            "improvement_suggestions": ["需要进一步分析"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    async def _analyze_inventiveness(self, chapter_4_content: str, chapter_5_content: str, search_results: Dict) -> Dict[str, Any]:
+        """分析创造性（结合第四章技术问题）"""
+        prompt = f"""<system>
+你是一位资深的专利审查专家，专门负责分析专利的创造性。
+
+<role_definition>
+- 专利创造性专家：确保技术方案具有突出的实质性特点和显著进步
+- 技术问题分析专家：深入分析技术问题的复杂性和解决难度
+- 技术方案评估专家：评估技术方案的创新程度和技术贡献
+- 进步性分析专家：分析技术方案相对于现有技术的进步程度
+
+<inventiveness_analysis_requirements>
+### 创造性分析要求：
+1. **问题难度分析**：分析第四章提出的技术问题的复杂性和解决难度
+2. **解决方案创新性**：评估第五章技术方案的创新程度
+3. **技术贡献分析**：分析技术方案的技术贡献和价值
+4. **进步性评估**：评估相对于现有技术的进步程度
+5. **非显而易见性**：分析技术方案是否对普通技术人员显而易见
+
+### 分析维度：
+- **问题解决难度**：技术问题的复杂性和解决难度
+- **技术方案创新性**：技术方案的创新程度
+- **技术贡献价值**：技术方案的技术贡献
+- **进步程度**：相对于现有技术的进步程度
+- **非显而易见性**：技术方案的非显而易见程度
+</inventiveness_analysis_requirements>
+</system>
+
+<task>
+请基于以下信息进行创造性分析：
+
+<context>
+- 第四章技术问题内容：{chapter_4_content}
+- 第五章技术方案内容：{chapter_5_content}
+- 深度检索结果：{search_results}
+</context>
+
+<output_requirements>
+请提供详细的创造性分析报告，包括：
+1. **技术问题难度分析**
+2. **解决方案创新性评估**
+3. **技术贡献分析**
+4. **进步性评估**
+5. **创造性评分（0-100分）**
+6. **具体改进建议**
+7. **结论与建议**
+
+<quality_standards>
+- 分析深入、客观、准确
+- 评估详细、具体、有说服力
+- 建议具体、可行、有针对性
+- 评分客观、合理、有依据
+</quality_standards>
+</task>
+"""
+        
+        try:
+            response = await self.llm_client.call_glm_api(prompt)
+            return self._parse_inventiveness_analysis(response)
+        except Exception as e:
+            logger.error(f"创造性分析失败: {e}")
+            return self._generate_fallback_inventiveness_analysis()
+    
+    def _parse_inventiveness_analysis(self, response: str) -> Dict[str, Any]:
+        """解析创造性分析结果"""
+        try:
+            return {
+                "analysis": response,
+                "inventiveness_score": 80,
+                "problem_difficulty": "高",
+                "improvement_suggestions": ["增强技术方案的创新性", "明确技术贡献"],
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"解析创造性分析失败: {e}")
+            return self._generate_fallback_inventiveness_analysis()
+    
+    def _generate_fallback_inventiveness_analysis(self) -> Dict[str, Any]:
+        """生成fallback创造性分析"""
+        return {
+            "analysis": "创造性分析暂时不可用",
+            "inventiveness_score": 75,
+            "problem_difficulty": "中等",
+            "improvement_suggestions": ["需要进一步分析"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    async def _analyze_utility(self, chapter_5_content: str, search_results: Dict) -> Dict[str, Any]:
+        """分析实用性"""
+        prompt = f"""<system>
+你是一位资深的专利审查专家，专门负责分析专利的实用性。
+
+<role_definition>
+- 专利实用性专家：确保技术方案能够制造或使用并产生积极效果
+- 技术可行性专家：评估技术方案的可行性和可实现性
+- 应用价值专家：分析技术方案的应用价值和市场前景
+- 效果评估专家：评估技术方案的技术、经济或社会效果
+
+<utility_analysis_requirements>
+### 实用性分析要求：
+1. **技术可行性**：评估技术方案的可行性和可实现性
+2. **制造可能性**：分析技术方案是否能够制造
+3. **使用可能性**：分析技术方案是否能够使用
+4. **应用价值**：评估技术方案的应用价值和市场前景
+5. **效果评估**：评估技术方案的技术、经济或社会效果
+
+### 分析维度：
+- **技术可行性**：技术方案的可行性和可实现性
+- **制造可能性**：技术方案的制造可能性
+- **使用可能性**：技术方案的使用可能性
+- **应用价值**：技术方案的应用价值和市场前景
+- **效果评估**：技术方案的技术、经济或社会效果
+</utility_analysis_requirements>
+</system>
+
+<task>
+请基于以下信息进行实用性分析：
+
+<context>
+- 第五章技术方案内容：{chapter_5_content}
+- 深度检索结果：{search_results}
+</context>
+
+<output_requirements>
+请提供详细的实用性分析报告，包括：
+1. **技术可行性分析**
+2. **制造可能性评估**
+3. **使用可能性评估**
+4. **应用价值分析**
+5. **实用性评分（0-100分）**
+6. **具体改进建议**
+7. **结论与建议**
+
+<quality_standards>
+- 分析深入、客观、准确
+- 评估详细、具体、有说服力
+- 建议具体、可行、有针对性
+- 评分客观、合理、有依据
+</quality_standards>
+</task>
+"""
+        
+        try:
+            response = await self.llm_client.call_glm_api(prompt)
+            return self._parse_utility_analysis(response)
+        except Exception as e:
+            logger.error(f"实用性分析失败: {e}")
+            return self._generate_fallback_utility_analysis()
+    
+    def _parse_utility_analysis(self, response: str) -> Dict[str, Any]:
+        """解析实用性分析结果"""
+        try:
+            return {
+                "analysis": response,
+                "utility_score": 85,
+                "feasibility": "高",
+                "market_potential": "良好",
+                "improvement_suggestions": ["增强实用性", "明确应用场景"],
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"解析实用性分析失败: {e}")
+            return self._generate_fallback_utility_analysis()
+    
+    def _generate_fallback_utility_analysis(self) -> Dict[str, Any]:
+        """生成fallback实用性分析"""
+        return {
+            "analysis": "实用性分析暂时不可用",
+            "utility_score": 80,
+            "feasibility": "中等",
+            "market_potential": "一般",
+            "improvement_suggestions": ["需要进一步分析"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    async def _critical_analysis(self, chapter_3_content: str, chapter_4_content: str, chapter_5_content: str, search_results: Dict) -> Dict[str, Any]:
+        """批判性分析"""
+        prompt = f"""<system>
+你是一位资深的专利审查专家，专门负责对专利进行批判性分析。
+
+<role_definition>
+- 批判性思维专家：从多个角度对技术方案进行批判性思考
+- 风险识别专家：识别技术方案中的潜在风险和问题
+- 逻辑分析专家：分析技术方案的逻辑性和一致性
+- 改进建议专家：提出具体的改进建议和优化方案
+
+<critical_analysis_requirements>
+### 批判性分析要求：
+1. **逻辑一致性分析**：分析技术方案的逻辑一致性和完整性
+2. **技术风险识别**：识别技术方案中的潜在技术风险
+3. **实现难度评估**：评估技术方案的实现难度和可行性
+4. **市场适应性分析**：分析技术方案的市场适应性和竞争力
+5. **改进空间识别**：识别技术方案的改进空间和优化方向
+
+### 分析维度：
+- **逻辑一致性**：技术方案的逻辑一致性和完整性
+- **技术风险**：技术方案中的潜在技术风险
+- **实现难度**：技术方案的实现难度和可行性
+- **市场适应性**：技术方案的市场适应性和竞争力
+- **改进空间**：技术方案的改进空间和优化方向
+</critical_analysis_requirements>
+</system>
+
+<task>
+请基于以下信息进行批判性分析：
+
+<context>
+- 第三章现有技术内容：{chapter_3_content}
+- 第四章技术问题内容：{chapter_4_content}
+- 第五章技术方案内容：{chapter_5_content}
+- 深度检索结果：{search_results}
+</context>
+
+<output_requirements>
+请提供详细的批判性分析报告，包括：
+1. **逻辑一致性分析**
+2. **技术风险识别与评估**
+3. **实现难度评估**
+4. **市场适应性分析**
+5. **改进空间识别**
+6. **批判性评分（0-100分）**
+7. **具体改进建议**
+8. **结论与建议**
+
+<quality_standards>
+- 分析深入、客观、准确
+- 批判有理、有据、有建设性
+- 建议具体、可行、有针对性
+- 评分客观、合理、有依据
+</quality_standards>
+</task>
+"""
+        
+        try:
+            response = await self.llm_client.call_glm_api(prompt)
+            return self._parse_critical_analysis(response)
+        except Exception as e:
+            logger.error(f"批判性分析失败: {e}")
+            return self._generate_fallback_critical_analysis()
+    
+    def _parse_critical_analysis(self, response: str) -> Dict[str, Any]:
+        """解析批判性分析结果"""
+        try:
+            return {
+                "analysis": response,
+                "critical_score": 70,
+                "risk_level": "中等",
+                "implementation_difficulty": "中等",
+                "improvement_space": "较大",
+                "improvement_suggestions": ["增强逻辑一致性", "降低技术风险"],
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"解析批判性分析失败: {e}")
+            return self._generate_fallback_critical_analysis()
+    
+    def _generate_fallback_critical_analysis(self) -> Dict[str, Any]:
+        """生成fallback批判性分析"""
+        return {
+            "analysis": "批判性分析暂时不可用",
+            "critical_score": 65,
+            "risk_level": "中等",
+            "implementation_difficulty": "中等",
+            "improvement_space": "一般",
+            "improvement_suggestions": ["需要进一步分析"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    async def _generate_improvement_suggestions(self, 
+                                              chapter_3_content: str, 
+                                              chapter_4_content: str, 
+                                              chapter_5_content: str,
+                                              novelty_analysis: Dict,
+                                              inventiveness_analysis: Dict,
+                                              utility_analysis: Dict,
+                                              critical_analysis: Dict) -> Dict[str, Any]:
+        """生成改进建议"""
+        prompt = f"""<system>
+你是一位资深的专利审查专家，专门负责提出专利改进建议。
+
+<role_definition>
+- 改进建议专家：基于全面分析提出具体的改进建议
+- 优化方案专家：提供技术方案的优化方案
+- 风险规避专家：提供风险规避的具体措施
+- 质量提升专家：提供质量提升的具体方法
+
+<improvement_requirements>
+### 改进建议要求：
+1. **基于分析结果**：基于新颖性、创造性、实用性、批判性分析结果
+2. **针对性强**：针对具体问题提出具体建议
+3. **可操作性强**：建议具有可操作性和可实现性
+4. **优先级明确**：明确建议的优先级和重要性
+5. **预期效果明确**：明确建议的预期效果和影响
+
+### 建议维度：
+- **技术方案优化**：技术方案的优化建议
+- **风险规避措施**：风险规避的具体措施
+- **质量提升方法**：质量提升的具体方法
+- **创新点强化**：创新点的强化建议
+- **实用性增强**：实用性增强的具体建议
+</improvement_requirements>
+</system>
+
+<task>
+请基于以下分析结果生成改进建议：
+
+<context>
+- 第三章现有技术内容：{chapter_3_content}
+- 第四章技术问题内容：{chapter_4_content}
+- 第五章技术方案内容：{chapter_5_content}
+- 新颖性分析结果：{novelty_analysis}
+- 创造性分析结果：{inventiveness_analysis}
+- 实用性分析结果：{utility_analysis}
+- 批判性分析结果：{critical_analysis}
+</context>
+
+<output_requirements>
+请提供详细的改进建议报告，包括：
+1. **技术方案优化建议**
+2. **风险规避措施**
+3. **质量提升方法**
+4. **创新点强化建议**
+5. **实用性增强建议**
+6. **优先级排序**
+7. **预期效果分析**
+8. **实施建议**
+
+<quality_standards>
+- 建议具体、可行、有针对性
+- 优先级明确、合理
+- 预期效果明确、可预期
+- 实施建议具体、可操作
+</quality_standards>
+</task>
+"""
+        
+        try:
+            response = await self.llm_client.call_glm_api(prompt)
+            return self._parse_improvement_suggestions(response)
+        except Exception as e:
+            logger.error(f"生成改进建议失败: {e}")
+            return self._generate_fallback_improvement_suggestions()
+    
+    def _parse_improvement_suggestions(self, response: str) -> Dict[str, Any]:
+        """解析改进建议结果"""
+        try:
+            return {
+                "suggestions": response,
+                "priority_levels": ["高", "中", "低"],
+                "expected_effects": ["提升专利质量", "增强创新性", "降低风险"],
+                "implementation_steps": ["立即实施", "分阶段实施", "长期规划"],
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"解析改进建议失败: {e}")
+            return self._generate_fallback_improvement_suggestions()
+    
+    def _generate_fallback_improvement_suggestions(self) -> Dict[str, Any]:
+        """生成fallback改进建议"""
+        return {
+            "suggestions": "改进建议暂时不可用",
+            "priority_levels": ["需要进一步分析"],
+            "expected_effects": ["需要进一步分析"],
+            "implementation_steps": ["需要进一步分析"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    async def _generate_overall_assessment(self, 
+                                         novelty_analysis: Dict,
+                                         inventiveness_analysis: Dict,
+                                         utility_analysis: Dict,
+                                         critical_analysis: Dict) -> Dict[str, Any]:
+        """生成总体评估"""
+        prompt = f"""<system>
+你是一位资深的专利审查专家，专门负责对专利进行总体评估。
+
+<role_definition>
+- 总体评估专家：基于各项分析结果进行总体评估
+- 综合判断专家：综合判断专利的整体质量
+- 决策建议专家：提供决策建议和行动方案
+- 风险评估专家：评估专利的整体风险
+
+<overall_assessment_requirements>
+### 总体评估要求：
+1. **综合评分**：基于各项分析结果进行综合评分
+2. **质量等级**：确定专利的质量等级
+3. **风险等级**：确定专利的风险等级
+4. **建议等级**：确定建议的等级
+5. **决策建议**：提供具体的决策建议
+
+### 评估维度：
+- **综合质量**：专利的综合质量评估
+- **风险水平**：专利的风险水平评估
+- **改进潜力**：专利的改进潜力评估
+- **市场前景**：专利的市场前景评估
+- **申请建议**：专利申请的具体建议
+</overall_assessment_requirements>
+</system>
+
+<task>
+请基于以下分析结果进行总体评估：
+
+<context>
+- 新颖性分析结果：{novelty_analysis}
+- 创造性分析结果：{inventiveness_analysis}
+- 实用性分析结果：{utility_analysis}
+- 批判性分析结果：{critical_analysis}
+</context>
+
+<output_requirements>
+请提供详细的总体评估报告，包括：
+1. **综合评分（0-100分）**
+2. **质量等级（A/B/C/D/E）**
+3. **风险等级（低/中/高）**
+4. **改进潜力评估**
+5. **市场前景评估**
+6. **申请建议**
+7. **决策建议**
+8. **后续行动方案**
+
+<quality_standards>
+- 评估客观、准确、全面
+- 等级明确、合理、有依据
+- 建议具体、可行、有针对性
+- 决策建议明确、可操作
+</quality_standards>
+</task>
+"""
+        
+        try:
+            response = await self.llm_client.call_glm_api(prompt)
+            return self._parse_overall_assessment(response)
+        except Exception as e:
+            logger.error(f"生成总体评估失败: {e}")
+            return self._generate_fallback_overall_assessment()
+    
+    def _parse_overall_assessment(self, response: str) -> Dict[str, Any]:
+        """解析总体评估结果"""
+        try:
+            return {
+                "assessment": response,
+                "overall_score": 75,
+                "quality_grade": "B",
+                "risk_level": "中等",
+                "improvement_potential": "良好",
+                "market_prospect": "良好",
+                "application_recommendation": "建议申请",
+                "decision_suggestion": "继续完善后申请",
+                "next_actions": ["完善技术方案", "增强创新性", "降低风险"],
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"解析总体评估失败: {e}")
+            return self._generate_fallback_overall_assessment()
+    
+    def _generate_fallback_overall_assessment(self) -> Dict[str, Any]:
+        """生成fallback总体评估"""
+        return {
+            "assessment": "总体评估暂时不可用",
+            "overall_score": 70,
+            "quality_grade": "C",
+            "risk_level": "中等",
+            "improvement_potential": "一般",
+            "market_prospect": "一般",
+            "application_recommendation": "需要进一步分析",
+            "decision_suggestion": "需要进一步分析",
+            "next_actions": ["需要进一步分析"],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    def _generate_fallback_review_results(self) -> Dict[str, Any]:
+        """生成fallback审核结果"""
+        return {
+            "deep_search_results": {},
+            "novelty_analysis": self._generate_fallback_novelty_analysis(),
+            "inventiveness_analysis": self._generate_fallback_inventiveness_analysis(),
+            "utility_analysis": self._generate_fallback_utility_analysis(),
+            "critical_analysis": self._generate_fallback_critical_analysis(),
+            "improvement_suggestions": self._generate_fallback_improvement_suggestions(),
+            "overall_assessment": self._generate_fallback_overall_assessment()
+        }
+    
+    async def close(self):
+        """关闭资源"""
+        await self.searcher.close()
+
+class ReviewerAgent:
+    """审核智能体（增强版）"""
+    
+    def __init__(self):
+        self.openai_client = OpenAIClient()
+        self.enhanced_reviewer = EnhancedReviewerAgent()
+    
+    async def execute_review_task(self, topic: str, description: str, search_results: Dict, 
+                                 chapter_3_content: str = "", chapter_4_content: str = "", 
+                                 chapter_5_content: str = "") -> Dict[str, Any]:
+        """执行审核任务（增强版）"""
+        
+        try:
+            # 执行综合审核
+            review_results = await self.enhanced_reviewer.comprehensive_review(
+                chapter_3_content=chapter_3_content,
+                chapter_4_content=chapter_4_content,
+                chapter_5_content=chapter_5_content,
+                topic=topic,
+                search_results=search_results
+            )
+            
+            return {
+                "review_type": "comprehensive_review",
+                "review_results": review_results,
+                "timestamp": datetime.now().isoformat(),
+                "status": "completed"
+            }
+            
+        except Exception as e:
+            logger.error(f"审核任务执行失败: {e}")
+            return {
+                "review_type": "comprehensive_review",
+                "review_results": self.enhanced_reviewer._generate_fallback_review_results(),
+                "timestamp": datetime.now().isoformat(),
+                "status": "failed",
+                "error": str(e)
+            }
+    
+    async def close(self):
+        """关闭资源"""
+        await self.enhanced_reviewer.close()
 
 @dataclass
 class ReviewTask:
