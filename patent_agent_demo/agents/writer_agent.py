@@ -132,10 +132,24 @@ class WriterAgent(BaseAgent):
             # 使用相对路径，在当前项目目录下创建output文件夹
             output_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "output")
             progress_dir = os.path.join(output_dir, "progress", f"{topic_str}_{wid8}")
+            
+            # 强制创建progress目录，添加详细日志
+            logger.info(f"Creating progress directory: {progress_dir}")
             try:
                 os.makedirs(progress_dir, exist_ok=True)
-            except Exception:
-                pass
+                logger.info(f"Successfully created progress directory: {progress_dir}")
+            except Exception as e:
+                logger.error(f"Failed to create progress directory: {e}")
+                # 尝试创建备用目录
+                backup_dir = os.path.join(output_dir, "backup_progress", f"{topic_str}_{wid8}")
+                try:
+                    os.makedirs(backup_dir, exist_ok=True)
+                    progress_dir = backup_dir
+                    logger.info(f"Using backup progress directory: {progress_dir}")
+                except Exception as e2:
+                    logger.error(f"Failed to create backup progress directory: {e2}")
+                    progress_dir = output_dir  # 使用output目录作为最后的备用
+                    logger.info(f"Using output directory as progress directory: {progress_dir}")
             
             # Generate patent draft using OpenAI GPT-5
             analysis_input = self._extract_analysis(previous_results)
@@ -146,11 +160,14 @@ class WriterAgent(BaseAgent):
             # Save initial skeleton
             try:
                 self._write_progress(progress_dir, "00_title_abstract.md", "标题与摘要", f"# {getattr(patent_draft, 'title', '')}\n\n{getattr(patent_draft, 'abstract', '')}\n")
-            except Exception:
-                pass
+                logger.info("Successfully saved initial skeleton")
+            except Exception as e:
+                logger.error(f"Failed to save initial skeleton: {e}")
 
             # Write detailed sections
+            logger.info("Starting _write_detailed_sections")
             detailed_sections = await self._write_detailed_sections(writing_task, patent_draft, progress_dir)
+            logger.info(f"Completed _write_detailed_sections, got keys: {list(detailed_sections.keys())}")
             
             # Generate technical diagrams
             technical_diagrams = await self.openai_client.generate_technical_diagrams(description)
@@ -163,6 +180,10 @@ class WriterAgent(BaseAgent):
             if isinstance(detailed_sections.get("claims"), list) and detailed_sections.get("claims"):
                 patent_draft.claims = detailed_sections.get("claims")
             patent_draft.technical_diagrams = technical_diagrams
+            
+            logger.info(f"Updated patent_draft.detailed_description length: {len(patent_draft.detailed_description)}")
+            logger.info(f"Updated patent_draft.background length: {len(patent_draft.background)}")
+            logger.info(f"Updated patent_draft.summary length: {len(patent_draft.summary)}")
             
             # Check legal compliance
             compliance_check = await self._check_patent_compliance(patent_draft)
@@ -211,35 +232,48 @@ class WriterAgent(BaseAgent):
         """Write detailed sections of the patent application using intelligent LLM prompts"""
         try:
             detailed_sections = {}
+            logger.info(f"Starting _write_detailed_sections for topic: {writing_task.topic}")
             
             # 第一步：生成专利大纲（简洁提示词）
+            logger.info("Step 1: Generating patent outline")
             outline_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"设计专利大纲，包含术语定义、技术领域、背景技术、技术方案、权利要求等章节。特别要求第五章包含伪代码和Mermaid图。"""
             outline_text = await self.openai_client._generate_response(outline_prompt)
+            logger.info(f"Generated outline, length: {len(outline_text)}")
             try:
                 self._write_progress(progress_dir, "01_outline.md", "撰写大纲", outline_text)
-            except Exception:
-                pass
+                logger.info("Successfully saved outline")
+            except Exception as e:
+                logger.error(f"Failed to save outline: {e}")
 
             # 第二步：生成背景技术（简洁提示词）
+            logger.info("Step 2: Generating background")
             background_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写技术背景，包含技术领域、现有技术方案、技术缺点、要解决的问题。要求具体专业，≥800字。"""
             background = await self.openai_client._generate_response(background_prompt)
             detailed_sections["background"] = background
+            logger.info(f"Generated background, length: {len(background)}")
             try:
                 self._write_progress(progress_dir, "02_background.md", "背景技术", background)
-            except Exception:
-                pass
+                logger.info("Successfully saved background")
+            except Exception as e:
+                logger.error(f"Failed to save background: {e}")
 
             # 第三步：生成发明内容总述（简洁提示词）
+            logger.info("Step 3: Generating summary")
             summary_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写发明内容总述，包含核心创新点、系统架构、技术优势。要求具体专业，≥800字。"""
             summary = await self.openai_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
+            logger.info(f"Generated summary, length: {len(summary)}")
             try:
                 self._write_progress(progress_dir, "03_summary.md", "发明内容总述", summary)
-            except Exception:
-                pass
+                logger.info("Successfully saved summary")
+            except Exception as e:
+                logger.error(f"Failed to save summary: {e}")
 
             # 第四步：生成第五章技术方案（重点，分步骤生成）
+            logger.info("Step 4: Generating Chapter 5 technical solution")
+            
             # 4.1 生成5.0总体介绍
+            logger.info("Step 4.1: Generating 5.0 overview")
             chapter5_0_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.0技术方案总体介绍，包含：
 1. 技术方案核心思想概述
 2. 整体技术架构图（Mermaid格式）
@@ -247,8 +281,10 @@ class WriterAgent(BaseAgent):
 4. 技术方案优势分析
 要求≥1000字，必须包含Mermaid架构图。"""
             chapter5_0 = await self.openai_client._generate_response(chapter5_0_prompt)
+            logger.info(f"Generated chapter5_0, length: {len(chapter5_0)}")
 
             # 4.2 生成5.1系统架构设计
+            logger.info("Step 4.2: Generating 5.1 system architecture")
             chapter5_1_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.1系统架构设计，包含：
 1. 系统整体架构图（Mermaid格式）
 2. 各模块功能详细描述
@@ -256,8 +292,10 @@ class WriterAgent(BaseAgent):
 4. 核心算法伪代码（≥50行Python代码）
 要求≥1500字，必须包含Mermaid图和伪代码。"""
             chapter5_1 = await self.openai_client._generate_response(chapter5_1_prompt)
+            logger.info(f"Generated chapter5_1, length: {len(chapter5_1)}")
 
             # 4.3 生成5.2核心算法实现
+            logger.info("Step 4.3: Generating 5.2 core algorithm")
             chapter5_2_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.2核心算法实现，包含：
 1. 核心算法流程图（Mermaid格式）
 2. 算法伪代码实现（≥50行Python代码）
@@ -265,8 +303,10 @@ class WriterAgent(BaseAgent):
 4. 子算法模块图（Mermaid格式）
 要求≥1500字，必须包含Mermaid图和伪代码。"""
             chapter5_2 = await self.openai_client._generate_response(chapter5_2_prompt)
+            logger.info(f"Generated chapter5_2, length: {len(chapter5_2)}")
 
             # 4.4 生成5.3数据流程设计
+            logger.info("Step 4.4: Generating 5.3 data flow")
             chapter5_3_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.3数据流程设计，包含：
 1. 数据流程图（Mermaid格式）
 2. 数据结构定义
@@ -274,8 +314,10 @@ class WriterAgent(BaseAgent):
 4. 数据处理子模块图（Mermaid格式）
 要求≥1500字，必须包含Mermaid图和伪代码。"""
             chapter5_3 = await self.openai_client._generate_response(chapter5_3_prompt)
+            logger.info(f"Generated chapter5_3, length: {len(chapter5_3)}")
 
             # 4.5 生成5.4接口规范定义
+            logger.info("Step 4.5: Generating 5.4 interface specification")
             chapter5_4_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.4接口规范定义，包含：
 1. 接口架构图（Mermaid格式）
 2. API接口规范
@@ -283,8 +325,10 @@ class WriterAgent(BaseAgent):
 4. 接口调用流程图（Mermaid格式）
 要求≥1500字，必须包含Mermaid图和伪代码。"""
             chapter5_4 = await self.openai_client._generate_response(chapter5_4_prompt)
+            logger.info(f"Generated chapter5_4, length: {len(chapter5_4)}")
 
             # 4.6 整合第五章内容
+            logger.info("Step 4.6: Integrating Chapter 5 content")
             chapter5_content = f"""## 第五章 技术方案详细阐述
 
 ### 5.0 技术方案总体介绍
@@ -308,30 +352,39 @@ class WriterAgent(BaseAgent):
 {chapter5_4}"""
 
             detailed_sections["detailed_description"] = chapter5_content
+            logger.info(f"Set detailed_description, length: {len(chapter5_content)}")
             try:
                 self._write_progress(progress_dir, "04_chapter5.md", "第五章技术方案详细阐述", chapter5_content)
-            except Exception:
-                pass
+                logger.info("Successfully saved chapter5")
+            except Exception as e:
+                logger.error(f"Failed to save chapter5: {e}")
 
             # 第五步：生成权利要求书（简洁提示词）
+            logger.info("Step 5: Generating claims")
             claims_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写权利要求书，包含1项独立权利要求和3-4项从属权利要求。要求具体清晰，符合专利法要求。"""
             claims_text = await self.openai_client._generate_response(claims_prompt)
             detailed_sections["claims"] = claims_text.splitlines()
+            logger.info(f"Generated claims, lines: {len(claims_text.splitlines())}")
             try:
                 self._write_progress(progress_dir, "05_claims.md", "权利要求书", claims_text)
-            except Exception:
-                pass
+                logger.info("Successfully saved claims")
+            except Exception as e:
+                logger.error(f"Failed to save claims: {e}")
 
             # 第六步：生成附图说明（简洁提示词）
+            logger.info("Step 6: Generating drawings description")
             drawings_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写附图说明，包含系统架构图、数据流程图、核心算法图的Mermaid代码和详细说明。要求≥1000字。"""
             drawings_description = await self.openai_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
+            logger.info(f"Generated drawings_description, length: {len(drawings_description)}")
             try:
                 self._write_progress(progress_dir, "06_drawings.md", "附图说明", drawings_description)
-            except Exception:
-                pass
+                logger.info("Successfully saved drawings")
+            except Exception as e:
+                logger.error(f"Failed to save drawings: {e}")
 
             # 第七步：使用LLM进行智能质量检查和内容增强
+            logger.info("Step 7: Performing content enhancement")
             enhancement_prompt = f"""你是专利质量专家。检查以下专利内容，如果发现内容简单或缺少技术细节，请进行智能增强：
 
 主题：{writing_task.topic}
@@ -351,17 +404,22 @@ class WriterAgent(BaseAgent):
 请直接提供增强后的完整内容。"""
             
             enhanced_content = await self.openai_client._generate_response(enhancement_prompt)
+            logger.info(f"Generated enhanced_content, length: {len(enhanced_content)}")
             try:
                 self._write_progress(progress_dir, "07_enhanced_content.md", "智能增强内容", enhanced_content)
-            except Exception:
-                pass
+                logger.info("Successfully saved enhanced content")
+            except Exception as e:
+                logger.error(f"Failed to save enhanced content: {e}")
 
             # 如果增强内容包含完整章节，则更新
             if "## 第五章" in enhanced_content and "### 5.1" in enhanced_content:
                 detailed_sections["detailed_description"] = enhanced_content
+                logger.info("Updated detailed_description with enhanced content")
             elif "背景技术" in enhanced_content and len(enhanced_content) > len(background):
                 detailed_sections["background"] = enhanced_content
+                logger.info("Updated background with enhanced content")
 
+            logger.info(f"Final detailed_sections keys: {list(detailed_sections.keys())}")
             return detailed_sections
             
         except Exception as e:
