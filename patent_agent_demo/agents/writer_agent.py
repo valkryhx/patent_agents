@@ -208,41 +208,20 @@ class WriterAgent(BaseAgent):
     async def _write_detailed_sections(self, writing_task: WritingTask, 
                                      patent_draft: PatentDraft,
                                      progress_dir: str) -> Dict[str, str]:
-        """Write detailed sections of the patent application with diagrams and pseudo-code using LLM intelligence"""
+        """Write detailed sections of the patent application using intelligent LLM prompts"""
         try:
             detailed_sections = {}
             
-            # 第一步：使用LLM生成完整的专利大纲
-            outline_prompt = f"""
-你是一位资深的专利撰写专家，请为专利主题"{writing_task.topic}"设计一个完整的专利撰写大纲。
-
-要求：
-1. 包含所有必要的章节（术语定义、技术领域、背景技术、技术方案、权利要求等）
-2. 每个章节都要有明确的内容要点和字数要求
-3. 特别关注第五章技术方案详细阐述，要求包含伪代码和Mermaid图
-4. 大纲要结构清晰，逻辑严密
-
-请输出完整的大纲结构。
-"""
+            # 第一步：生成专利大纲（简洁提示词）
+            outline_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"设计专利大纲，包含术语定义、技术领域、背景技术、技术方案、权利要求等章节。特别要求第五章包含伪代码和Mermaid图。"""
             outline_text = await self.openai_client._generate_response(outline_prompt)
             try:
                 self._write_progress(progress_dir, "01_outline.md", "撰写大纲", outline_text)
             except Exception:
                 pass
 
-            # 第二步：使用LLM生成背景技术部分
-            background_prompt = f"""
-请为专利主题"{writing_task.topic}"撰写详细的技术背景部分。
-
-要求：
-1. 详细描述技术领域和现有技术方案
-2. 分析现有技术的缺点和局限性
-3. 明确要解决的技术问题
-4. 内容要具体、专业、有深度
-5. 字数不少于800字
-
-请生成高质量的技术背景内容。
-"""
+            # 第二步：生成背景技术（简洁提示词）
+            background_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写技术背景，包含技术领域、现有技术方案、技术缺点、要解决的问题。要求具体专业，≥800字。"""
             background = await self.openai_client._generate_response(background_prompt)
             detailed_sections["background"] = background
             try:
@@ -250,19 +229,8 @@ class WriterAgent(BaseAgent):
             except Exception:
                 pass
 
-            # 第三步：使用LLM生成发明内容总述
-            summary_prompt = f"""
-请为专利主题"{writing_task.topic}"撰写发明内容总述部分。
-
-要求：
-1. 概述技术方案的核心创新点
-2. 描述系统的整体架构设计
-3. 分析技术优势和创新特色
-4. 内容要具体、专业、有深度
-5. 字数不少于800字
-
-请生成高质量的发明内容总述。
-"""
+            # 第三步：生成发明内容总述（简洁提示词）
+            summary_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写发明内容总述，包含核心创新点、系统架构、技术优势。要求具体专业，≥800字。"""
             summary = await self.openai_client._generate_response(summary_prompt)
             detailed_sections["summary"] = summary
             try:
@@ -270,70 +238,83 @@ class WriterAgent(BaseAgent):
             except Exception:
                 pass
 
-            # 第四步：使用LLM生成第五章技术方案详细阐述（重点）
-            chapter5_prompt = f"""
-请为专利主题"{writing_task.topic}"撰写第五章技术方案详细阐述。
+            # 第四步：生成第五章技术方案（重点，分步骤生成）
+            # 4.1 生成5.0总体介绍
+            chapter5_0_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.0技术方案总体介绍，包含：
+1. 技术方案核心思想概述
+2. 整体技术架构图（Mermaid格式）
+3. 技术方案创新点总结
+4. 技术方案优势分析
+要求≥1000字，必须包含Mermaid架构图。"""
+            chapter5_0 = await self.openai_client._generate_response(chapter5_0_prompt)
 
-这是专利的核心章节，要求：
+            # 4.2 生成5.1系统架构设计
+            chapter5_1_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.1系统架构设计，包含：
+1. 系统整体架构图（Mermaid格式）
+2. 各模块功能详细描述
+3. 子功能模块架构图（Mermaid格式）
+4. 核心算法伪代码（≥50行Python代码）
+要求≥1500字，必须包含Mermaid图和伪代码。"""
+            chapter5_1 = await self.openai_client._generate_response(chapter5_1_prompt)
 
-1. **5.0 技术方案总体介绍**（≥1000字）
-   - 技术方案核心思想概述
-   - 整体技术架构图（必须包含Mermaid格式）
-   - 技术方案创新点总结
-   - 技术方案优势分析
+            # 4.3 生成5.2核心算法实现
+            chapter5_2_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.2核心算法实现，包含：
+1. 核心算法流程图（Mermaid格式）
+2. 算法伪代码实现（≥50行Python代码）
+3. 算法复杂度分析
+4. 子算法模块图（Mermaid格式）
+要求≥1500字，必须包含Mermaid图和伪代码。"""
+            chapter5_2 = await self.openai_client._generate_response(chapter5_2_prompt)
 
-2. **5.1 系统架构设计**（≥1500字）
-   - 系统整体架构图（Mermaid格式）
-   - 各模块功能详细描述
-   - 子功能模块架构图（Mermaid格式）
-   - 核心算法伪代码（≥50行Python代码）
+            # 4.4 生成5.3数据流程设计
+            chapter5_3_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.3数据流程设计，包含：
+1. 数据流程图（Mermaid格式）
+2. 数据结构定义
+3. 数据处理伪代码（≥50行Python代码）
+4. 数据处理子模块图（Mermaid格式）
+要求≥1500字，必须包含Mermaid图和伪代码。"""
+            chapter5_3 = await self.openai_client._generate_response(chapter5_3_prompt)
 
-3. **5.2 核心算法实现**（≥1500字）
-   - 核心算法流程图（Mermaid格式）
-   - 算法伪代码实现（≥50行Python代码）
-   - 算法复杂度分析
-   - 子算法模块图（Mermaid格式）
+            # 4.5 生成5.4接口规范定义
+            chapter5_4_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写5.4接口规范定义，包含：
+1. 接口架构图（Mermaid格式）
+2. API接口规范
+3. 接口实现伪代码（≥50行Python代码）
+4. 接口调用流程图（Mermaid格式）
+要求≥1500字，必须包含Mermaid图和伪代码。"""
+            chapter5_4 = await self.openai_client._generate_response(chapter5_4_prompt)
 
-4. **5.3 数据流程设计**（≥1500字）
-   - 数据流程图（Mermaid格式）
-   - 数据结构定义
-   - 数据处理伪代码（≥50行Python代码）
-   - 数据处理子模块图（Mermaid格式）
+            # 4.6 整合第五章内容
+            chapter5_content = f"""## 第五章 技术方案详细阐述
 
-5. **5.4 接口规范定义**（≥1500字）
-   - 接口架构图（Mermaid格式）
-   - API接口规范
-   - 接口实现伪代码（≥50行Python代码）
-   - 接口调用流程图（Mermaid格式）
+### 5.0 技术方案总体介绍
 
-**重要要求：**
-- 每个小节都必须包含Mermaid图和伪代码
-- 伪代码要完整可执行，包含核心逻辑
-- Mermaid图要清晰展示技术架构和流程
-- 技术描述要具体详细，不能只是概念
-- 总字数不少于6000字
+{chapter5_0}
 
-请生成高质量的第五章内容，确保包含所有必需的技术图表和伪代码。
-"""
-            chapter5_content = await self.openai_client._generate_response(chapter5_prompt)
+### 5.1 系统架构设计
+
+{chapter5_1}
+
+### 5.2 核心算法实现
+
+{chapter5_2}
+
+### 5.3 数据流程设计
+
+{chapter5_3}
+
+### 5.4 接口规范定义
+
+{chapter5_4}"""
+
             detailed_sections["detailed_description"] = chapter5_content
             try:
                 self._write_progress(progress_dir, "04_chapter5.md", "第五章技术方案详细阐述", chapter5_content)
             except Exception:
                 pass
 
-            # 第五步：使用LLM生成权利要求书
-            claims_prompt = f"""
-请为专利主题"{writing_task.topic}"撰写权利要求书。
-
-要求：
-1. 1项独立权利要求，覆盖核心技术方案
-2. 3-4项从属权利要求，细化关键特征
-3. 权利要求要具体、清晰、符合专利法要求
-4. 避免过于宽泛或过于狭窄的表述
-
-请生成高质量的权利要求书。
-"""
+            # 第五步：生成权利要求书（简洁提示词）
+            claims_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写权利要求书，包含1项独立权利要求和3-4项从属权利要求。要求具体清晰，符合专利法要求。"""
             claims_text = await self.openai_client._generate_response(claims_prompt)
             detailed_sections["claims"] = claims_text.splitlines()
             try:
@@ -341,19 +322,8 @@ class WriterAgent(BaseAgent):
             except Exception:
                 pass
 
-            # 第六步：使用LLM生成附图说明
-            drawings_prompt = f"""
-请为专利主题"{writing_task.topic}"撰写附图说明。
-
-要求：
-1. 系统架构图说明 + Mermaid代码
-2. 数据流程图说明 + Mermaid代码
-3. 核心算法图说明 + Mermaid代码
-4. 每个图都要有详细的说明文字
-5. 字数不少于1000字
-
-请生成高质量的附图说明。
-"""
+            # 第六步：生成附图说明（简洁提示词）
+            drawings_prompt = f"""你是专利撰写专家。为"{writing_task.topic}"撰写附图说明，包含系统架构图、数据流程图、核心算法图的Mermaid代码和详细说明。要求≥1000字。"""
             drawings_description = await self.openai_client._generate_response(drawings_prompt)
             detailed_sections["drawings_description"] = drawings_description
             try:
@@ -361,9 +331,8 @@ class WriterAgent(BaseAgent):
             except Exception:
                 pass
 
-            # 第七步：使用LLM进行内容质量检查和优化
-            quality_check_prompt = f"""
-请检查并优化以下专利内容的质量：
+            # 第七步：使用LLM进行智能质量检查和内容增强
+            enhancement_prompt = f"""你是专利质量专家。检查以下专利内容，如果发现内容简单或缺少技术细节，请进行智能增强：
 
 主题：{writing_task.topic}
 
@@ -373,55 +342,25 @@ class WriterAgent(BaseAgent):
 权利要求书：{claims_text}
 附图说明：{drawings_description}
 
-请进行以下检查：
-1. 内容是否完整、逻辑是否清晰
-2. 是否包含足够的伪代码和Mermaid图
-3. 技术描述是否具体详细
-4. 是否符合专利撰写要求
-5. 是否需要补充或优化
+请进行智能分析和增强：
+1. 如果内容过于简单，请补充技术细节
+2. 如果缺少伪代码，请添加具体的算法实现
+3. 如果缺少Mermaid图，请添加技术架构图
+4. 如果技术描述不够深入，请深化技术内容
 
-如果发现问题，请提供具体的改进建议和优化后的内容。
-"""
-            quality_feedback = await self.openai_client._generate_response(quality_check_prompt)
+请直接提供增强后的完整内容。"""
+            
+            enhanced_content = await self.openai_client._generate_response(enhancement_prompt)
             try:
-                self._write_progress(progress_dir, "07_quality_check.md", "质量检查反馈", quality_feedback)
+                self._write_progress(progress_dir, "07_enhanced_content.md", "智能增强内容", enhanced_content)
             except Exception:
                 pass
 
-            # 第八步：根据质量检查结果进行内容优化
-            if "需要补充" in quality_feedback or "需要优化" in quality_feedback:
-                optimization_prompt = f"""
-根据质量检查反馈，请优化专利内容：
-
-原始内容：
-背景技术：{background}
-发明内容总述：{summary}
-第五章技术方案：{chapter5_content}
-权利要求书：{claims_text}
-附图说明：{drawings_description}
-
-质量检查反馈：{quality_feedback}
-
-请根据反馈意见，优化相关内容，确保：
-1. 内容更加完整和详细
-2. 包含足够的伪代码和Mermaid图
-3. 技术描述更加具体
-4. 符合专利撰写要求
-
-请提供优化后的内容。
-"""
-                optimized_content = await self.openai_client._generate_response(optimization_prompt)
-                
-                # 更新优化后的内容
-                if "背景技术" in optimized_content:
-                    detailed_sections["background"] = optimized_content
-                if "第五章" in optimized_content:
-                    detailed_sections["detailed_description"] = optimized_content
-                
-                try:
-                    self._write_progress(progress_dir, "08_optimized_content.md", "优化后内容", optimized_content)
-                except Exception:
-                    pass
+            # 如果增强内容包含完整章节，则更新
+            if "## 第五章" in enhanced_content and "### 5.1" in enhanced_content:
+                detailed_sections["detailed_description"] = enhanced_content
+            elif "背景技术" in enhanced_content and len(enhanced_content) > len(background):
+                detailed_sections["background"] = enhanced_content
 
             return detailed_sections
             
