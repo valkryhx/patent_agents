@@ -577,3 +577,5 @@ AttributeError: 'str' object has no attribute 'get'
 2025-08-18 12:08:26,290 - patent_agent_demo.agents.writer_agent_simple.writer_agent - INFO - Successfully created progress directory: /workspace/output/progress/基于语义理解的复杂函数参数智能推断与分层调用重试优化方法_test_wri
 2025-08-18 12:08:26,290 - patent_agent_demo.openai_client - WARNING - OpenAI not available, using GLM fallback directly
 2025-08-18 12:08:26,290 - patent_agent_demo.openai_client - INFO - Using GLM-4.5-flash fallback directly
+2025-08-19 09:33:53,408 - __main__ - INFO - 🚀 开始综合智能体测试
+2025-08-19 09:33:53,409 - __main__ - INFO - 🎯 开始所有智能体测试

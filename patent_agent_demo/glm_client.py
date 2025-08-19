@@ -3,8 +3,13 @@ import json
 import asyncio
 import ssl
 import urllib.request
+import time
+import logging
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+
+# 设置日志
+logger = logging.getLogger(__name__)
 
 # Reuse dataclasses from google_a2a_client to keep interfaces compatible
 from .google_a2a_client import PatentAnalysis, PatentDraft, SearchResult
@@ -96,15 +101,32 @@ class GLMA2AClient:
                     method="POST",
                 )
                 # 优化1: 增加超时时间到300秒，提高GLM-4.5-flash的响应成功率
-                with urllib.request.urlopen(req, timeout=300) as resp:
-                    body = resp.read().decode("utf-8")
-                    data = json.loads(body)
-                    # OpenAI-style response
-                    choices = data.get("choices") or []
-                    if choices and "message" in choices[0]:
-                        return choices[0]["message"].get("content", "").strip()
-                    # Fallback parse for variations
-                    return data.get("text") or ""
+                # 优化2: 添加重试机制和更好的错误处理
+                max_retries = 3
+                retry_delay = 5  # 秒
+                
+                for attempt in range(max_retries):
+                    try:
+                        with urllib.request.urlopen(req, timeout=300) as resp:
+                            body = resp.read().decode("utf-8")
+                            data = json.loads(body)
+                            # OpenAI-style response
+                            choices = data.get("choices") or []
+                            if choices and "message" in choices[0]:
+                                return choices[0]["message"].get("content", "").strip()
+                            # Fallback parse for variations
+                            return data.get("text") or ""
+                    except urllib.error.URLError as e:
+                        if attempt < max_retries - 1:
+                            logger.warning(f"GLM API请求失败 (尝试 {attempt + 1}/{max_retries}): {e}，{retry_delay}秒后重试...")
+                            time.sleep(retry_delay)
+                            retry_delay *= 2  # 指数退避
+                        else:
+                            logger.error(f"GLM API请求最终失败: {e}")
+                            raise
+                    except Exception as e:
+                        logger.error(f"GLM API请求异常: {e}")
+                        raise
 
             return await asyncio.get_event_loop().run_in_executor(None, _do_request)
 
