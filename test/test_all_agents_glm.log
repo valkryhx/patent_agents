@@ -579,3 +579,5 @@ AttributeError: 'str' object has no attribute 'get'
 2025-08-18 12:08:26,290 - patent_agent_demo.openai_client - INFO - Using GLM-4.5-flash fallback directly
 2025-08-19 09:33:53,408 - __main__ - INFO - 🚀 开始综合智能体测试
 2025-08-19 09:33:53,409 - __main__ - INFO - 🎯 开始所有智能体测试
+2025-08-19 09:52:14,890 - __main__ - INFO - 🚀 开始综合智能体测试
+2025-08-19 09:52:14,890 - __main__ - INFO - 🎯 开始所有智能体测试
