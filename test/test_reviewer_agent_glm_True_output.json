@@ -8,12 +8,12 @@
     "unified_content_consistency": "Pass"
   },
   "feedback": [
-    "GLM审查反馈：# 专利质量审查报告\n\n## 总体评估\n当前专利草稿仅提供了基本框架，内容严重不完整，无法进行全面的质量评估。核心策略显示该发明在语义理解、参数推断、分层调用和重试优化方面具有较高的创新性(8.5/1...",
+    "GLM审查反馈：# 专利质量审查报告\n\n## 总体评价\n当前专利草稿框架已初步建立，但内容过于简略，缺乏实质性技术细节。基于提供的信息，该发明在参数推断领域具有较高创新潜力（新颖性评分8.5/10），但需要大幅完善才...",
     "Excellent technical description aligned with 语义理解",
     "Claims are well-structured and consistent with unified approach"
   ],
   "recommendations": [
-    "GLM建议：0)，但需要大幅完善内容才能满足专利申请要求。\n\n## 详细分析\n\n### 1. 标题评估\n**优点**：\n- 清晰包含了核心技术领域（语义理解、参数推断、分层调用、重试优化）\n- 准确反映了发明的技...",
+    "GLM建议：能形成合格的专利申请文件。\n\n## 详细分析\n\n### 1. 标题评估\n**优点**：\n- 标题准确反映了发明的核心技术领域和多个创新点\n- 包含了\"语义理解\"、\"参数推断\"、\"分层调用\"和\"重试优化...",
     "Proceed with filing - unified content is consistent",
     "Minor improvements suggested for enhanced clarity"
   ],
