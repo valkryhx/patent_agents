@@ -2853,80 +2853,241 @@ async def extract_keywords(topic: str, description: str) -> List[str]:
     ]
 
 async def conduct_prior_art_search(topic: str, keywords: List[str], previous_results: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Conduct comprehensive prior art search using DuckDuckGo API + GLM API analysis"""
-    logger.info(f"🔍 Conducting prior art search for: {topic}")
+    """Conduct iterative prior art search: 3 rounds of DuckDuckGo + GLM analysis"""
+    logger.info(f"🔍 开始迭代式现有技术检索: {topic}")
     
     try:
-        # 第一步：使用DuckDuckGo API进行实际检索
-        logger.info("🌐 使用DuckDuckGo API进行网络检索")
-        from patent_agent_demo.openai_client import SearchResult
+        all_results = []
+        current_keywords = keywords.copy()
         
-        # 构建搜索查询
-        search_query = f"patent prior art {topic} {' '.join(keywords)}"
-        logger.info(f"🔍 搜索查询: {search_query}")
+        # 执行3轮迭代检索
+        for round_num in range(1, 4):
+            logger.info(f"🔄 第{round_num}轮检索开始，关键词: {current_keywords}")
+            
+            # 第1步：使用当前关键词进行DuckDuckGo检索
+            round_results = await _search_with_duckduckgo_api(topic, current_keywords, 8)
+            logger.info(f"✅ 第{round_num}轮检索完成，获得 {len(round_results)} 个结果")
+            
+            # 将本轮结果添加到总结果中
+            all_results.extend(round_results)
+            
+            # 第2步：使用GLM API分析检索结果，生成新的检索词
+            if GLM_AVAILABLE and round_results and round_num < 3:  # 最后一轮不需要生成新检索词
+                try:
+                    new_keywords = await _generate_new_search_keywords_with_glm(
+                        topic, current_keywords, round_results, round_num
+                    )
+                    
+                    if new_keywords:
+                        logger.info(f"🧠 GLM生成第{round_num+1}轮新检索词: {new_keywords}")
+                        current_keywords = new_keywords[:5]  # 限制新关键词数量
+                    else:
+                        logger.info(f"⚠️ 第{round_num}轮GLM未生成新检索词，使用原关键词")
+                        
+                except Exception as glm_error:
+                    logger.warning(f"⚠️ 第{round_num}轮GLM分析失败: {glm_error}，继续使用原关键词")
+            else:
+                logger.info(f"📝 第{round_num}轮跳过GLM分析（最后一轮或GLM不可用）")
         
-        # 调用DuckDuckGo API
-        duckduckgo_results = await _search_with_duckduckgo_api(topic, keywords, 10)
-        logger.info(f"✅ DuckDuckGo检索完成，获得 {len(duckduckgo_results)} 个结果")
-        
-        # 第二步：使用GLM API分析检索结果
-        if GLM_AVAILABLE and duckduckgo_results:
+        # 第3步：最终GLM分析整合所有检索结果
+        if GLM_AVAILABLE and all_results:
             try:
-                logger.info("🧠 使用GLM API分析检索结果")
-                glm_client = GLMA2AClient()
-                
-                # 构建分析提示
-                analysis_prompt = f"""
-                请分析以下专利检索结果，提取关键信息：
-
-                检索主题：{topic}
-                关键词：{', '.join(keywords)}
-                检索结果数量：{len(duckduckgo_results)}
-
-                请提供：
-                1. 技术领域分析
-                2. 主要技术特征
-                3. 创新点识别
-                4. 相关技术趋势
-                """
-                
-                glm_analysis = await glm_client._generate_response(analysis_prompt)
-                logger.info("✅ GLM API分析完成")
-                
-                # 将GLM分析结果整合到检索结果中
-                enhanced_results = []
-                for i, result in enumerate(duckduckgo_results):
-                    enhanced_result = {
-                        "patent_id": result.get("patent_id", f"DDG_{i+1:03d}"),
-                        "title": result.get("title", f"基于{keywords[0] if keywords else topic}的相关技术"),
-                        "abstract": result.get("abstract", "检索结果"),
-                        "filing_date": result.get("filing_date", "N/A"),
-                        "publication_date": result.get("publication_date", "N/A"),
-                        "assignee": result.get("assignee", "Various"),
-                        "relevance_score": result.get("relevance_score", 0.7),
-                        "similarity_analysis": {
-                            "concept_overlap": "GLM分析：概念重叠度评估",
-                            "technical_similarity": "GLM分析：技术相似性分析",
-                            "implementation_differences": "GLM分析：实现差异识别"
-                        },
-                        "glm_analysis": glm_analysis[:200] + "..." if len(glm_analysis) > 200 else glm_analysis
-                    }
-                    enhanced_results.append(enhanced_result)
-                
-                logger.info(f"🎯 GLM分析整合完成，返回 {len(enhanced_results)} 个增强结果")
+                logger.info("🎯 使用GLM API进行最终结果分析和整合")
+                enhanced_results = await _enhance_results_with_glm_final_analysis(
+                    topic, keywords, all_results
+                )
+                logger.info(f"✅ GLM最终分析完成，返回 {len(enhanced_results)} 个增强结果")
                 return enhanced_results
-                
-            except Exception as glm_error:
-                logger.warning(f"⚠️ GLM API分析失败: {glm_error}，使用原始DuckDuckGo结果")
-                return duckduckgo_results
+            except Exception as final_glm_error:
+                logger.warning(f"⚠️ GLM最终分析失败: {final_glm_error}，使用原始结果")
+                return all_results
         else:
-            logger.info("📝 GLM不可用或检索结果为空，使用DuckDuckGo结果")
-            return duckduckgo_results
+            logger.info("📝 GLM不可用，返回原始检索结果")
+            return all_results
             
     except Exception as e:
-        logger.error(f"❌ DuckDuckGo检索失败: {e}")
+        logger.error(f"❌ 迭代式检索失败: {e}")
         logger.info("🔄 回退到mock数据")
         return _get_mock_search_results(topic, keywords)
+
+async def _generate_new_search_keywords_with_glm(topic: str, current_keywords: List[str], 
+                                                search_results: List[Dict[str, Any]], 
+                                                round_num: int) -> List[str]:
+    """使用GLM API分析检索结果，生成新的检索关键词"""
+    try:
+        glm_client = GLMA2AClient()
+        
+        # 构建智能分析提示
+        analysis_prompt = f"""
+        作为专利检索专家，请分析第{round_num}轮检索结果，生成第{round_num+1}轮的新检索关键词。
+
+        检索主题：{topic}
+        当前关键词：{', '.join(current_keywords)}
+        检索结果数量：{len(search_results)}
+
+        检索结果摘要：
+        {_summarize_search_results(search_results)}
+
+        请基于以下策略生成5-8个新的检索关键词：
+        1. 识别技术领域中的专业术语
+        2. 发现相关技术分支和子领域
+        3. 提取专利文献中的关键概念
+        4. 考虑同义词和近义词
+        5. 关注技术发展趋势
+
+        要求：
+        - 关键词要具体、专业、有针对性
+        - 避免过于宽泛的词汇
+        - 优先选择技术性强的术语
+        - 返回格式：关键词1,关键词2,关键词3...
+
+        请直接返回关键词列表，不要其他解释：
+        """
+        
+        glm_response = await glm_client._generate_response(analysis_prompt)
+        logger.info(f"🧠 GLM第{round_num}轮分析响应: {glm_response[:100]}...")
+        
+        # 解析GLM响应，提取新关键词
+        new_keywords = _parse_keywords_from_glm_response(glm_response)
+        
+        # 过滤和优化关键词
+        filtered_keywords = _filter_and_optimize_keywords(new_keywords, current_keywords, topic)
+        
+        logger.info(f"✅ 第{round_num}轮生成新关键词: {filtered_keywords}")
+        return filtered_keywords
+        
+    except Exception as e:
+        logger.error(f"❌ GLM生成新检索词失败: {e}")
+        return []
+
+async def _enhance_results_with_glm_final_analysis(topic: str, original_keywords: List[str], 
+                                                 all_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """使用GLM API对所有检索结果进行最终分析和增强"""
+    try:
+        glm_client = GLMA2AClient()
+        
+        # 构建最终分析提示
+        final_analysis_prompt = f"""
+        作为专利分析师，请对以下专利检索结果进行深度分析和增强：
+
+        检索主题：{topic}
+        原始关键词：{', '.join(original_keywords)}
+        总检索结果数量：{len(all_results)}
+
+        检索结果概览：
+        {_summarize_search_results(all_results)}
+
+        请提供：
+        1. 技术领域深度分析
+        2. 主要技术特征识别
+        3. 创新点和差异化分析
+        4. 技术发展趋势预测
+        5. 专利布局建议
+        6. 风险评估
+
+        请提供结构化的分析结果，包含具体的技术洞察和建议。
+        """
+        
+        final_glm_analysis = await glm_client._generate_response(final_analysis_prompt)
+        logger.info(f"🧠 GLM最终分析完成，分析长度: {len(final_glm_analysis)}")
+        
+        # 将GLM分析结果整合到每个检索结果中
+        enhanced_results = []
+        for i, result in enumerate(all_results):
+            enhanced_result = result.copy()
+            enhanced_result.update({
+                "glm_final_analysis": final_glm_analysis[:300] + "..." if len(final_glm_analysis) > 300 else final_glm_analysis,
+                "analysis_round": "final",
+                "enhanced_by_glm": True,
+                "technical_insights": f"GLM深度分析: {final_glm_analysis[:100]}...",
+                "similarity_analysis": {
+                    "concept_overlap": "GLM分析：概念重叠度深度评估",
+                    "technical_similarity": "GLM分析：技术相似性综合分析",
+                    "implementation_differences": "GLM分析：实现差异深度识别",
+                    "innovation_potential": "GLM分析：创新潜力评估"
+                }
+            })
+            enhanced_results.append(enhanced_result)
+        
+        return enhanced_results
+        
+    except Exception as e:
+        logger.error(f"❌ GLM最终分析失败: {e}")
+        return all_results
+
+def _summarize_search_results(results: List[Dict[str, Any]]) -> str:
+    """汇总检索结果，用于GLM分析"""
+    if not results:
+        return "无检索结果"
+    
+    summary = []
+    for i, result in enumerate(results[:5]):  # 只取前5个结果进行摘要
+        title = result.get("title", "无标题")
+        abstract = result.get("abstract", "无摘要")
+        summary.append(f"结果{i+1}: {title} - {abstract[:100]}...")
+    
+    return "\n".join(summary)
+
+def _parse_keywords_from_glm_response(glm_response: str) -> List[str]:
+    """从GLM响应中解析关键词"""
+    try:
+        # 清理响应文本
+        cleaned_response = glm_response.strip()
+        
+        # 尝试多种分隔符
+        separators = [',', '，', ';', '；', '\n', '、']
+        keywords = []
+        
+        for sep in separators:
+            if sep in cleaned_response:
+                keywords = [kw.strip() for kw in cleaned_response.split(sep) if kw.strip()]
+                break
+        
+        # 如果没有找到分隔符，尝试按空格分割
+        if not keywords:
+            keywords = [kw.strip() for kw in cleaned_response.split() if kw.strip()]
+        
+        # 过滤和清理关键词
+        filtered_keywords = []
+        for kw in keywords:
+            # 移除常见的无关词汇
+            if len(kw) > 1 and kw not in ['的', '和', '与', '或', '等', '等', '技术', '系统', '方法']:
+                filtered_keywords.append(kw)
+        
+        return filtered_keywords[:8]  # 限制关键词数量
+        
+    except Exception as e:
+        logger.warning(f"⚠️ 解析GLM关键词失败: {e}")
+        return []
+
+def _filter_and_optimize_keywords(new_keywords: List[str], current_keywords: List[str], 
+                                topic: str) -> List[str]:
+    """过滤和优化关键词"""
+    try:
+        optimized = []
+        
+        for kw in new_keywords:
+            # 避免重复
+            if kw not in current_keywords and kw not in optimized:
+                # 确保关键词与主题相关
+                if any(word in kw.lower() for word in topic.lower().split()) or \
+                   any(word in kw.lower() for word in current_keywords):
+                    optimized.append(kw)
+                else:
+                    # 检查是否包含技术相关词汇
+                    tech_terms = ['技术', '系统', '方法', '设备', '算法', '模型', '网络', '数据', '智能', '自动']
+                    if any(term in kw for term in tech_terms):
+                        optimized.append(kw)
+        
+        # 如果没有优化结果，返回原始新关键词
+        if not optimized:
+            return new_keywords[:5]
+        
+        return optimized[:5]  # 限制数量
+        
+    except Exception as e:
+        logger.warning(f"⚠️ 关键词优化失败: {e}")
+        return new_keywords[:5]
 
 async def _search_with_duckduckgo_api(topic: str, keywords: List[str], max_results: int) -> List[Dict[str, Any]]:
     """使用DuckDuckGo API进行专利检索"""
