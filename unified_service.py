@@ -2034,14 +2034,40 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     planning_result = previous_results.get("planning", {})
     search_result = previous_results.get("search", {})
     
+    # 修复：正确解析数据结构并添加调试信息
+    logger.info(f"🔍 Planning result type: {type(planning_result)}")
+    logger.info(f"🔍 Planning result keys: {list(planning_result.keys()) if isinstance(planning_result, dict) else 'Not a dict'}")
+    logger.info(f"🔍 Search result type: {type(search_result)}")
+    logger.info(f"🔍 Search result keys: {list(search_result.keys()) if isinstance(search_result, dict) else 'Not a dict'}")
+    
     # 修复：正确解析数据结构
     planning_strategy = planning_result.get("strategy", {}) if isinstance(planning_result, dict) else {}
     search_results = search_result.get("search_results", {}) if isinstance(search_result, dict) else {}
     
+    # 如果search_results不存在，尝试其他可能的字段名
+    if not search_results and isinstance(search_result, dict):
+        search_results = search_result.get("results", {})  # 尝试results字段
+        if not search_results:
+            search_results = search_result.get("search_data", {})  # 尝试search_data字段
+    
     # Build on previous stages' insights
     core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
     novelty_score = planning_result.get("novelty_score", 8.5)
-    search_findings = search_results.get("results", []) if isinstance(search_results, dict) else []
+    
+    # 修复：正确获取search_findings，考虑Search阶段的实际数据结构
+    search_findings = []
+    if isinstance(search_results, dict):
+        search_findings = search_results.get("results", [])
+    elif isinstance(search_result, dict):
+        # 直接从search_result获取，因为Search阶段返回的是{"search_results": {...}, "results": [...]}
+        search_findings = search_result.get("results", [])
+        if not search_findings:
+            # 尝试从search_results字段获取
+            search_results_data = search_result.get("search_results", {})
+            if isinstance(search_results_data, dict):
+                search_findings = search_results_data.get("results", [])
+    
+    logger.info(f"🔍 最终获取到的search_findings数量: {len(search_findings)}")
     
     logger.info(f"📋 Building on planning strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating search findings: {len(search_findings)} patents found")
@@ -2074,34 +2100,51 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
             glm_response = await glm_client._generate_response(analysis_prompt)
             logger.info("✅ GLM API调用成功")
             
-            # 修复：将GLM的文本响应转换为结构化的讨论结果
-            if isinstance(glm_response, str) and glm_response.strip():
-                # 解析GLM响应并构建结构化的讨论结果
-                discussion_result = {
-                    "topic": topic,
-                    "core_strategy": planning_strategy,
-                    "search_context": search_results,
-                    "innovations": [
-                        f"GLM分析：{glm_response[:100]}...",
-                        f"Enhanced {core_innovation_areas[0] if core_innovation_areas else 'layered reasoning'} architecture",
-                        f"Improved {core_innovation_areas[1] if len(core_innovation_areas) > 1 else 'multi-parameter'} optimization"
-                    ],
-                    "technical_insights": [
-                        f"GLM技术洞察：{glm_response[100:200] if len(glm_response) > 100 else glm_response}...",
-                        f"Novel approach to {topic.lower()} parameter inference",
-                        f"Unique {topic.lower()} system integration methodology"
-                    ],
-                    "recommendations": [
-                        f"GLM建议：{glm_response[200:300] if len(glm_response) > 200 else glm_response}...",
-                        f"Focus on {core_innovation_areas[0] if core_innovation_areas else 'layered reasoning'} as key differentiator",
-                        f"Emphasize {core_innovation_areas[1] if len(core_innovation_areas) > 1 else 'adaptive parameter'} optimization"
-                    ],
-                    "novelty_score": novelty_score,
-                    "execution_time": 0.5 if request.test_mode else 1.0,
-                    "test_mode": request.test_mode,
-                    "mock_delay_applied": 0
-                }
-                return discussion_result
+                # 修复：将GLM的文本响应转换为结构化的讨论结果
+    if isinstance(glm_response, str) and glm_response.strip():
+        # 确保core_strategy和search_context不为空
+        if not planning_strategy:
+            planning_strategy = {
+                "key_innovation_areas": ["layered reasoning", "multi-parameter optimization", "context-aware processing"],
+                "novelty_score": novelty_score,
+                "topic": topic
+            }
+            logger.info("⚠️ Planning strategy为空，使用默认值")
+        
+        if not search_results:
+            search_results = {
+                "results": search_findings,
+                "total_count": len(search_findings),
+                "search_topic": topic
+            }
+            logger.info("⚠️ Search results为空，使用默认值")
+        
+        # 解析GLM响应并构建结构化的讨论结果
+        discussion_result = {
+            "topic": topic,
+            "core_strategy": planning_strategy,
+            "search_context": search_results,
+            "innovations": [
+                f"GLM分析：{glm_response[:100]}...",
+                f"Enhanced {core_innovation_areas[0] if core_innovation_areas else 'layered reasoning'} architecture",
+                f"Improved {core_innovation_areas[1] if len(core_innovation_areas) > 1 else 'multi-parameter'} optimization"
+            ],
+            "technical_insights": [
+                f"GLM技术洞察：{glm_response[100:200] if len(glm_response) > 100 else glm_response}...",
+                f"Novel approach to {topic.lower()} parameter inference",
+                f"Unique {topic.lower()} system integration methodology"
+            ],
+            "recommendations": [
+                f"GLM建议：{glm_response[200:300] if len(glm_response) > 200 else glm_response}...",
+                f"Focus on {core_innovation_areas[0] if core_innovation_areas else 'layered reasoning'} as key differentiator",
+                f"Emphasize {core_innovation_areas[1] if len(core_innovation_areas) > 1 else 'adaptive parameter'} optimization"
+            ],
+            "novelty_score": novelty_score,
+            "execution_time": 0.5 if request.test_mode else 1.0,
+            "test_mode": request.test_mode,
+            "mock_delay_applied": 0
+        }
+        return discussion_result
             else:
                 logger.warning("⚠️ GLM返回结果为空，回退到mock数据")
                 raise ValueError("Empty GLM response")
@@ -2111,6 +2154,24 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     
     # Mock fallback
     logger.info("📝 使用mock数据进行创新讨论分析")
+    
+    # 确保core_strategy和search_context不为空
+    if not planning_strategy:
+        planning_strategy = {
+            "key_innovation_areas": ["layered reasoning", "multi-parameter optimization", "context-aware processing"],
+            "novelty_score": novelty_score,
+            "topic": topic
+        }
+        logger.info("⚠️ Mock模式：Planning strategy为空，使用默认值")
+    
+    if not search_results:
+        search_results = {
+            "results": search_findings,
+            "total_count": len(search_findings),
+            "search_topic": topic
+        }
+        logger.info("⚠️ Mock模式：Search results为空，使用默认值")
+    
     discussion_result = {
         "topic": topic,
         "core_strategy": planning_strategy,
