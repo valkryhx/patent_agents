@@ -1937,9 +1937,12 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     novelty_assessment = await assess_novelty(search_results, analysis)
     recommendations = await generate_recommendations(search_results, analysis, novelty_assessment)
     
+    # 确保search_results格式与后续智能体兼容
+    compatible_search_results = _ensure_search_results_compatibility(search_results)
+    
     search_report = {
         "query": {"topic": topic, "keywords": keywords, "date_range": "Last 20 years", "jurisdiction": "Global", "max_results": 50},
-        "results": search_results,
+        "results": compatible_search_results,  # 使用兼容格式
         "analysis": analysis,
         "recommendations": recommendations,
         "risk_assessment": novelty_assessment.get("risk_assessment", {}),
@@ -1949,7 +1952,7 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
     return {
         "workflow_id": workflow_id,  # Include workflow ID in result
         "search_results": search_report,
-        "patents_found": len(search_results),
+        "patents_found": len(compatible_search_results),
         "novelty_score": novelty_assessment.get("novelty_score", 8.0),
         "risk_level": novelty_assessment.get("risk_level", "Low"),
         "recommendations": recommendations,
@@ -1958,6 +1961,48 @@ async def execute_searcher_task(request: TaskRequest) -> Dict[str, Any]:
         "mock_delay_applied": 0.5 if request.test_mode else 0,
         "isolation_timestamp": time.time()
     }
+
+def _ensure_search_results_compatibility(search_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """确保检索结果与后续智能体完全兼容"""
+    compatible_results = []
+    
+    for result in search_results:
+        # 保留核心必需字段
+        compatible_result = {
+            "patent_id": result.get("patent_id", "UNKNOWN"),
+            "title": result.get("title", "无标题"),
+            "abstract": result.get("abstract", "无摘要"),
+            "filing_date": result.get("filing_date", "N/A"),
+            "publication_date": result.get("publication_date", "N/A"),
+            "assignee": result.get("assignee", "Various"),
+            "relevance_score": result.get("relevance_score", 0.7),
+            "similarity_analysis": result.get("similarity_analysis", {
+                "concept_overlap": "待分析",
+                "technical_similarity": "待分析", 
+                "implementation_differences": "待分析"
+            })
+        }
+        
+        # 添加GLM分析结果（如果存在）
+        if "glm_final_analysis" in result:
+            compatible_result["glm_analysis"] = result["glm_final_analysis"]
+            compatible_result["enhanced_by_glm"] = True
+        elif "glm_analysis" in result:
+            compatible_result["glm_analysis"] = result["glm_analysis"]
+            compatible_result["enhanced_by_glm"] = True
+        
+        # 添加迭代轮次信息（如果存在）
+        if "analysis_round" in result:
+            compatible_result["analysis_round"] = result["analysis_round"]
+        
+        # 添加技术洞察（如果存在）
+        if "technical_insights" in result:
+            compatible_result["technical_insights"] = result["technical_insights"]
+        
+        compatible_results.append(compatible_result)
+    
+    logger.info(f"✅ 检索结果兼容性检查完成，{len(compatible_results)} 个结果已标准化")
+    return compatible_results
 
 async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     """Execute discussion task using GLM API or fallback to mock"""

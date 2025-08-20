@@ -172,3 +172,5 @@
 2025-08-20 06:40:05,024 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
 2025-08-20 06:40:05,024 - patent_agent_demo.glm_client - INFO - 🔒 获取GLM并发信号量，准备调用API
 2025-08-20 06:40:05,024 - patent_agent_demo.glm_client - INFO - 🚀 使用官方OpenAI库调用GLM API
+2025-08-20 06:41:47,832 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:41:47,832 - patent_agent_demo.glm_client - INFO - 🔓 释放GLM并发信号量，API调用完成
