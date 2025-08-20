@@ -2,11 +2,18 @@ import os
 import json
 import asyncio
 import ssl
-import urllib.request
 import time
 import logging
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+
+# 尝试导入官方OpenAI库
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    import urllib.request
 
 # 设置日志
 logger = logging.getLogger(__name__)
@@ -73,62 +80,111 @@ class GLMA2AClient:
         self.api_key = (api_key or _load_glm_key())
         if not self.api_key:
             raise ValueError("ZHIPUAI_API_KEY is required and fallback is disabled")
+        
+        # 初始化官方OpenAI客户端（如果可用）
+        self.openai_client = None
+        if OPENAI_AVAILABLE:
+            try:
+                self.openai_client = OpenAI(
+                    api_key=self.api_key,
+                    base_url=GLM_API_BASE
+                )
+                logger.info("✅ 使用官方OpenAI库初始化GLM客户端")
+            except Exception as e:
+                logger.warning(f"⚠️ 官方OpenAI库初始化失败: {e}，回退到urllib方式")
+                self.openai_client = None
+        else:
+            logger.info("ℹ️ 官方OpenAI库不可用，使用urllib方式")
 
     async def _generate_response(self, prompt: str) -> str:
         """Generate response using GLM-4.5-flash API with OpenAI-compatible format"""
         # 使用信号量控制并发数量
         async with _glm_semaphore:
-            payload = {
-                "model": GLM_MODEL,
-                "messages": [
+            # 优先使用官方OpenAI库
+            if self.openai_client:
+                return await self._generate_response_openai(prompt)
+            else:
+                return await self._generate_response_urllib(prompt)
+    
+    async def _generate_response_openai(self, prompt: str) -> str:
+        """使用官方OpenAI库调用GLM API"""
+        try:
+            logger.info("🚀 使用官方OpenAI库调用GLM API")
+            response = self.openai_client.chat.completions.create(
+                model=GLM_MODEL,
+                messages=[
                     {"role": "system", "content": "你是一个专业的专利分析师和专利撰写专家"},
                     {"role": "user", "content": prompt}
                 ],
-                "temperature": 0.3,
-                "top_p": 0.7,
-                "stream": False,
-            }
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}",
-            }
+                temperature=0.3,
+                top_p=0.7,
+                stream=False,
+                timeout=300  # 5分钟超时
+            )
+            
+            content = response.choices[0].message.content
+            logger.info(f"✅ 官方OpenAI库调用成功，响应长度: {len(content)}")
+            return content.strip()
+            
+        except Exception as e:
+            logger.error(f"❌ 官方OpenAI库调用失败: {e}")
+            # 回退到urllib方式
+            logger.info("🔄 回退到urllib方式")
+            return await self._generate_response_urllib(prompt)
+    
+    async def _generate_response_urllib(self, prompt: str) -> str:
+        """使用urllib方式调用GLM API（fallback）"""
+        payload = {
+            "model": GLM_MODEL,
+            "messages": [
+                {"role": "system", "content": "你是一个专业的专利分析师和专利撰写专家"},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.3,
+            "top_p": 0.7,
+            "stream": False,
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+        }
 
-            def _do_request() -> str:
-                req = urllib.request.Request(
-                    GLM_CHAT_COMPLETIONS,
-                    data=json.dumps(payload).encode("utf-8"),
-                    headers=headers,
-                    method="POST",
-                )
-                # 优化1: 增加超时时间到300秒，提高GLM-4.5-flash的响应成功率
-                # 优化2: 添加重试机制和更好的错误处理
-                max_retries = 3
-                retry_delay = 5  # 秒
-                
-                for attempt in range(max_retries):
-                    try:
-                        with urllib.request.urlopen(req, timeout=300) as resp:
-                            body = resp.read().decode("utf-8")
-                            data = json.loads(body)
-                            # OpenAI-style response
-                            choices = data.get("choices") or []
-                            if choices and "message" in choices[0]:
-                                return choices[0]["message"].get("content", "").strip()
-                            # Fallback parse for variations
-                            return data.get("text") or ""
-                    except urllib.error.URLError as e:
-                        if attempt < max_retries - 1:
-                            logger.warning(f"GLM API请求失败 (尝试 {attempt + 1}/{max_retries}): {e}，{retry_delay}秒后重试...")
-                            time.sleep(retry_delay)
-                            retry_delay *= 2  # 指数退避
-                        else:
-                            logger.error(f"GLM API请求最终失败: {e}")
-                            raise
-                    except Exception as e:
-                        logger.error(f"GLM API请求异常: {e}")
+        def _do_request() -> str:
+            req = urllib.request.Request(
+                GLM_CHAT_COMPLETIONS,
+                data=json.dumps(payload).encode("utf-8"),
+                headers=headers,
+                method="POST",
+            )
+            # 优化1: 增加超时时间到300秒，提高GLM-4.5-flash的响应成功率
+            # 优化2: 添加重试机制和更好的错误处理
+            max_retries = 3
+            retry_delay = 5  # 秒
+            
+            for attempt in range(max_retries):
+                try:
+                    with urllib.request.urlopen(req, timeout=300) as resp:
+                        body = resp.read().decode("utf-8")
+                        data = json.loads(body)
+                        # OpenAI-style response
+                        choices = data.get("choices") or []
+                        if choices and "message" in choices[0]:
+                            return choices[0]["message"].get("content", "").strip()
+                        # Fallback parse for variations
+                        return data.get("text") or ""
+                except urllib.error.URLError as e:
+                    if attempt < max_retries - 1:
+                        logger.warning(f"GLM API请求失败 (尝试 {attempt + 1}/{max_retries}): {e}，{retry_delay}秒后重试...")
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # 指数退避
+                    else:
+                        logger.error(f"GLM API请求最终失败: {e}")
                         raise
+                except Exception as e:
+                    logger.error(f"GLM API请求异常: {e}")
+                    raise
 
-            return await asyncio.get_event_loop().run_in_executor(None, _do_request)
+        return await asyncio.get_event_loop().run_in_executor(None, _do_request)
 
     # Below mirror the interface used by agents, with simple parsing (same as GoogleA2AClient)
     async def analyze_patent_topic(self, topic: str, description: str) -> PatentAnalysis:
