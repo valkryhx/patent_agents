@@ -1,0 +1,11 @@
+{
+  "title": "Patent Application: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法",
+  "abstract": "Fallback generation for 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法",
+  "claims": [
+    "Claim 1: A method for 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法"
+  ],
+  "detailed_description": "Fallback content due to error: No module named 'openai'",
+  "test_mode": true,
+  "agent_generated": false,
+  "error": "No module named 'openai'"
+}

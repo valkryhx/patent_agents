@@ -1,67 +1,17 @@
 {
   "title": "Improved Patent Application: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法",
-  "abstract": "An enhanced system for 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法 with improved functionality and efficiency through 语义理解, 参数推断.",
+  "abstract": "GLM优化摘要：。该方法通过构建语义理解模型分析函数调用上下文，实现对复杂函数参数的智能推断；同时设计了分层调用重试机制，根据函数调用失败原因和上下文信息动态调整重试策略，提高系统容错性和调用成功率。本发明解决了传统...",
   "claims": [
+    "GLM优化权利要求：# 专利申请书重写\n\n## 优化后的标题\n基于语义理解的复杂函数参数智能推断与分层调用重试优化方法\n\n## 优化后的摘要\n本发明公开了一种基于语义理解的复杂函数参数智能推断与分层调用重试优化方法及系统...",
     "An improved system for 语义理解 comprising...",
-    "The system of claim 1, further comprising enhanced 参数推断 features...",
-    "An optimized method for 分层调用 comprising..."
+    "The system of claim 1, further comprising enhanced 参数推断 features..."
   ],
-  "detailed_description": "Enhanced technical description of the 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法 system with improvements incorporating 语义理解, 参数推断, 分层调用, 重试优化...",
+  "detailed_description": "GLM优化描述：函数调用中参数配置复杂、错误处理不灵活的问题，适用于分布式系统、微服务架构和API集成等场景，显著提升开发效率和系统稳定性。\n\n## 优化后的详细描述\n\n### 技术领域\n本发明涉及计算机软件技术领域...",
   "improvements": [
-    "Enhanced clarity in 语义理解 claims",
-    "Additional technical examples for 参数推断",
-    "Improved abstract description aligned with unified strategy"
+    "GLM建议改进：，特别是涉及一种基于语义理解的函数参数推断与调用优化方法。\n\n### 背景技术\n在软件开发过程中，函数调用是基本的操作单元。随着系统复杂度的增加，函数参数配置变得日益复杂，特别是在分布式系统和微服务架...",
+    "Enhanced 语义理解 architecture",
+    "Improved 参数推断 optimization"
   ],
-  "unified_content_summary": {
-    "core_strategy": {
-      "key_innovation_areas": [
-        "语义理解",
-        "参数推断",
-        "分层调用",
-        "重试优化"
-      ],
-      "novelty_score": 8.5
-    },
-    "search_integration": {
-      "results": [
-        "现有技术：传统参数推断方法",
-        "相关专利：智能参数优化系统",
-        "技术趋势：语义理解在参数推断中的应用"
-      ]
-    },
-    "discussion_insights": {
-      "innovations": [
-        "增强的语义理解架构",
-        "改进的参数推断优化"
-      ],
-      "technical_insights": [
-        "新颖的参数推断方法",
-        "独特的系统集成方法"
-      ],
-      "recommendations": [
-        "专注于语义理解作为关键差异化因素"
-      ]
-    },
-    "review_incorporation": {
-      "quality_score": 8.5,
-      "consistency_score": 9.0,
-      "feedback": [
-        "技术描述清晰",
-        "权利要求结构良好"
-      ],
-      "recommendations": [
-        "可以添加更多技术示例",
-        "建议优化摘要描述"
-      ]
-    },
-    "final_novelty_score": 8.5,
-    "innovation_areas": [
-      "语义理解",
-      "参数推断",
-      "分层调用",
-      "重试优化"
-    ]
-  },
   "execution_time": 1.0,
   "test_mode": false,
   "mock_delay_applied": 0

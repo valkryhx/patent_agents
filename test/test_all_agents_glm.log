@@ -583,3 +583,359 @@ AttributeError: 'str' object has no attribute 'get'
 2025-08-19 09:52:14,890 - __main__ - INFO - 🎯 开始所有智能体测试
 2025-08-19 09:58:42,376 - __main__ - INFO - 🚀 开始综合智能体测试
 2025-08-19 09:58:42,376 - __main__ - INFO - 🎯 开始所有智能体测试
+2025-08-19 10:00:03,248 - __main__ - INFO - 🚀 开始综合智能体测试
+2025-08-19 10:00:03,248 - __main__ - INFO - 🎯 开始所有智能体测试
+2025-08-19 10:00:03,548 - unified_service - INFO - ✅ GLM客户端导入成功
+2025-08-19 10:00:03,548 - workflow_manager - INFO - 🚀 WorkflowManager initialized with task assignment to agent services
+2025-08-19 10:00:03,560 - __main__ - INFO - 
+🔍 开始测试 Planner Agent (专利规划分析)
+2025-08-19 10:00:03,560 - __main__ - INFO - ============================================================
+2025-08-19 10:00:03,560 - __main__ - INFO - 🧪 测试 Planner Agent - GLM_AVAILABLE=False
+2025-08-19 10:00:03,560 - __main__ - INFO - ============================================================
+2025-08-19 10:00:03,560 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-19 10:00:03,560 - __main__ - INFO - 📋 执行 Planner Agent 任务
+2025-08-19 10:00:03,560 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:03,560 - unified_service - INFO - 🚀 Starting patent planning for workflow test_planner_agent_glm_False: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:03,560 - unified_service - INFO - 🔧 Test mode: True
+2025-08-19 10:00:03,560 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-19 10:00:03,560 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode = True
+2025-08-19 10:00:03,560 - unified_service - INFO - 🔍 DEBUG STEP 1: type(request.test_mode) = <class 'bool'>
+2025-08-19 10:00:03,560 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == False = False
+2025-08-19 10:00:03,560 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == True = True
+2025-08-19 10:00:04,061 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 Analyzing patent topic: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:04,061 - unified_service - INFO - 📝 使用mock数据进行专利主题分析
+2025-08-19 10:00:04,061 - unified_service - INFO - 📊 Developing strategy for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:04,061 - unified_service - INFO - 📅 Creating development phases
+2025-08-19 10:00:04,061 - unified_service - INFO - ⚠️ Assessing competitive risks
+2025-08-19 10:00:04,061 - unified_service - INFO - ⏰ Estimating timeline
+2025-08-19 10:00:04,061 - unified_service - INFO - 💰 Estimating resources
+2025-08-19 10:00:04,061 - unified_service - INFO - 📈 Calculating success probability
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 DEBUG STEP 2: 准备构建返回结果
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 DEBUG STEP 2: request.test_mode = True
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 DEBUG STEP 2: execution_time 计算: 0.5
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 DEBUG STEP 2: mock_delay_applied 计算: 0.5
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 DEBUG STEP 3: 构建完成的结果
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict['test_mode'] = True
+2025-08-19 10:00:04,061 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict keys = ['workflow_id', 'strategy', 'analysis', 'recommendations', 'execution_time', 'test_mode', 'mock_delay_applied', 'isolation_timestamp']
+2025-08-19 10:00:04,061 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-19 10:00:04,062 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:00:04,062 - __main__ - INFO -   测试模式: True
+2025-08-19 10:00:04,062 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-19 10:00:04,062 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-19 10:00:04,062 - __main__ - INFO - 💾 结果已保存到: test_planner_agent_glm_False_output.json
+2025-08-19 10:00:04,062 - __main__ - INFO - ============================================================
+2025-08-19 10:00:04,062 - __main__ - INFO - 🧪 测试 Planner Agent - GLM_AVAILABLE=True
+2025-08-19 10:00:04,062 - __main__ - INFO - ============================================================
+2025-08-19 10:00:04,062 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-19 10:00:04,062 - __main__ - INFO - 📋 执行 Planner Agent 任务
+2025-08-19 10:00:04,062 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:04,062 - unified_service - INFO - 🚀 Starting patent planning for workflow test_planner_agent_glm_True: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:04,062 - unified_service - INFO - 🔧 Test mode: False
+2025-08-19 10:00:04,062 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-19 10:00:04,062 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode = False
+2025-08-19 10:00:04,062 - unified_service - INFO - 🔍 DEBUG STEP 1: type(request.test_mode) = <class 'bool'>
+2025-08-19 10:00:04,062 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == False = True
+2025-08-19 10:00:04,062 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == True = False
+2025-08-19 10:00:04,062 - unified_service - INFO - 🔍 Analyzing patent topic: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:04,062 - unified_service - INFO - 🚀 使用GLM API进行专利主题分析
+2025-08-19 10:00:52,233 - unified_service - INFO - ✅ GLM API调用成功
+2025-08-19 10:00:52,233 - unified_service - INFO - 📊 Developing strategy for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,233 - unified_service - INFO - 📅 Creating development phases
+2025-08-19 10:00:52,233 - unified_service - INFO - ⚠️ Assessing competitive risks
+2025-08-19 10:00:52,233 - unified_service - INFO - ⏰ Estimating timeline
+2025-08-19 10:00:52,233 - unified_service - INFO - 💰 Estimating resources
+2025-08-19 10:00:52,233 - unified_service - INFO - 📈 Calculating success probability
+2025-08-19 10:00:52,233 - unified_service - INFO - 🔍 DEBUG STEP 2: 准备构建返回结果
+2025-08-19 10:00:52,233 - unified_service - INFO - 🔍 DEBUG STEP 2: request.test_mode = False
+2025-08-19 10:00:52,233 - unified_service - INFO - 🔍 DEBUG STEP 2: execution_time 计算: 1.0
+2025-08-19 10:00:52,233 - unified_service - INFO - 🔍 DEBUG STEP 2: mock_delay_applied 计算: 0
+2025-08-19 10:00:52,233 - unified_service - INFO - 🔍 DEBUG STEP 3: 构建完成的结果
+2025-08-19 10:00:52,233 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict['test_mode'] = False
+2025-08-19 10:00:52,233 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict keys = ['workflow_id', 'strategy', 'analysis', 'recommendations', 'execution_time', 'test_mode', 'mock_delay_applied', 'isolation_timestamp']
+2025-08-19 10:00:52,233 - __main__ - INFO - ⏱️ 执行时间: 48.17秒
+2025-08-19 10:00:52,233 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:00:52,233 - __main__ - INFO -   测试模式: False
+2025-08-19 10:00:52,233 - __main__ - INFO -   Mock延迟: 0
+2025-08-19 10:00:52,233 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-19 10:00:52,234 - __main__ - INFO - 💾 结果已保存到: test_planner_agent_glm_True_output.json
+2025-08-19 10:00:52,234 - __main__ - INFO - 
+🔍 开始测试 Searcher Agent (现有技术检索)
+2025-08-19 10:00:52,234 - __main__ - INFO - ============================================================
+2025-08-19 10:00:52,234 - __main__ - INFO - 🧪 测试 Searcher Agent - GLM_AVAILABLE=False
+2025-08-19 10:00:52,234 - __main__ - INFO - ============================================================
+2025-08-19 10:00:52,234 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-19 10:00:52,234 - __main__ - INFO - 📋 执行 Searcher Agent 任务
+2025-08-19 10:00:52,234 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,234 - unified_service - INFO - 🚀 Starting prior art search for workflow test_searcher_agent_glm_False: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,234 - unified_service - INFO - 🔧 Test mode: True
+2025-08-19 10:00:52,234 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-19 10:00:52,735 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-19 10:00:52,735 - unified_service - INFO - 🔑 Extracting keywords from: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,735 - unified_service - INFO - 🔍 Conducting prior art search for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,735 - unified_service - INFO - 📝 使用mock数据进行现有技术检索
+2025-08-19 10:00:52,735 - unified_service - INFO - 📊 Analyzing search results for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,735 - unified_service - INFO - 🎯 Assessing novelty and patentability
+2025-08-19 10:00:52,735 - unified_service - INFO - 💡 Generating recommendations
+2025-08-19 10:00:52,735 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-19 10:00:52,735 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:00:52,735 - __main__ - INFO -   测试模式: True
+2025-08-19 10:00:52,735 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-19 10:00:52,735 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-19 10:00:52,736 - __main__ - INFO - 💾 结果已保存到: test_searcher_agent_glm_False_output.json
+2025-08-19 10:00:52,736 - __main__ - INFO - ============================================================
+2025-08-19 10:00:52,736 - __main__ - INFO - 🧪 测试 Searcher Agent - GLM_AVAILABLE=True
+2025-08-19 10:00:52,736 - __main__ - INFO - ============================================================
+2025-08-19 10:00:52,736 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-19 10:00:52,736 - __main__ - INFO - 📋 执行 Searcher Agent 任务
+2025-08-19 10:00:52,736 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,736 - unified_service - INFO - 🚀 Starting prior art search for workflow test_searcher_agent_glm_True: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,736 - unified_service - INFO - 🔧 Test mode: False
+2025-08-19 10:00:52,736 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-19 10:00:52,736 - unified_service - INFO - 🔑 Extracting keywords from: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,736 - unified_service - INFO - 🔍 Conducting prior art search for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:00:52,736 - unified_service - INFO - 🚀 使用GLM API进行现有技术检索
+2025-08-19 10:02:09,910 - unified_service - INFO - ✅ GLM API调用成功
+2025-08-19 10:02:09,910 - unified_service - INFO - 📊 Analyzing search results for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:02:09,910 - unified_service - INFO - 🎯 Assessing novelty and patentability
+2025-08-19 10:02:09,910 - unified_service - INFO - 💡 Generating recommendations
+2025-08-19 10:02:09,910 - __main__ - INFO - ⏱️ 执行时间: 77.17秒
+2025-08-19 10:02:09,910 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:02:09,910 - __main__ - INFO -   测试模式: False
+2025-08-19 10:02:09,910 - __main__ - INFO -   Mock延迟: 0
+2025-08-19 10:02:09,910 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-19 10:02:09,911 - __main__ - INFO - 💾 结果已保存到: test_searcher_agent_glm_True_output.json
+2025-08-19 10:02:09,911 - __main__ - INFO - 
+🔍 开始测试 Discussion Agent (创新讨论分析)
+2025-08-19 10:02:09,911 - __main__ - INFO - ============================================================
+2025-08-19 10:02:09,911 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=False
+2025-08-19 10:02:09,911 - __main__ - INFO - ============================================================
+2025-08-19 10:02:09,911 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-19 10:02:09,911 - __main__ - INFO - 📋 执行 Discussion Agent 任务
+2025-08-19 10:02:09,911 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:02:09,911 - unified_service - INFO - 🚀 Starting innovation discussion for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:02:09,911 - unified_service - INFO - 🔧 Test mode: True
+2025-08-19 10:02:10,412 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-19 10:02:10,412 - unified_service - INFO - 📋 Building on planning strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-19 10:02:10,412 - unified_service - INFO - 🔍 Incorporating search findings: 3 patents found
+2025-08-19 10:02:10,412 - unified_service - INFO - 📝 使用mock数据进行创新讨论分析
+2025-08-19 10:02:10,412 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-19 10:02:10,412 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:02:10,412 - __main__ - INFO -   创新点数量: 3
+2025-08-19 10:02:10,412 - __main__ - INFO -   技术洞察数量: 3
+2025-08-19 10:02:10,412 - __main__ - INFO -   建议数量: 3
+2025-08-19 10:02:10,412 - __main__ - INFO -   新颖性评分: 8.5
+2025-08-19 10:02:10,412 - __main__ - INFO -   测试模式: True
+2025-08-19 10:02:10,412 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-19 10:02:10,412 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-19 10:02:10,412 - __main__ - INFO - 💾 结果已保存到: test_discussion_agent_glm_False_output.json
+2025-08-19 10:02:10,412 - __main__ - INFO - ============================================================
+2025-08-19 10:02:10,412 - __main__ - INFO - 🧪 测试 Discussion Agent - GLM_AVAILABLE=True
+2025-08-19 10:02:10,412 - __main__ - INFO - ============================================================
+2025-08-19 10:02:10,413 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-19 10:02:10,413 - __main__ - INFO - 📋 执行 Discussion Agent 任务
+2025-08-19 10:02:10,413 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:02:10,413 - unified_service - INFO - 🚀 Starting innovation discussion for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:02:10,413 - unified_service - INFO - 🔧 Test mode: False
+2025-08-19 10:02:10,413 - unified_service - INFO - 📋 Building on planning strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-19 10:02:10,413 - unified_service - INFO - 🔍 Incorporating search findings: 3 patents found
+2025-08-19 10:02:10,413 - unified_service - INFO - 🚀 使用GLM API进行创新讨论分析
+2025-08-19 10:03:07,338 - unified_service - INFO - ✅ GLM API调用成功
+2025-08-19 10:03:07,338 - __main__ - INFO - ⏱️ 执行时间: 56.93秒
+2025-08-19 10:03:07,338 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:03:07,338 - __main__ - INFO -   创新点数量: 3
+2025-08-19 10:03:07,338 - __main__ - INFO -   技术洞察数量: 3
+2025-08-19 10:03:07,338 - __main__ - INFO -   建议数量: 3
+2025-08-19 10:03:07,338 - __main__ - INFO -   新颖性评分: 8.5
+2025-08-19 10:03:07,338 - __main__ - INFO -   测试模式: False
+2025-08-19 10:03:07,338 - __main__ - INFO -   Mock延迟: 0
+2025-08-19 10:03:07,338 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-19 10:03:07,339 - __main__ - INFO - 💾 结果已保存到: test_discussion_agent_glm_True_output.json
+2025-08-19 10:03:07,339 - __main__ - INFO - 
+🔍 开始测试 Writer Agent (专利撰写)
+2025-08-19 10:03:07,339 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,339 - __main__ - INFO - 🧪 测试 Writer Agent - GLM_AVAILABLE=False
+2025-08-19 10:03:07,339 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,339 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-19 10:03:07,339 - __main__ - INFO - 📋 执行 Writer Agent 任务
+2025-08-19 10:03:07,339 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,339 - unified_service - INFO - 🚀 Starting patent drafting for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,339 - unified_service - INFO - 🔧 Test mode: True
+2025-08-19 10:03:07,357 - unified_service - ERROR - ❌ Error in execute_writer_task: No module named 'openai'
+2025-08-19 10:03:07,359 - unified_service - ERROR - 📋 Traceback: Traceback (most recent call last):
+  File "/workspace/unified_service.py", line 2069, in execute_writer_task
+    from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 7, in <module>
+    from .planner_agent import PlannerAgent
+  File "/workspace/patent_agent_demo/agents/planner_agent.py", line 12, in <module>
+    from ..openai_client import OpenAIClient
+  File "/workspace/patent_agent_demo/openai_client.py", line 11, in <module>
+    from openai import OpenAI
+ModuleNotFoundError: No module named 'openai'
+
+2025-08-19 10:03:07,359 - __main__ - INFO - ⏱️ 执行时间: 0.02秒
+2025-08-19 10:03:07,359 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:03:07,359 - __main__ - INFO -   测试模式: True
+2025-08-19 10:03:07,359 - __main__ - INFO -   Mock延迟: N/A
+2025-08-19 10:03:07,359 - __main__ - WARNING - ⚠️ 可能没有使用mock数据
+2025-08-19 10:03:07,359 - __main__ - INFO - 💾 结果已保存到: test_writer_agent_glm_False_output.json
+2025-08-19 10:03:07,359 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,359 - __main__ - INFO - 🧪 测试 Writer Agent - GLM_AVAILABLE=True
+2025-08-19 10:03:07,359 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,359 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-19 10:03:07,359 - __main__ - INFO - 📋 执行 Writer Agent 任务
+2025-08-19 10:03:07,359 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,359 - unified_service - INFO - 🚀 Starting patent drafting for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,359 - unified_service - INFO - 🔧 Test mode: False
+2025-08-19 10:03:07,360 - unified_service - ERROR - ❌ Error in execute_writer_task: No module named 'openai'
+2025-08-19 10:03:07,360 - unified_service - ERROR - 📋 Traceback: Traceback (most recent call last):
+  File "/workspace/unified_service.py", line 2069, in execute_writer_task
+    from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+  File "/workspace/patent_agent_demo/agents/__init__.py", line 7, in <module>
+    from .planner_agent import PlannerAgent
+  File "/workspace/patent_agent_demo/agents/planner_agent.py", line 12, in <module>
+    from ..openai_client import OpenAIClient
+  File "/workspace/patent_agent_demo/openai_client.py", line 11, in <module>
+    from openai import OpenAI
+ModuleNotFoundError: No module named 'openai'
+
+2025-08-19 10:03:07,360 - __main__ - INFO - ⏱️ 执行时间: 0.00秒
+2025-08-19 10:03:07,360 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:03:07,360 - __main__ - INFO -   测试模式: False
+2025-08-19 10:03:07,360 - __main__ - INFO -   Mock延迟: N/A
+2025-08-19 10:03:07,360 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-19 10:03:07,360 - __main__ - INFO - 💾 结果已保存到: test_writer_agent_glm_True_output.json
+2025-08-19 10:03:07,360 - __main__ - INFO - 
+🔍 开始测试 Reviewer Agent (专利质量审查)
+2025-08-19 10:03:07,360 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,360 - __main__ - INFO - 🧪 测试 Reviewer Agent - GLM_AVAILABLE=False
+2025-08-19 10:03:07,360 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,360 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-19 10:03:07,360 - __main__ - INFO - 📋 执行 Reviewer Agent 任务
+2025-08-19 10:03:07,360 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,361 - unified_service - INFO - 🚀 Starting quality review for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,361 - unified_service - INFO - 🔧 Test mode: True
+2025-08-19 10:03:07,861 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-19 10:03:07,861 - unified_service - INFO - 📋 Using full context for review
+2025-08-19 10:03:07,861 - unified_service - INFO - 📋 Reviewing against unified strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-19 10:03:07,861 - unified_service - INFO - 🔍 Checking consistency with 0 search findings
+2025-08-19 10:03:07,861 - unified_service - INFO - 📝 使用mock数据进行专利质量审查
+2025-08-19 10:03:07,861 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-19 10:03:07,861 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:03:07,861 - __main__ - INFO -   质量评分: 8.75
+2025-08-19 10:03:07,861 - __main__ - INFO -   一致性评分: 9.0
+2025-08-19 10:03:07,862 - __main__ - INFO -   反馈数量: 3
+2025-08-19 10:03:07,862 - __main__ - INFO -   建议数量: 3
+2025-08-19 10:03:07,862 - __main__ - INFO -   测试模式: True
+2025-08-19 10:03:07,862 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-19 10:03:07,862 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-19 10:03:07,862 - __main__ - INFO - 💾 结果已保存到: test_reviewer_agent_glm_False_output.json
+2025-08-19 10:03:07,862 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,862 - __main__ - INFO - 🧪 测试 Reviewer Agent - GLM_AVAILABLE=True
+2025-08-19 10:03:07,862 - __main__ - INFO - ============================================================
+2025-08-19 10:03:07,862 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-19 10:03:07,862 - __main__ - INFO - 📋 执行 Reviewer Agent 任务
+2025-08-19 10:03:07,862 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,862 - unified_service - INFO - 🚀 Starting quality review for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:03:07,862 - unified_service - INFO - 🔧 Test mode: False
+2025-08-19 10:03:07,862 - unified_service - INFO - 📋 Using full context for review
+2025-08-19 10:03:07,862 - unified_service - INFO - 📋 Reviewing against unified strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-19 10:03:07,862 - unified_service - INFO - 🔍 Checking consistency with 0 search findings
+2025-08-19 10:03:07,862 - unified_service - INFO - 🚀 使用GLM API进行专利质量审查
+2025-08-19 10:04:10,533 - unified_service - INFO - ✅ GLM API调用成功
+2025-08-19 10:04:10,534 - __main__ - INFO - ⏱️ 执行时间: 62.67秒
+2025-08-19 10:04:10,534 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:04:10,534 - __main__ - INFO -   质量评分: 8.75
+2025-08-19 10:04:10,534 - __main__ - INFO -   一致性评分: 9.0
+2025-08-19 10:04:10,534 - __main__ - INFO -   反馈数量: 3
+2025-08-19 10:04:10,534 - __main__ - INFO -   建议数量: 3
+2025-08-19 10:04:10,534 - __main__ - INFO -   测试模式: False
+2025-08-19 10:04:10,534 - __main__ - INFO -   Mock延迟: 0
+2025-08-19 10:04:10,534 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-19 10:04:10,534 - __main__ - INFO - 💾 结果已保存到: test_reviewer_agent_glm_True_output.json
+2025-08-19 10:04:10,534 - __main__ - INFO - 
+🔍 开始测试 Rewriter Agent (专利内容重写)
+2025-08-19 10:04:10,534 - __main__ - INFO - ============================================================
+2025-08-19 10:04:10,534 - __main__ - INFO - 🧪 测试 Rewriter Agent - GLM_AVAILABLE=False
+2025-08-19 10:04:10,534 - __main__ - INFO - ============================================================
+2025-08-19 10:04:10,534 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-19 10:04:10,534 - __main__ - INFO - 📋 执行 Rewriter Agent 任务
+2025-08-19 10:04:10,534 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:04:10,534 - unified_service - INFO - 🚀 Starting patent rewriting for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:04:10,534 - unified_service - INFO - 🔧 Test mode: True
+2025-08-19 10:04:11,035 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-19 10:04:11,035 - unified_service - INFO - 📋 Using full context for rewrite
+2025-08-19 10:04:11,035 - unified_service - INFO - 📋 Final polish using unified strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-19 10:04:11,035 - unified_service - INFO - 🔍 Incorporating review feedback: 2 recommendations
+2025-08-19 10:04:11,035 - unified_service - INFO - 📝 使用mock数据进行专利内容重写优化
+2025-08-19 10:04:11,035 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-19 10:04:11,035 - __main__ - INFO - 📊 结果分析:
+2025-08-19 10:04:11,035 - __main__ - INFO -   标题: Improved Patent Application: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:04:11,035 - __main__ - INFO -   摘要长度: 114 字符
+2025-08-19 10:04:11,035 - __main__ - INFO -   权利要求数量: 3
+2025-08-19 10:04:11,035 - __main__ - INFO -   改进点数量: 3
+2025-08-19 10:04:11,035 - __main__ - INFO -   测试模式: True
+2025-08-19 10:04:11,035 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-19 10:04:11,035 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-19 10:04:11,036 - __main__ - INFO - 💾 结果已保存到: test_rewriter_agent_glm_False_output.json
+2025-08-19 10:04:11,036 - __main__ - INFO - ============================================================
+2025-08-19 10:04:11,036 - __main__ - INFO - 🧪 测试 Rewriter Agent - GLM_AVAILABLE=True
+2025-08-19 10:04:11,036 - __main__ - INFO - ============================================================
+2025-08-19 10:04:11,036 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-19 10:04:11,036 - __main__ - INFO - 📋 执行 Rewriter Agent 任务
+2025-08-19 10:04:11,036 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:04:11,036 - unified_service - INFO - 🚀 Starting patent rewriting for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-19 10:04:11,036 - unified_service - INFO - 🔧 Test mode: False
+2025-08-19 10:04:11,036 - unified_service - INFO - 📋 Using full context for rewrite
+2025-08-19 10:04:11,036 - unified_service - INFO - 📋 Final polish using unified strategy: ['语义理解', '参数推断', '分层调用', '重试优化']
+2025-08-19 10:04:11,036 - unified_service - INFO - 🔍 Incorporating review feedback: 2 recommendations
+2025-08-19 10:04:11,036 - unified_service - INFO - 🚀 使用GLM API进行专利内容重写优化
+2025-08-20 01:46:40,353 - unified_service - INFO - ✅ GLM API调用成功
+2025-08-20 01:46:40,354 - __main__ - INFO - ⏱️ 执行时间: 58.15秒
+2025-08-20 01:46:40,354 - __main__ - INFO - 📊 结果分析:
+2025-08-20 01:46:40,354 - __main__ - INFO -   标题: Improved Patent Application: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:46:40,354 - __main__ - INFO -   摘要长度: 111 字符
+2025-08-20 01:46:40,354 - __main__ - INFO -   权利要求数量: 3
+2025-08-20 01:46:40,354 - __main__ - INFO -   改进点数量: 3
+2025-08-20 01:46:40,354 - __main__ - INFO -   测试模式: False
+2025-08-20 01:46:40,354 - __main__ - INFO -   Mock延迟: 0
+2025-08-20 01:46:40,354 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-20 01:46:40,354 - __main__ - INFO - 💾 结果已保存到: test_rewriter_agent_glm_True_output.json
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+================================================================================
+2025-08-20 01:46:40,354 - __main__ - INFO - 📋 综合测试报告
+2025-08-20 01:46:40,354 - __main__ - INFO - ================================================================================
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+🤖 Planner Agent:
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+🤖 Searcher Agent:
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+🤖 Discussion Agent:
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+🤖 Writer Agent:
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+🤖 Reviewer Agent:
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+🤖 Rewriter Agent:
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=False 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO -   ✅ GLM_AVAILABLE=True 测试: 通过
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+📊 总体统计:
+2025-08-20 01:46:40,354 - __main__ - INFO -   智能体数量: 6
+2025-08-20 01:46:40,354 - __main__ - INFO -   总测试数: 12
+2025-08-20 01:46:40,354 - __main__ - INFO -   通过测试: 12
+2025-08-20 01:46:40,354 - __main__ - INFO -   失败测试: 0
+2025-08-20 01:46:40,354 - __main__ - INFO -   通过率: 100.0%
+2025-08-20 01:46:40,354 - __main__ - INFO - 
+🎉 所有测试通过！所有智能体工作正常
+2025-08-20 01:46:40,355 - __main__ - INFO - 💾 详细报告已保存到: test_all_agents_glm_report.json
