@@ -5,6 +5,9 @@ httpx>=0.25.0
 pydantic>=2.0.0
 python-multipart>=0.0.6
 
+# HTTP客户端依赖
+requests>=2.31.0
+
 # 终端美化输出
 rich>=13.7.0
 
