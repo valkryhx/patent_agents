@@ -939,3 +939,59 @@ ModuleNotFoundError: No module named 'openai'
 2025-08-20 01:46:40,354 - __main__ - INFO - 
 🎉 所有测试通过！所有智能体工作正常
 2025-08-20 01:46:40,355 - __main__ - INFO - 💾 详细报告已保存到: test_all_agents_glm_report.json
+2025-08-20 01:53:16,532 - __main__ - INFO - 🚀 开始综合智能体测试
+2025-08-20 01:53:16,532 - __main__ - INFO - 🎯 开始所有智能体测试
+2025-08-20 01:53:16,834 - unified_service - INFO - ✅ GLM客户端导入成功
+2025-08-20 01:53:16,834 - workflow_manager - INFO - 🚀 WorkflowManager initialized with task assignment to agent services
+2025-08-20 01:53:16,847 - __main__ - INFO - 
+🔍 开始测试 Planner Agent (专利规划分析)
+2025-08-20 01:53:16,847 - __main__ - INFO - ============================================================
+2025-08-20 01:53:16,847 - __main__ - INFO - 🧪 测试 Planner Agent - GLM_AVAILABLE=False
+2025-08-20 01:53:16,847 - __main__ - INFO - ============================================================
+2025-08-20 01:53:16,847 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-20 01:53:16,847 - __main__ - INFO - 📋 执行 Planner Agent 任务
+2025-08-20 01:53:16,847 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:53:16,847 - unified_service - INFO - 🚀 Starting patent planning for workflow test_planner_agent_glm_False: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:53:16,847 - unified_service - INFO - 🔧 Test mode: True
+2025-08-20 01:53:16,847 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-20 01:53:16,847 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode = True
+2025-08-20 01:53:16,847 - unified_service - INFO - 🔍 DEBUG STEP 1: type(request.test_mode) = <class 'bool'>
+2025-08-20 01:53:16,847 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == False = False
+2025-08-20 01:53:16,847 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == True = True
+2025-08-20 01:53:17,348 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 Analyzing patent topic: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:53:17,348 - unified_service - INFO - 📝 使用mock数据进行专利主题分析
+2025-08-20 01:53:17,348 - unified_service - INFO - 📊 Developing strategy for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:53:17,348 - unified_service - INFO - 📅 Creating development phases
+2025-08-20 01:53:17,348 - unified_service - INFO - ⚠️ Assessing competitive risks
+2025-08-20 01:53:17,348 - unified_service - INFO - ⏰ Estimating timeline
+2025-08-20 01:53:17,348 - unified_service - INFO - 💰 Estimating resources
+2025-08-20 01:53:17,348 - unified_service - INFO - 📈 Calculating success probability
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 DEBUG STEP 2: 准备构建返回结果
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 DEBUG STEP 2: request.test_mode = True
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 DEBUG STEP 2: execution_time 计算: 0.5
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 DEBUG STEP 2: mock_delay_applied 计算: 0.5
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 DEBUG STEP 3: 构建完成的结果
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict['test_mode'] = True
+2025-08-20 01:53:17,348 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict keys = ['workflow_id', 'strategy', 'analysis', 'recommendations', 'execution_time', 'test_mode', 'mock_delay_applied', 'isolation_timestamp']
+2025-08-20 01:53:17,348 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-20 01:53:17,348 - __main__ - INFO - 📊 结果分析:
+2025-08-20 01:53:17,348 - __main__ - INFO -   测试模式: True
+2025-08-20 01:53:17,348 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-20 01:53:17,348 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-20 01:53:17,348 - __main__ - INFO - 💾 结果已保存到: test_planner_agent_glm_False_output.json
+2025-08-20 01:53:17,348 - __main__ - INFO - ============================================================
+2025-08-20 01:53:17,348 - __main__ - INFO - 🧪 测试 Planner Agent - GLM_AVAILABLE=True
+2025-08-20 01:53:17,348 - __main__ - INFO - ============================================================
+2025-08-20 01:53:17,348 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-20 01:53:17,348 - __main__ - INFO - 📋 执行 Planner Agent 任务
+2025-08-20 01:53:17,348 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:53:17,349 - unified_service - INFO - 🚀 Starting patent planning for workflow test_planner_agent_glm_True: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:53:17,349 - unified_service - INFO - 🔧 Test mode: False
+2025-08-20 01:53:17,349 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-20 01:53:17,349 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode = False
+2025-08-20 01:53:17,349 - unified_service - INFO - 🔍 DEBUG STEP 1: type(request.test_mode) = <class 'bool'>
+2025-08-20 01:53:17,349 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == False = True
+2025-08-20 01:53:17,349 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == True = False
+2025-08-20 01:53:17,349 - unified_service - INFO - 🔍 Analyzing patent topic: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 01:53:17,349 - unified_service - INFO - 🚀 使用GLM API进行专利主题分析
