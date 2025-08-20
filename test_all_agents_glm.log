@@ -1,0 +1,174 @@
+2025-08-20 06:38:22,645 - __main__ - INFO - 🚀 开始综合智能体测试
+2025-08-20 06:38:22,645 - __main__ - INFO - 🎯 开始所有智能体测试
+2025-08-20 06:38:23,141 - unified_service - INFO - ✅ GLM客户端导入成功
+2025-08-20 06:38:23,141 - workflow_manager - INFO - 🚀 WorkflowManager initialized with task assignment to agent services
+2025-08-20 06:38:23,155 - __main__ - INFO - 
+🔍 开始测试 Planner Agent (专利规划分析)
+2025-08-20 06:38:23,155 - __main__ - INFO - ============================================================
+2025-08-20 06:38:23,155 - __main__ - INFO - 🧪 测试 Planner Agent - GLM_AVAILABLE=False
+2025-08-20 06:38:23,155 - __main__ - INFO - ============================================================
+2025-08-20 06:38:23,155 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-20 06:38:23,155 - __main__ - INFO - 📋 执行 Planner Agent 任务
+2025-08-20 06:38:23,155 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:38:23,155 - unified_service - INFO - 🚀 Starting patent planning for workflow test_planner_agent_glm_False: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:38:23,155 - unified_service - INFO - 🔧 Test mode: True
+2025-08-20 06:38:23,155 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-20 06:38:23,155 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode = True
+2025-08-20 06:38:23,155 - unified_service - INFO - 🔍 DEBUG STEP 1: type(request.test_mode) = <class 'bool'>
+2025-08-20 06:38:23,155 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == False = False
+2025-08-20 06:38:23,155 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == True = True
+2025-08-20 06:38:23,656 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 Analyzing patent topic: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:38:23,656 - unified_service - INFO - 📝 使用mock数据进行专利主题分析
+2025-08-20 06:38:23,656 - unified_service - INFO - 📊 Developing strategy for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:38:23,656 - unified_service - INFO - 📅 Creating development phases
+2025-08-20 06:38:23,656 - unified_service - INFO - ⚠️ Assessing competitive risks
+2025-08-20 06:38:23,656 - unified_service - INFO - ⏰ Estimating timeline
+2025-08-20 06:38:23,656 - unified_service - INFO - 💰 Estimating resources
+2025-08-20 06:38:23,656 - unified_service - INFO - 📈 Calculating success probability
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 DEBUG STEP 2: 准备构建返回结果
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 DEBUG STEP 2: request.test_mode = True
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 DEBUG STEP 2: execution_time 计算: 0.5
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 DEBUG STEP 2: mock_delay_applied 计算: 0.5
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 DEBUG STEP 3: 构建完成的结果
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict['test_mode'] = True
+2025-08-20 06:38:23,656 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict keys = ['workflow_id', 'strategy', 'analysis', 'recommendations', 'execution_time', 'test_mode', 'mock_delay_applied', 'isolation_timestamp']
+2025-08-20 06:38:23,656 - __main__ - INFO - ⏱️ 执行时间: 0.50秒
+2025-08-20 06:38:23,656 - __main__ - INFO - 📊 结果分析:
+2025-08-20 06:38:23,657 - __main__ - INFO -   测试模式: True
+2025-08-20 06:38:23,657 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-20 06:38:23,657 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-20 06:38:23,657 - __main__ - INFO - 💾 结果已保存到: test_planner_agent_glm_False_output.json
+2025-08-20 06:38:23,657 - __main__ - INFO - ============================================================
+2025-08-20 06:38:23,657 - __main__ - INFO - 🧪 测试 Planner Agent - GLM_AVAILABLE=True
+2025-08-20 06:38:23,657 - __main__ - INFO - ============================================================
+2025-08-20 06:38:23,657 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-20 06:38:23,657 - __main__ - INFO - 📋 执行 Planner Agent 任务
+2025-08-20 06:38:23,657 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:38:23,657 - unified_service - INFO - 🚀 Starting patent planning for workflow test_planner_agent_glm_True: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:38:23,657 - unified_service - INFO - 🔧 Test mode: False
+2025-08-20 06:38:23,657 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-20 06:38:23,657 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode = False
+2025-08-20 06:38:23,657 - unified_service - INFO - 🔍 DEBUG STEP 1: type(request.test_mode) = <class 'bool'>
+2025-08-20 06:38:23,657 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == False = True
+2025-08-20 06:38:23,657 - unified_service - INFO - 🔍 DEBUG STEP 1: request.test_mode == True = False
+2025-08-20 06:38:23,657 - unified_service - INFO - 🔍 Analyzing patent topic: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:38:23,657 - unified_service - INFO - 🚀 使用GLM API进行专利主题分析
+2025-08-20 06:38:23,677 - patent_agent_demo.glm_client - INFO - ✅ 使用官方OpenAI库初始化GLM客户端
+2025-08-20 06:38:23,677 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:38:23,677 - patent_agent_demo.glm_client - INFO - 🔒 获取GLM并发信号量，准备调用API
+2025-08-20 06:38:23,677 - patent_agent_demo.glm_client - INFO - 🚀 使用官方OpenAI库调用GLM API
+2025-08-20 06:39:15,833 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2025-08-20 06:39:15,842 - patent_agent_demo.glm_client - INFO - ✅ 官方OpenAI库调用成功，响应长度: 1301
+2025-08-20 06:39:15,842 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:39:15,843 - patent_agent_demo.glm_client - INFO - 🔓 释放GLM并发信号量，API调用完成
+2025-08-20 06:39:15,843 - unified_service - INFO - ✅ GLM API调用成功
+2025-08-20 06:39:15,843 - unified_service - INFO - 📊 Developing strategy for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:15,843 - unified_service - INFO - 📅 Creating development phases
+2025-08-20 06:39:15,843 - unified_service - INFO - ⚠️ Assessing competitive risks
+2025-08-20 06:39:15,843 - unified_service - INFO - ⏰ Estimating timeline
+2025-08-20 06:39:15,843 - unified_service - INFO - 💰 Estimating resources
+2025-08-20 06:39:15,843 - unified_service - INFO - 📈 Calculating success probability
+2025-08-20 06:39:15,843 - unified_service - INFO - 🔍 DEBUG STEP 2: 准备构建返回结果
+2025-08-20 06:39:15,843 - unified_service - INFO - 🔍 DEBUG STEP 2: request.test_mode = False
+2025-08-20 06:39:15,843 - unified_service - INFO - 🔍 DEBUG STEP 2: execution_time 计算: 1.0
+2025-08-20 06:39:15,843 - unified_service - INFO - 🔍 DEBUG STEP 2: mock_delay_applied 计算: 0
+2025-08-20 06:39:15,843 - unified_service - INFO - 🔍 DEBUG STEP 3: 构建完成的结果
+2025-08-20 06:39:15,843 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict['test_mode'] = False
+2025-08-20 06:39:15,843 - unified_service - INFO - 🔍 DEBUG STEP 3: result_dict keys = ['workflow_id', 'strategy', 'analysis', 'recommendations', 'execution_time', 'test_mode', 'mock_delay_applied', 'isolation_timestamp']
+2025-08-20 06:39:15,843 - __main__ - INFO - ⏱️ 执行时间: 52.19秒
+2025-08-20 06:39:15,843 - __main__ - INFO - 📊 结果分析:
+2025-08-20 06:39:15,843 - __main__ - INFO -   测试模式: False
+2025-08-20 06:39:15,843 - __main__ - INFO -   Mock延迟: 0
+2025-08-20 06:39:15,843 - __main__ - INFO - ✅ 确认调用了GLM API
+2025-08-20 06:39:15,843 - __main__ - INFO - 💾 结果已保存到: test_planner_agent_glm_True_output.json
+2025-08-20 06:39:15,843 - __main__ - INFO - 
+🔍 开始测试 Searcher Agent (现有技术检索)
+2025-08-20 06:39:15,844 - __main__ - INFO - ============================================================
+2025-08-20 06:39:15,844 - __main__ - INFO - 🧪 测试 Searcher Agent - GLM_AVAILABLE=False
+2025-08-20 06:39:15,844 - __main__ - INFO - ============================================================
+2025-08-20 06:39:15,844 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=False
+2025-08-20 06:39:15,844 - __main__ - INFO - 📋 执行 Searcher Agent 任务
+2025-08-20 06:39:15,844 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:15,844 - unified_service - INFO - 🚀 Starting prior art search for workflow test_searcher_agent_glm_False: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:15,844 - unified_service - INFO - 🔧 Test mode: True
+2025-08-20 06:39:15,844 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-20 06:39:16,344 - unified_service - INFO - ⏱️ Test mode delay: 0.5s
+2025-08-20 06:39:16,345 - unified_service - INFO - 🔑 Extracting keywords from: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:16,345 - unified_service - INFO - 🔍 开始迭代式现有技术检索: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:16,345 - unified_service - INFO - 🔄 第1轮检索开始，关键词: ['intelligent', 'layered', 'reasoning', 'multi-parameter', 'tool', 'adaptive', 'calling', 'system', 'context', 'user intent', 'inference', 'accuracy', 'efficiency']
+2025-08-20 06:39:16,376 - unified_service - INFO - 🌐 调用DuckDuckGo API: https://api.duckduckgo.com/?q=patent+prior+art+%E5%9F%BA%E4%BA%8E%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E7%9A%84%E5%A4%8D%E6%9D%82%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E6%99%BA%E8%83%BD%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%88%86%E5%B1%82%E8%B0%83%E7%94%A8%E9%87%8D%E8%AF%95%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95+intelligent+layered+reasoning+multi-parameter+tool+adaptive+calling+system+context+user+intent+inference+accuracy+efficiency&format=json&no_html=1&skip_disambig=1
+2025-08-20 06:39:16,490 - unified_service - INFO - ✅ DuckDuckGo API检索完成，获得 1 个结果
+2025-08-20 06:39:16,491 - unified_service - INFO - ✅ 第1轮检索完成，获得 1 个结果
+2025-08-20 06:39:16,491 - unified_service - INFO - 📝 第1轮跳过GLM分析（最后一轮或GLM不可用）
+2025-08-20 06:39:16,491 - unified_service - INFO - 🔄 第2轮检索开始，关键词: ['intelligent', 'layered', 'reasoning', 'multi-parameter', 'tool', 'adaptive', 'calling', 'system', 'context', 'user intent', 'inference', 'accuracy', 'efficiency']
+2025-08-20 06:39:16,491 - unified_service - INFO - 🌐 调用DuckDuckGo API: https://api.duckduckgo.com/?q=patent+prior+art+%E5%9F%BA%E4%BA%8E%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E7%9A%84%E5%A4%8D%E6%9D%82%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E6%99%BA%E8%83%BD%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%88%86%E5%B1%82%E8%B0%83%E7%94%A8%E9%87%8D%E8%AF%95%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95+intelligent+layered+reasoning+multi-parameter+tool+adaptive+calling+system+context+user+intent+inference+accuracy+efficiency&format=json&no_html=1&skip_disambig=1
+2025-08-20 06:39:16,549 - unified_service - INFO - ✅ DuckDuckGo API检索完成，获得 1 个结果
+2025-08-20 06:39:16,549 - unified_service - INFO - ✅ 第2轮检索完成，获得 1 个结果
+2025-08-20 06:39:16,549 - unified_service - INFO - 📝 第2轮跳过GLM分析（最后一轮或GLM不可用）
+2025-08-20 06:39:16,549 - unified_service - INFO - 🔄 第3轮检索开始，关键词: ['intelligent', 'layered', 'reasoning', 'multi-parameter', 'tool', 'adaptive', 'calling', 'system', 'context', 'user intent', 'inference', 'accuracy', 'efficiency']
+2025-08-20 06:39:16,549 - unified_service - INFO - 🌐 调用DuckDuckGo API: https://api.duckduckgo.com/?q=patent+prior+art+%E5%9F%BA%E4%BA%8E%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E7%9A%84%E5%A4%8D%E6%9D%82%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E6%99%BA%E8%83%BD%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%88%86%E5%B1%82%E8%B0%83%E7%94%A8%E9%87%8D%E8%AF%95%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95+intelligent+layered+reasoning+multi-parameter+tool+adaptive+calling+system+context+user+intent+inference+accuracy+efficiency&format=json&no_html=1&skip_disambig=1
+2025-08-20 06:39:16,663 - unified_service - INFO - ✅ DuckDuckGo API检索完成，获得 1 个结果
+2025-08-20 06:39:16,663 - unified_service - INFO - ✅ 第3轮检索完成，获得 1 个结果
+2025-08-20 06:39:16,663 - unified_service - INFO - 📝 第3轮跳过GLM分析（最后一轮或GLM不可用）
+2025-08-20 06:39:16,663 - unified_service - INFO - 📝 GLM不可用，返回原始检索结果
+2025-08-20 06:39:16,663 - unified_service - INFO - 📊 Analyzing search results for: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:16,663 - unified_service - INFO - 🎯 Assessing novelty and patentability
+2025-08-20 06:39:16,663 - unified_service - INFO - 💡 Generating recommendations
+2025-08-20 06:39:16,663 - __main__ - INFO - ⏱️ 执行时间: 0.82秒
+2025-08-20 06:39:16,663 - __main__ - INFO - 📊 结果分析:
+2025-08-20 06:39:16,663 - __main__ - INFO -   测试模式: True
+2025-08-20 06:39:16,663 - __main__ - INFO -   Mock延迟: 0.5
+2025-08-20 06:39:16,663 - __main__ - INFO - ✅ 确认使用了mock数据
+2025-08-20 06:39:16,664 - __main__ - INFO - 💾 结果已保存到: test_searcher_agent_glm_False_output.json
+2025-08-20 06:39:16,664 - __main__ - INFO - ============================================================
+2025-08-20 06:39:16,664 - __main__ - INFO - 🧪 测试 Searcher Agent - GLM_AVAILABLE=True
+2025-08-20 06:39:16,664 - __main__ - INFO - ============================================================
+2025-08-20 06:39:16,664 - __main__ - INFO - 🔧 设置 GLM_AVAILABLE=True
+2025-08-20 06:39:16,664 - __main__ - INFO - 📋 执行 Searcher Agent 任务
+2025-08-20 06:39:16,664 - __main__ - INFO - 主题: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:16,664 - unified_service - INFO - 🚀 Starting prior art search for workflow test_searcher_agent_glm_True: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:16,664 - unified_service - INFO - 🔧 Test mode: False
+2025-08-20 06:39:16,664 - unified_service - INFO - 🔒 Workflow isolation: unknown
+2025-08-20 06:39:16,664 - unified_service - INFO - 🔑 Extracting keywords from: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:16,664 - unified_service - INFO - 🔍 开始迭代式现有技术检索: 基于语义理解的复杂函数参数智能推断与分层调用重试优化方法
+2025-08-20 06:39:16,664 - unified_service - INFO - 🔄 第1轮检索开始，关键词: ['intelligent', 'layered', 'reasoning', 'multi-parameter', 'tool', 'adaptive', 'calling', 'system', 'context', 'user intent', 'inference', 'accuracy', 'efficiency']
+2025-08-20 06:39:16,664 - unified_service - INFO - 🌐 调用DuckDuckGo API: https://api.duckduckgo.com/?q=patent+prior+art+%E5%9F%BA%E4%BA%8E%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E7%9A%84%E5%A4%8D%E6%9D%82%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E6%99%BA%E8%83%BD%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%88%86%E5%B1%82%E8%B0%83%E7%94%A8%E9%87%8D%E8%AF%95%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95+intelligent+layered+reasoning+multi-parameter+tool+adaptive+calling+system+context+user+intent+inference+accuracy+efficiency&format=json&no_html=1&skip_disambig=1
+2025-08-20 06:39:16,778 - unified_service - INFO - ✅ DuckDuckGo API检索完成，获得 1 个结果
+2025-08-20 06:39:16,778 - unified_service - INFO - ✅ 第1轮检索完成，获得 1 个结果
+2025-08-20 06:39:16,783 - patent_agent_demo.glm_client - INFO - ✅ 使用官方OpenAI库初始化GLM客户端
+2025-08-20 06:39:16,783 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:39:16,783 - patent_agent_demo.glm_client - INFO - 🔒 获取GLM并发信号量，准备调用API
+2025-08-20 06:39:16,783 - patent_agent_demo.glm_client - INFO - 🚀 使用官方OpenAI库调用GLM API
+2025-08-20 06:39:41,762 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2025-08-20 06:39:41,763 - patent_agent_demo.glm_client - INFO - ✅ 官方OpenAI库调用成功，响应长度: 191
+2025-08-20 06:39:41,763 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:39:41,763 - patent_agent_demo.glm_client - INFO - 🔓 释放GLM并发信号量，API调用完成
+2025-08-20 06:39:41,763 - unified_service - INFO - 🧠 GLM第1轮分析响应: semantic parsing, function signature analysis, retry policy, parameter type inference, natural langu...
+2025-08-20 06:39:41,763 - unified_service - INFO - ✅ 第1轮生成新关键词: ['parameter type inference', 'adaptive backoff', 'zero-shot parameter inference']
+2025-08-20 06:39:41,763 - unified_service - INFO - 🧠 GLM生成第2轮新检索词: ['parameter type inference', 'adaptive backoff', 'zero-shot parameter inference']
+2025-08-20 06:39:41,763 - unified_service - INFO - 🔄 第2轮检索开始，关键词: ['parameter type inference', 'adaptive backoff', 'zero-shot parameter inference']
+2025-08-20 06:39:41,763 - unified_service - INFO - 🌐 调用DuckDuckGo API: https://api.duckduckgo.com/?q=patent+prior+art+%E5%9F%BA%E4%BA%8E%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E7%9A%84%E5%A4%8D%E6%9D%82%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E6%99%BA%E8%83%BD%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%88%86%E5%B1%82%E8%B0%83%E7%94%A8%E9%87%8D%E8%AF%95%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95+parameter+type+inference+adaptive+backoff+zero-shot+parameter+inference&format=json&no_html=1&skip_disambig=1
+2025-08-20 06:39:41,904 - unified_service - INFO - ✅ DuckDuckGo API检索完成，获得 1 个结果
+2025-08-20 06:39:41,904 - unified_service - INFO - ✅ 第2轮检索完成，获得 1 个结果
+2025-08-20 06:39:41,910 - patent_agent_demo.glm_client - INFO - ✅ 使用官方OpenAI库初始化GLM客户端
+2025-08-20 06:39:41,910 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:39:41,910 - patent_agent_demo.glm_client - INFO - 🔒 获取GLM并发信号量，准备调用API
+2025-08-20 06:39:41,910 - patent_agent_demo.glm_client - INFO - 🚀 使用官方OpenAI库调用GLM API
+2025-08-20 06:40:04,894 - httpx - INFO - HTTP Request: POST https://open.bigmodel.cn/api/paas/v4/chat/completions "HTTP/1.1 200 OK"
+2025-08-20 06:40:04,895 - patent_agent_demo.glm_client - INFO - ✅ 官方OpenAI库调用成功，响应长度: 240
+2025-08-20 06:40:04,895 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:40:04,895 - patent_agent_demo.glm_client - INFO - 🔓 释放GLM并发信号量，API调用完成
+2025-08-20 06:40:04,895 - unified_service - INFO - 🧠 GLM第2轮分析响应: semantic parameter inference, function call optimization, hierarchical retry strategy, context-aware...
+2025-08-20 06:40:04,895 - unified_service - INFO - ✅ 第2轮生成新关键词: ['semantic parameter inference', 'function call optimization', 'hierarchical retry strategy', 'context-aware parameter typing', 'machine learning parameter prediction']
+2025-08-20 06:40:04,895 - unified_service - INFO - 🧠 GLM生成第3轮新检索词: ['semantic parameter inference', 'function call optimization', 'hierarchical retry strategy', 'context-aware parameter typing', 'machine learning parameter prediction']
+2025-08-20 06:40:04,895 - unified_service - INFO - 🔄 第3轮检索开始，关键词: ['semantic parameter inference', 'function call optimization', 'hierarchical retry strategy', 'context-aware parameter typing', 'machine learning parameter prediction']
+2025-08-20 06:40:04,895 - unified_service - INFO - 🌐 调用DuckDuckGo API: https://api.duckduckgo.com/?q=patent+prior+art+%E5%9F%BA%E4%BA%8E%E8%AF%AD%E4%B9%89%E7%90%86%E8%A7%A3%E7%9A%84%E5%A4%8D%E6%9D%82%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E6%99%BA%E8%83%BD%E6%8E%A8%E6%96%AD%E4%B8%8E%E5%88%86%E5%B1%82%E8%B0%83%E7%94%A8%E9%87%8D%E8%AF%95%E4%BC%98%E5%8C%96%E6%96%B9%E6%B3%95+semantic+parameter+inference+function+call+optimization+hierarchical+retry+strategy+context-aware+parameter+typing+machine+learning+parameter+prediction&format=json&no_html=1&skip_disambig=1
+2025-08-20 06:40:05,019 - unified_service - INFO - ✅ DuckDuckGo API检索完成，获得 1 个结果
+2025-08-20 06:40:05,019 - unified_service - INFO - ✅ 第3轮检索完成，获得 1 个结果
+2025-08-20 06:40:05,019 - unified_service - INFO - 📝 第3轮跳过GLM分析（最后一轮或GLM不可用）
+2025-08-20 06:40:05,019 - unified_service - INFO - 🎯 使用GLM API进行最终结果分析和整合
+2025-08-20 06:40:05,024 - patent_agent_demo.glm_client - INFO - ✅ 使用官方OpenAI库初始化GLM客户端
+2025-08-20 06:40:05,024 - patent_agent_demo.glm_client - INFO - 📊 GLM并发状态: 最大并发数=2, 当前使用=1, 可用=1, 利用率=50.0%
+2025-08-20 06:40:05,024 - patent_agent_demo.glm_client - INFO - 🔒 获取GLM并发信号量，准备调用API
+2025-08-20 06:40:05,024 - patent_agent_demo.glm_client - INFO - 🚀 使用官方OpenAI库调用GLM API
