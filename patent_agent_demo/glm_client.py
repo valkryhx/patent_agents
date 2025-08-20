@@ -95,19 +95,46 @@ class GLMA2AClient:
                 self.openai_client = None
         else:
             logger.info("ℹ️ 官方OpenAI库不可用，使用urllib方式")
+    
+    @classmethod
+    def get_concurrency_status(cls) -> Dict[str, Any]:
+        """获取当前GLM API并发状态"""
+        return {
+            "max_concurrency": GLM_CONCURRENCY_LIMIT,
+            "current_available": _glm_semaphore._value,
+            "current_in_use": GLM_CONCURRENCY_LIMIT - _glm_semaphore._value,
+            "utilization_percent": round((GLM_CONCURRENCY_LIMIT - _glm_semaphore._value) / GLM_CONCURRENCY_LIMIT * 100, 2)
+        }
+    
+    @classmethod
+    def log_concurrency_status(cls):
+        """记录当前并发状态到日志"""
+        status = cls.get_concurrency_status()
+        logger.info(f"📊 GLM并发状态: 最大并发数={status['max_concurrency']}, "
+                   f"当前使用={status['current_in_use']}, "
+                   f"可用={status['current_available']}, "
+                   f"利用率={status['utilization_percent']}%")
 
     async def _generate_response(self, prompt: str) -> str:
         """Generate response using GLM-4.5-flash API with OpenAI-compatible format"""
-        # 使用信号量控制并发数量
+        # 使用信号量控制并发数量 - GLM-4.5-flash最大支持2个并发请求
         async with _glm_semaphore:
-            # 优先使用官方OpenAI库
-            if self.openai_client:
-                return await self._generate_response_openai(prompt)
-            else:
-                return await self._generate_response_urllib(prompt)
+            # 记录获取信号量前的状态
+            self.log_concurrency_status()
+            logger.info(f"🔒 获取GLM并发信号量，准备调用API")
+            try:
+                # 优先使用官方OpenAI库
+                if self.openai_client:
+                    return await self._generate_response_openai(prompt)
+                else:
+                    return await self._generate_response_urllib(prompt)
+            finally:
+                # 记录释放信号量后的状态
+                self.log_concurrency_status()
+                logger.info(f"🔓 释放GLM并发信号量，API调用完成")
     
     async def _generate_response_openai(self, prompt: str) -> str:
-        """使用官方OpenAI库调用GLM API"""
+        """使用官方OpenAI库调用GLM API（受并发信号量控制）"""
         try:
             logger.info("🚀 使用官方OpenAI库调用GLM API")
             response = self.openai_client.chat.completions.create(
