@@ -846,6 +846,13 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
         if not agent:
             return f"Unknown stage: {stage}"
         
+        # Get previous results from workflow state
+        previous_results = {}
+        if workflow_id and hasattr(app.state, 'workflows') and workflow_id in app.state.workflows:
+            workflow = app.state.workflows[workflow_id]
+            previous_results = workflow.get("results", {})
+            logger.info(f"📋 Stage {stage}: Found {len(previous_results)} previous stage results")
+        
         # Call agent endpoint
         async with httpx.AsyncClient() as client:
             # Provide all required fields for TaskRequest model
@@ -858,9 +865,14 @@ async def execute_stage_with_agent(stage: str, topic: str, description: str, tes
                 "topic": topic,
                 "description": safe_description,
                 "test_mode": test_mode,
-                "previous_results": {},
-                "context": {}
+                "previous_results": previous_results,  # 传递之前阶段的结果
+                "context": {
+                    "workflow_id": workflow_id,
+                    "isolation_level": "workflow"
+                }
             }
+            
+            logger.info(f"🚀 Calling {agent} agent for stage {stage} with {len(previous_results)} previous results")
             
             response = await client.post(
                 f"http://localhost:8000/agents/{agent}/execute",
@@ -2011,6 +2023,7 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     
     logger.info(f"🚀 Starting innovation discussion for: {topic}")
     logger.info(f"🔧 Test mode: {request.test_mode}")
+    logger.info(f"📋 Previous results keys: {list(previous_results.keys())}")
     
     # Add test mode delay
     if request.test_mode:
@@ -2018,23 +2031,47 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
         logger.info(f"⏱️ Test mode delay: 0.5s")
     
     # Extract core strategy from planning stage
-    planning_strategy = previous_results.get("planning", {}).get("result", {}).get("strategy", {})
-    search_results = previous_results.get("search", {}).get("result", {}).get("search_results", {})
+    planning_result = previous_results.get("planning", {})
+    search_result = previous_results.get("search", {})
+    
+    # 修复：正确解析数据结构
+    planning_strategy = planning_result.get("strategy", {}) if isinstance(planning_result, dict) else {}
+    search_results = search_result.get("search_results", {}) if isinstance(search_result, dict) else {}
     
     # Build on previous stages' insights
     core_innovation_areas = planning_strategy.get("key_innovation_areas", [])
-    novelty_score = planning_strategy.get("novelty_score", 8.5)
-    search_findings = search_results.get("results", [])
+    novelty_score = planning_result.get("novelty_score", 8.5)
+    search_findings = search_results.get("results", []) if isinstance(search_results, dict) else []
     
     logger.info(f"📋 Building on planning strategy: {core_innovation_areas}")
     logger.info(f"🔍 Incorporating search findings: {len(search_findings)} patents found")
+    logger.info(f"📊 Planning strategy keys: {list(planning_strategy.keys())}")
+    logger.info(f"📊 Search results keys: {list(search_results.keys()) if isinstance(search_results, dict) else 'Not a dict'}")
     
     if GLM_AVAILABLE:
         try:
             logger.info("🚀 使用GLM API进行创新讨论分析")
             glm_client = GLMA2AClient()
-            # 使用_generate_response方法进行讨论分析
-            glm_response = await glm_client._generate_response(f"创新讨论分析：基于规划策略{planning_strategy}和搜索结果{search_results}")
+            
+            # 构建更详细的提示词
+            planning_summary = f"规划策略: {planning_strategy}" if planning_strategy else "无规划策略数据"
+            search_summary = f"搜索结果: {len(search_findings)}个专利" if search_findings else "无搜索结果数据"
+            
+            analysis_prompt = f"""
+            请对以下专利主题进行创新讨论分析：
+
+            专利主题：{topic}
+            {planning_summary}
+            {search_summary}
+
+            请提供：
+            1. 技术创新点分析
+            2. 技术优势识别
+            3. 实现方案建议
+            4. 技术发展趋势
+            """
+            
+            glm_response = await glm_client._generate_response(analysis_prompt)
             logger.info("✅ GLM API调用成功")
             
             # 修复：将GLM的文本响应转换为结构化的讨论结果
