@@ -1,6 +1,26 @@
-rich>=13.7.0
+# 核心Web框架依赖
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 httpx>=0.25.0
 pydantic>=2.0.0
 python-multipart>=0.0.6
+
+# 终端美化输出
+rich>=13.7.0
+
+# AI/ML相关依赖
+openai>=1.65.0
+
+# 系统工具依赖
+python-dotenv>=1.0.0
+
+# 数据处理依赖
+numpy>=1.24.0
+pandas>=2.0.0
+
+# 异步处理依赖
+aiofiles>=24.1.0
+asyncio-mqtt>=0.16.0
+
+# 日志和监控依赖
+structlog>=23.0.0
