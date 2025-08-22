@@ -13,7 +13,11 @@ try:
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
-    import urllib.request
+
+# 确保urllib总是可用
+import urllib.request
+import urllib.parse
+import urllib.error
 
 # 设置日志
 logger = logging.getLogger(__name__)
@@ -25,8 +29,8 @@ GLM_API_BASE = "https://open.bigmodel.cn/api/paas/v4/"
 GLM_CHAT_COMPLETIONS = GLM_API_BASE + "chat/completions"
 GLM_MODEL = "glm-4.5-flash"
 
-# 添加并发控制：GLM-4.5-flash只能支持2个并发请求
-GLM_CONCURRENCY_LIMIT = 2
+# 添加并发控制：GLM-4.5-flash只能支持1个并发请求，避免429错误
+GLM_CONCURRENCY_LIMIT = 1
 _glm_semaphore = asyncio.Semaphore(GLM_CONCURRENCY_LIMIT)
 
 _PRIVATE_KEY_PATHS = [
@@ -154,7 +158,33 @@ class GLMA2AClient:
             return content.strip()
             
         except Exception as e:
+            error_msg = str(e)
             logger.error(f"❌ 官方OpenAI库调用失败: {e}")
+            
+            # 检查是否是429错误（并发过高）
+            if "429" in error_msg or "concurrent" in error_msg.lower() or "rate limit" in error_msg.lower():
+                logger.warning(f"🚨 检测到429错误（并发过高），等待后重试...")
+                # 等待一段时间后重试
+                await asyncio.sleep(10)
+                try:
+                    logger.info("🔄 重试官方OpenAI库调用...")
+                    response = self.openai_client.chat.completions.create(
+                        model=GLM_MODEL,
+                        messages=[
+                            {"role": "system", "content": "你是一个专业的专利分析师和专利撰写专家"},
+                            {"role": "user", "content": prompt}
+                        ],
+                        temperature=0.3,
+                        top_p=0.7,
+                        stream=False,
+                        timeout=300
+                    )
+                    content = response.choices[0].message.content
+                    logger.info(f"✅ 重试成功，响应长度: {len(content)}")
+                    return content.strip()
+                except Exception as retry_error:
+                    logger.error(f"❌ 重试也失败: {retry_error}")
+            
             # 回退到urllib方式
             logger.info("🔄 回退到urllib方式")
             return await self._generate_response_urllib(prompt)

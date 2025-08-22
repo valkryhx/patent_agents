@@ -731,61 +731,27 @@ async def execute_patent_workflow(workflow_id: str, topic: str, description: str
                     workflow["stages"][stage]["error"] = stage_result.get("message", "Unknown error")
                     workflow["results"][stage] = stage_result
                     
-                    # 特殊处理drafting阶段失败的情况
-                    if stage == "drafting":
-                        logger.error(f"🚨 CRITICAL: Drafting stage failed! This is the core stage and cannot be skipped.")
-                        logger.error(f"🚨 Drafting stage error details: {stage_result}")
-                        
-                        # 尝试强制重试drafting阶段
-                        logger.info(f"🔄 Attempting to retry drafting stage...")
-                        try:
-                            # 重新执行drafting阶段
-                            retry_result = await execute_stage_with_agent(stage, topic, description, test_mode, workflow_id)
-                            
-                            if isinstance(retry_result, dict) and not retry_result.get("error"):
-                                logger.info(f"✅ Drafting stage retry successful!")
-                                workflow["stages"][stage]["status"] = "completed"
-                                workflow["stages"][stage]["completed_at"] = time.time()
-                                workflow["results"][stage] = retry_result
-                            else:
-                                logger.error(f"❌ Drafting stage retry failed: {retry_result}")
-                                # 生成基本的专利内容作为最后的回退
-                                fallback_draft = {
-                                    "title": f"Patent Application: {topic}",
-                                    "abstract": f"Fallback patent abstract for {topic}",
-                                    "claims": [f"Claim 1: A method for {topic}"],
-                                    "detailed_description": f"Fallback detailed description for {topic}",
-                                    "background": f"Background of the invention for {topic}",
-                                    "summary": f"Summary of the invention for {topic}",
-                                    "test_mode": test_mode,
-                                    "agent_generated": False,
-                                    "error": "Drafting stage failed after retry, using fallback content"
-                                }
-                                workflow["results"][stage] = fallback_draft
-                                workflow["stages"][stage]["status"] = "completed"
-                                workflow["stages"][stage]["completed_at"] = time.time()
-                                logger.warning(f"⚠️ Drafting stage completed with fallback content after retry failure")
-                        except Exception as retry_error:
-                            logger.error(f"❌ Drafting stage retry attempt failed: {retry_error}")
-                            # 使用回退内容
-                            fallback_draft = {
-                                "title": f"Patent Application: {topic}",
-                                "abstract": f"Fallback patent abstract for {topic}",
-                                "claims": [f"Claim 1: A method for {topic}"],
-                                "detailed_description": f"Fallback detailed description for {topic}",
-                                "background": f"Background of the invention for {topic}",
-                                "summary": f"Summary of the invention for {topic}",
-                                "test_mode": test_mode,
-                                "agent_generated": False,
-                                "error": f"Drafting stage failed and retry failed: {retry_error}"
-                            }
-                            workflow["results"][stage] = fallback_draft
-                            workflow["stages"][stage]["status"] = "completed"
-                            workflow["stages"][stage]["completed_at"] = time.time()
-                            logger.warning(f"⚠️ Drafting stage completed with fallback content after retry failure")
-                    else:
-                        # 其他阶段失败，继续到下一个阶段
-                        continue
+                    # 任务出错时不能执行后续阶段！
+                    logger.error(f"🚨 CRITICAL: {stage} stage failed! Workflow cannot continue.")
+                    logger.error(f"🚨 Workflow execution stopped due to {stage} stage failure.")
+                    
+                    # 标记工作流为失败状态
+                    workflow["status"] = "failed"
+                    workflow["failed_at"] = time.time()
+                    workflow["failure_reason"] = f"{stage} stage failed: {stage_result.get('message', 'Unknown error')}"
+                    
+                    # 保存失败状态
+                    await save_workflow_stage_result(workflow_id, stage, stage_result, topic)
+                    
+                    logger.error(f"❌ Workflow execution terminated due to {stage} stage failure")
+                    return {
+                        "workflow_id": workflow_id,
+                        "status": "failed",
+                        "failed_stage": stage,
+                        "error": f"{stage} stage failed: {stage_result.get('message', 'Unknown error')}",
+                        "completed_stages": list(workflow["stages"].keys())[:stages.index(stage)],
+                        "test_mode": test_mode
+                    }
                 
                 workflow["stages"][stage]["status"] = "completed"
                 workflow["stages"][stage]["completed_at"] = time.time()
@@ -2303,14 +2269,26 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         
         logger.info(f"📋 Executing Writer Agent with task data: {task_data}")
         
-        # Execute the task using Writer Agent
-        logger.info("⏳ Executing Writer Agent task...")
-        try:
-            result = await writer_agent.execute_task(task_data)
-            logger.info(f"✅ Writer Agent task execution completed")
-        except Exception as execute_error:
-            logger.error(f"❌ Writer Agent task execution failed: {execute_error}")
-            raise Exception(f"Writer Agent task execution failed: {execute_error}")
+                           # Execute the task using Writer Agent
+                   logger.info("⏳ Executing Writer Agent task...")
+                   try:
+                       result = await writer_agent.execute_task(task_data)
+                       logger.info(f"✅ Writer Agent task execution completed")
+                   except Exception as execute_error:
+                       logger.error(f"❌ Writer Agent task execution failed: {execute_error}")
+                       logger.error(f"📋 Detailed error: {type(execute_error).__name__}: {execute_error}")
+                       import traceback
+                       logger.error(f"📋 Traceback: {traceback.format_exc()}")
+                       
+                       # 检查是否是GLM API相关错误
+                       if "timeout" in str(execute_error).lower() or "timed out" in str(execute_error).lower():
+                           logger.error(f"🚨 GLM API timeout detected, this is likely the root cause")
+                       elif "429" in str(execute_error):
+                           logger.error(f"🚨 Rate limit error (429) detected")
+                       elif "connection" in str(execute_error).lower():
+                           logger.error(f"🚨 Connection error detected")
+                       
+                       raise Exception(f"Writer Agent task execution failed: {execute_error}")
         
         if result.success:
             logger.info(f"✅ Writer Agent completed successfully")
