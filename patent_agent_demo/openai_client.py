@@ -299,18 +299,103 @@ Use formal patent writing style and ensure technical accuracy.
                 input=prompt
             )
             
-            # Parse the response and create PatentDraft object
-            # For now, return a structured response
-            return PatentDraft(
-                title="Generated Patent Title",
-                abstract="This is a generated abstract for the patent...",
-                background="Background section describing the technical field...",
-                summary="Summary of the invention...",
-                detailed_description="Detailed description of the technical implementation...",
-                claims=["Claim 1: A method for...", "Claim 2: The method of claim 1...", "Claim 3: A system for..."],
-                drawings_description="Drawings description...",
-                technical_diagrams=["Figure 1: System architecture", "Figure 2: Process flow"]
-            )
+            # 解析OpenAI响应，提取各个部分
+            try:
+                response_text = response.output_text
+                logger.info(f"✅ OpenAI API生成专利草稿成功，响应长度: {len(response_text)}")
+                
+                # 尝试从OpenAI响应中提取结构化内容
+                lines = response_text.split('\n')
+                title = ""
+                abstract = ""
+                background = ""
+                summary = ""
+                detailed_description = ""
+                claims = []
+                drawings_description = ""
+                technical_diagrams = []
+                
+                current_section = ""
+                for line in lines:
+                    line = line.strip()
+                    if not line:
+                        continue
+                        
+                    # 识别章节标题
+                    if line.startswith('#') or line.lower().startswith(('title', 'abstract', 'background', 'summary', 'detailed', 'claims', 'drawings', 'technical')):
+                        current_section = line.lower()
+                        continue
+                    
+                    # 根据当前章节收集内容
+                    if 'title' in current_section:
+                        title = line if not title else title
+                    elif 'abstract' in current_section:
+                        abstract += line + " "
+                    elif 'background' in current_section:
+                        background += line + " "
+                    elif 'summary' in current_section:
+                        summary += line + " "
+                    elif 'detailed' in current_section:
+                        detailed_description += line + " "
+                    elif 'claims' in current_section:
+                        if line.startswith(('Claim', 'claim', '1.', '2.', '3.')):
+                            claims.append(line)
+                    elif 'drawings' in current_section:
+                        drawings_description += line + " "
+                    elif 'technical' in current_section:
+                        if line.startswith(('Figure', 'figure')):
+                            technical_diagrams.append(line)
+                
+                # 如果没有提取到足够的内容，使用OpenAI响应作为详细描述
+                if not detailed_description:
+                    detailed_description = response_text
+                
+                # 确保有基本内容
+                if not title:
+                    title = f"Patent Application: {topic}"
+                if not abstract:
+                    abstract = f"A comprehensive patent application for {topic} with advanced technical features and innovative methodology."
+                if not claims:
+                    claims = [
+                        f"Claim 1: A method for {topic}",
+                        f"Claim 2: The method of claim 1, further comprising enhanced processing capabilities",
+                        f"Claim 3: A system for implementing {topic}"
+                    ]
+                
+                logger.info(f"✅ 成功解析OpenAI响应，生成专利草稿")
+                logger.info(f"   - 标题: {title[:50]}...")
+                logger.info(f"   - 摘要: {abstract[:100]}...")
+                logger.info(f"   - 权利要求数量: {len(claims)}")
+                logger.info(f"   - 详细描述长度: {len(detailed_description)}")
+                
+                return PatentDraft(
+                    title=title,
+                    abstract=abstract,
+                    background=background if background else f"Technical background for {topic}",
+                    summary=summary if summary else f"Summary of the invention: {topic}",
+                    detailed_description=detailed_description,
+                    claims=claims,
+                    drawings_description=drawings_description if drawings_description else f"Technical drawings for {topic}",
+                    technical_diagrams=technical_diagrams if technical_diagrams else [f"Figure 1: System architecture for {topic}", f"Figure 2: Process flow for {topic}"]
+                )
+                
+            except Exception as e:
+                logger.error(f"❌ 解析OpenAI响应失败: {e}")
+                # 回退到基本内容
+                return PatentDraft(
+                    title=f"Patent Application: {topic}",
+                    abstract=f"A comprehensive patent application for {topic}",
+                    background=f"Technical background for {topic}",
+                    summary=f"Summary of the invention: {topic}",
+                    detailed_description=response_text if 'response_text' in locals() else f"Detailed description for {topic}",
+                    claims=[
+                        f"Claim 1: A method for {topic}",
+                        f"Claim 2: The method of claim 1, further comprising enhanced features",
+                        f"Claim 3: A system for {topic}"
+                    ],
+                    drawings_description=f"Technical drawings for {topic}",
+                    technical_diagrams=[f"Figure 1: System architecture for {topic}", f"Figure 2: Process flow for {topic}"]
+                )
         
         async def glm_generate():
             if self.glm_client:

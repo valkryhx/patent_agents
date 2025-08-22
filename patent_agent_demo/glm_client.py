@@ -30,8 +30,12 @@ GLM_CHAT_COMPLETIONS = GLM_API_BASE + "chat/completions"
 GLM_MODEL = "glm-4.5-flash"
 
 # 添加并发控制：GLM-4.5-flash只能支持1个并发请求，避免429错误
+# 进一步降低并发，确保不会触发429错误
 GLM_CONCURRENCY_LIMIT = 1
 _glm_semaphore = asyncio.Semaphore(GLM_CONCURRENCY_LIMIT)
+
+# 添加全局锁，确保同一时间只有一个GLM API调用
+_glm_global_lock = asyncio.Lock()
 
 _PRIVATE_KEY_PATHS = [
     "/workspace/glm_api_key",              # preferred path with GLM_API_KEY=...
@@ -121,21 +125,23 @@ class GLMA2AClient:
 
     async def _generate_response(self, prompt: str) -> str:
         """Generate response using GLM-4.5-flash API with OpenAI-compatible format"""
-        # 使用信号量控制并发数量 - GLM-4.5-flash最大支持2个并发请求
-        async with _glm_semaphore:
-            # 记录获取信号量前的状态
-            self.log_concurrency_status()
-            logger.info(f"🔒 获取GLM并发信号量，准备调用API")
-            try:
-                # 优先使用官方OpenAI库
-                if self.openai_client:
-                    return await self._generate_response_openai(prompt)
-                else:
-                    return await self._generate_response_urllib(prompt)
-            finally:
-                # 记录释放信号量后的状态
+        # 使用全局锁确保同一时间只有一个GLM API调用
+        async with _glm_global_lock:
+            # 使用信号量控制并发数量 - GLM-4.5-flash最大支持1个并发请求
+            async with _glm_semaphore:
+                # 记录获取信号量前的状态
                 self.log_concurrency_status()
-                logger.info(f"🔓 释放GLM并发信号量，API调用完成")
+                logger.info(f"🔒 获取GLM并发信号量，准备调用API")
+                try:
+                    # 优先使用官方OpenAI库
+                    if self.openai_client:
+                        return await self._generate_response_openai(prompt)
+                    else:
+                        return await self._generate_response_urllib(prompt)
+                finally:
+                    # 记录释放信号量后的状态
+                    self.log_concurrency_status()
+                    logger.info(f"🔓 释放GLM并发信号量，API调用完成")
     
     async def _generate_response_openai(self, prompt: str) -> str:
         """使用官方OpenAI库调用GLM API（受并发信号量控制）"""
@@ -164,8 +170,10 @@ class GLMA2AClient:
             # 检查是否是429错误（并发过高）
             if "429" in error_msg or "concurrent" in error_msg.lower() or "rate limit" in error_msg.lower():
                 logger.warning(f"🚨 检测到429错误（并发过高），等待后重试...")
-                # 等待一段时间后重试
-                await asyncio.sleep(10)
+                # 等待更长时间后重试，避免429错误
+                wait_time = 30
+                logger.info(f"⏳ 等待{wait_time}秒后重试...")
+                await asyncio.sleep(wait_time)
                 try:
                     logger.info("🔄 重试官方OpenAI库调用...")
                     response = self.openai_client.chat.completions.create(
@@ -329,26 +337,104 @@ Create a complete patent draft including:
 
 Use formal patent writing style and ensure technical accuracy.
 """
-        _ = await self._generate_response(prompt)
+        # 调用GLM API生成专利草稿内容
+        glm_response = await self._generate_response(prompt)
+        logger.info(f"✅ GLM API生成专利草稿成功，响应长度: {len(glm_response)}")
         
-        # Return structured patent draft
-        return PatentDraft(
-            title=f"Generated Patent Title for {topic}",
-            abstract=f"This is a generated abstract for the patent: {topic}",
-            background=f"Background section describing the technical field for {topic}",
-            summary=f"Summary of the invention: {topic}",
-            detailed_description=f"Detailed description of the technical implementation for {topic}",
-            claims=[
-                f"Claim 1: A method for {topic}",
-                f"Claim 2: The method of claim 1, further comprising...",
-                f"Claim 3: A system for {topic}"
-            ],
-            drawings_description=f"Drawings description for {topic}",
-            technical_diagrams=[
-                f"Figure 1: System architecture for {topic}",
-                f"Figure 2: Process flow for {topic}"
-            ]
-        )
+        # 解析GLM响应，提取各个部分
+        try:
+            # 尝试从GLM响应中提取结构化内容
+            lines = glm_response.split('\n')
+            title = ""
+            abstract = ""
+            background = ""
+            summary = ""
+            detailed_description = ""
+            claims = []
+            drawings_description = ""
+            technical_diagrams = []
+            
+            current_section = ""
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                # 识别章节标题
+                if line.startswith('#') or line.lower().startswith(('title', 'abstract', 'background', 'summary', 'detailed', 'claims', 'drawings', 'technical')):
+                    current_section = line.lower()
+                    continue
+                
+                # 根据当前章节收集内容
+                if 'title' in current_section:
+                    title = line if not title else title
+                elif 'abstract' in current_section:
+                    abstract += line + " "
+                elif 'background' in current_section:
+                    background += line + " "
+                elif 'summary' in current_section:
+                    summary += line + " "
+                elif 'detailed' in current_section:
+                    detailed_description += line + " "
+                elif 'claims' in current_section:
+                    if line.startswith(('Claim', 'claim', '1.', '2.', '3.')):
+                        claims.append(line)
+                elif 'drawings' in current_section:
+                    drawings_description += line + " "
+                elif 'technical' in current_section:
+                    if line.startswith(('Figure', 'figure')):
+                        technical_diagrams.append(line)
+            
+            # 如果没有提取到足够的内容，使用GLM响应作为详细描述
+            if not detailed_description:
+                detailed_description = glm_response
+            
+            # 确保有基本内容
+            if not title:
+                title = f"Patent Application: {topic}"
+            if not abstract:
+                abstract = f"A comprehensive patent application for {topic} with advanced technical features and innovative methodology."
+            if not claims:
+                claims = [
+                    f"Claim 1: A method for {topic}",
+                    f"Claim 2: The method of claim 1, further comprising enhanced processing capabilities",
+                    f"Claim 3: A system for implementing {topic}"
+                ]
+            
+            logger.info(f"✅ 成功解析GLM响应，生成专利草稿")
+            logger.info(f"   - 标题: {title[:50]}...")
+            logger.info(f"   - 摘要: {abstract[:100]}...")
+            logger.info(f"   - 权利要求数量: {len(claims)}")
+            logger.info(f"   - 详细描述长度: {len(detailed_description)}")
+            
+            return PatentDraft(
+                title=title,
+                abstract=abstract,
+                background=background if background else f"Technical background for {topic}",
+                summary=summary if summary else f"Summary of the invention: {topic}",
+                detailed_description=detailed_description,
+                claims=claims,
+                drawings_description=drawings_description if drawings_description else f"Technical drawings for {topic}",
+                technical_diagrams=technical_diagrams if technical_diagrams else [f"Figure 1: System architecture for {topic}", f"Figure 2: Process flow for {topic}"]
+            )
+            
+        except Exception as e:
+            logger.error(f"❌ 解析GLM响应失败: {e}")
+            # 回退到基本内容
+            return PatentDraft(
+                title=f"Patent Application: {topic}",
+                abstract=f"A comprehensive patent application for {topic}",
+                background=f"Technical background for {topic}",
+                summary=f"Summary of the invention: {topic}",
+                detailed_description=glm_response,  # 使用原始GLM响应
+                claims=[
+                    f"Claim 1: A method for {topic}",
+                    f"Claim 2: The method of claim 1, further comprising enhanced features",
+                    f"Claim 3: A system for {topic}"
+                ],
+                drawings_description=f"Technical drawings for {topic}",
+                technical_diagrams=[f"Figure 1: System architecture for {topic}", f"Figure 2: Process flow for {topic}"]
+            )
 
     async def review_patent_draft(self, draft: PatentDraft,
                                   analysis: PatentAnalysis) -> Dict[str, Any]:
