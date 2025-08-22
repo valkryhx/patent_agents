@@ -1,0 +1,37 @@
+{
+  "workflow_id": "04975f87-7e26-4869-b604-bc6f40dc5326",
+  "topic": "基于语义理解的复杂函数参数智能推断与分层调用重试优化方法",
+  "created_at": "2025-08-22 10:51:35",
+  "files": {
+    "planning": {
+      "filename": "planning_1755859983.md",
+      "timestamp": 1755859983,
+      "generated_at": "2025-08-22 10:53:03"
+    },
+    "search": {
+      "filename": "search_1755860203.md",
+      "timestamp": 1755860203,
+      "generated_at": "2025-08-22 10:56:43"
+    },
+    "discussion": {
+      "filename": "discussion_1755860453.md",
+      "timestamp": 1755860453,
+      "generated_at": "2025-08-22 11:00:53"
+    },
+    "review": {
+      "filename": "review_1755861665.md",
+      "timestamp": 1755861665,
+      "generated_at": "2025-08-22 11:21:05"
+    },
+    "rewrite": {
+      "filename": "rewrite_1755861677.md",
+      "timestamp": 1755861677,
+      "generated_at": "2025-08-22 11:21:17"
+    },
+    "final_patent": {
+      "filename": "final_patent_1755861677.md",
+      "timestamp": 1755861677,
+      "generated_at": "2025-08-22 11:21:17"
+    }
+  }
+}
