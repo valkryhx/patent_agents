@@ -22,7 +22,7 @@ from workflow_manager import WorkflowManager
 
 # 导入GLM客户端
 try:
-    from patent_agent_demo.glm_client import GLMA2AClient
+    # GLM客户端现在通过OpenAI Client统一管理
     GLM_AVAILABLE = True
 except ImportError:
     GLM_AVAILABLE = False
@@ -2097,8 +2097,10 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
     
     if GLM_AVAILABLE:
         try:
-            logger.info("🚀 使用GLM API进行创新讨论分析")
-            glm_client = GLMA2AClient()
+            logger.info("🚀 使用OpenAI Client进行创新讨论分析")
+            # 使用统一的OpenAI Client，它会自动处理GLM回退
+            from patent_agent_demo.openai_client import OpenAIClient
+            openai_client = OpenAIClient()
             
             # 构建更详细的提示词
             planning_summary = f"规划策略: {planning_strategy}" if planning_strategy else "无规划策略数据"
@@ -2118,8 +2120,8 @@ async def execute_discussion_task(request: TaskRequest) -> Dict[str, Any]:
             4. 技术发展趋势
             """
             
-            glm_response = await glm_client._generate_response(analysis_prompt)
-            logger.info("✅ GLM API调用成功")
+            glm_response = await openai_client._generate_response(analysis_prompt)
+            logger.info("✅ OpenAI Client API调用成功")
             
             # 修复：将GLM的文本响应转换为结构化的讨论结果
             if isinstance(glm_response, str) and glm_response.strip():
@@ -2414,11 +2416,13 @@ async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     
     if GLM_AVAILABLE:
         try:
-            logger.info("🚀 使用GLM API进行专利质量审查")
-            glm_client = GLMA2AClient()
+            logger.info("🚀 使用OpenAI Client进行专利质量审查")
+            # 使用统一的OpenAI Client，它会自动处理GLM回退
+            from patent_agent_demo.openai_client import OpenAIClient
+            openai_client = OpenAIClient()
             # 使用_generate_response方法进行质量审查
-            glm_response = await glm_client._generate_response(f"专利质量审查：基于草稿{writer_draft}和核心策略{core_strategy}")
-            logger.info("✅ GLM API调用成功")
+            glm_response = await openai_client._generate_response(f"专利质量审查：基于草稿{writer_draft}和核心策略{core_strategy}")
+            logger.info("✅ OpenAI Client API调用成功")
             
             # 修复：将GLM的文本响应转换为结构化的审查结果
             if isinstance(glm_response, str) and glm_response.strip():
@@ -2568,11 +2572,13 @@ async def execute_rewriter_task(request: TaskRequest) -> Dict[str, Any]:
     
     if GLM_AVAILABLE:
         try:
-            logger.info("🚀 使用GLM API进行专利内容重写优化")
-            glm_client = GLMA2AClient()
+            logger.info("🚀 使用OpenAI Client进行专利内容重写优化")
+            # 使用统一的OpenAI Client，它会自动处理GLM回退
+            from patent_agent_demo.openai_client import OpenAIClient
+            openai_client = OpenAIClient()
             # 使用_generate_response方法进行内容重写
-            glm_response = await glm_client._generate_response(f"专利内容重写：基于草稿{writer_draft}和审查反馈{review_feedback}")
-            logger.info("✅ GLM API调用成功")
+            glm_response = await openai_client._generate_response(f"专利内容重写：基于草稿{writer_draft}和审查反馈{review_feedback}")
+            logger.info("✅ OpenAI Client API调用成功")
             
             # 修复：将GLM的文本响应转换为结构化的重写结果
             if isinstance(glm_response, str) and glm_response.strip():
@@ -2921,10 +2927,12 @@ async def analyze_patent_topic(topic: str, description: str) -> Dict[str, Any]:
     
     if GLM_AVAILABLE:
         try:
-            logger.info("🚀 使用GLM API进行专利主题分析")
-            glm_client = GLMA2AClient()
-            result = await glm_client._generate_response(f"专利主题分析：{topic} - {description}")
-            logger.info("✅ GLM API调用成功")
+            logger.info("🚀 使用OpenAI Client进行专利主题分析")
+            # 使用统一的OpenAI Client，它会自动处理GLM回退
+            from patent_agent_demo.openai_client import OpenAIClient
+            openai_client = OpenAIClient()
+            result = await openai_client._generate_response(f"专利主题分析：{topic} - {description}")
+            logger.info("✅ OpenAI Client API调用成功")
             return {"analysis": result}
         except Exception as e:
             logger.error(f"❌ GLM API调用失败: {e}")
@@ -3119,7 +3127,9 @@ async def _generate_new_search_keywords_with_glm(topic: str, current_keywords: L
                                                 round_num: int) -> List[str]:
     """使用GLM API分析检索结果，生成新的检索关键词"""
     try:
-        glm_client = GLMA2AClient()
+        # 使用统一的OpenAI Client，它会自动处理GLM回退
+        from patent_agent_demo.openai_client import OpenAIClient
+        openai_client = OpenAIClient()
         
         # 构建智能分析提示
         analysis_prompt = f"""
@@ -3148,7 +3158,7 @@ async def _generate_new_search_keywords_with_glm(topic: str, current_keywords: L
         请直接返回关键词列表，不要其他解释：
         """
         
-        glm_response = await glm_client._generate_response(analysis_prompt)
+        glm_response = await openai_client._generate_response(analysis_prompt)
         logger.info(f"🧠 GLM第{round_num}轮分析响应: {glm_response[:100]}...")
         
         # 解析GLM响应，提取新关键词
@@ -3168,7 +3178,9 @@ async def _enhance_results_with_glm_final_analysis(topic: str, original_keywords
                                                  all_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """使用GLM API对所有检索结果进行最终分析和增强"""
     try:
-        glm_client = GLMA2AClient()
+        # 使用统一的OpenAI Client，它会自动处理GLM回退
+        from patent_agent_demo.openai_client import OpenAIClient
+        openai_client = OpenAIClient()
         
         # 构建最终分析提示
         final_analysis_prompt = f"""
@@ -3192,7 +3204,7 @@ async def _enhance_results_with_glm_final_analysis(topic: str, original_keywords
         请提供结构化的分析结果，包含具体的技术洞察和建议。
         """
         
-        final_glm_analysis = await glm_client._generate_response(final_analysis_prompt)
+        final_glm_analysis = await openai_client._generate_response(final_analysis_prompt)
         logger.info(f"🧠 GLM最终分析完成，分析长度: {len(final_glm_analysis)}")
         
         # 将GLM分析结果整合到每个检索结果中
