@@ -2269,26 +2269,26 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         
         logger.info(f"📋 Executing Writer Agent with task data: {task_data}")
         
-                           # Execute the task using Writer Agent
-                   logger.info("⏳ Executing Writer Agent task...")
-                   try:
-                       result = await writer_agent.execute_task(task_data)
-                       logger.info(f"✅ Writer Agent task execution completed")
-                   except Exception as execute_error:
-                       logger.error(f"❌ Writer Agent task execution failed: {execute_error}")
-                       logger.error(f"📋 Detailed error: {type(execute_error).__name__}: {execute_error}")
-                       import traceback
-                       logger.error(f"📋 Traceback: {traceback.format_exc()}")
-                       
-                       # 检查是否是GLM API相关错误
-                       if "timeout" in str(execute_error).lower() or "timed out" in str(execute_error).lower():
-                           logger.error(f"🚨 GLM API timeout detected, this is likely the root cause")
-                       elif "429" in str(execute_error):
-                           logger.error(f"🚨 Rate limit error (429) detected")
-                       elif "connection" in str(execute_error).lower():
-                           logger.error(f"🚨 Connection error detected")
-                       
-                       raise Exception(f"Writer Agent task execution failed: {execute_error}")
+        # Execute the task using Writer Agent
+        logger.info("⏳ Executing Writer Agent task...")
+        try:
+            result = await writer_agent.execute_task(task_data)
+            logger.info(f"✅ Writer Agent task execution completed")
+        except Exception as execute_error:
+            logger.error(f"❌ Writer Agent task execution failed: {execute_error}")
+            logger.error(f"📋 Detailed error: {type(execute_error).__name__}: {execute_error}")
+            import traceback
+            logger.error(f"📋 Traceback: {traceback.format_exc()}")
+            
+            # 检查是否是GLM API相关错误
+            if "timeout" in str(execute_error).lower() or "timed out" in str(execute_error).lower():
+                logger.error(f"🚨 GLM API timeout detected, this is likely the root cause")
+            elif "429" in str(execute_error):
+                logger.error(f"🚨 Rate limit error (429) detected")
+            elif "connection" in str(execute_error).lower():
+                logger.error(f"🚨 Connection error detected")
+            
+            raise Exception(f"Writer Agent task execution failed: {execute_error}")
         
         if result.success:
             logger.info(f"✅ Writer Agent completed successfully")
