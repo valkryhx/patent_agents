@@ -32,6 +32,18 @@ class OpenAIClient:
         # Initialize GLM-4.5-flash client as fallback
         self.glm_client = None
         self._init_glm_fallback()
+        
+        # Log fallback status
+        if not self.openai_available:
+            if self.glm_client:
+                logger.info("OpenAI not available, GLM fallback will be used")
+            else:
+                logger.error("CRITICAL: Neither OpenAI nor GLM fallback is available!")
+        else:
+            if self.glm_client:
+                logger.info("OpenAI available with GLM fallback")
+            else:
+                logger.warning("OpenAI available but GLM fallback not initialized")
     
     def _init_glm_fallback(self):
         """Initialize GLM client as fallback"""
@@ -50,7 +62,13 @@ class OpenAIClient:
             logger.warning("OpenAI not available, using GLM fallback directly")
             if self.glm_client:
                 logger.info("Using GLM-4.5-flash fallback directly")
-                return await glm_func(*args, **kwargs)
+                try:
+                    result = await glm_func(*args, **kwargs)
+                    logger.info("GLM fallback call successful")
+                    return result
+                except Exception as glm_error:
+                    logger.error(f"GLM fallback call failed: {glm_error}")
+                    raise RuntimeError(f"GLM fallback failed: {glm_error}")
             else:
                 logger.error("GLM fallback not available")
                 raise RuntimeError("Neither OpenAI nor GLM fallback is available")
@@ -66,7 +84,13 @@ class OpenAIClient:
             logger.warning(f"OpenAI API error, falling back to GLM: {error_msg}")
             if self.glm_client:
                 logger.info("Switching to GLM-4.5-flash fallback...")
-                return await glm_func(*args, **kwargs)
+                try:
+                    result = await glm_func(*args, **kwargs)
+                    logger.info("GLM fallback call successful")
+                    return result
+                except Exception as glm_error:
+                    logger.error(f"GLM fallback call failed: {glm_error}")
+                    raise RuntimeError(f"OpenAI failed and GLM fallback failed: {glm_error}")
             else:
                 logger.error("GLM fallback not available")
                 raise RuntimeError("OpenAI failed and GLM fallback not available")
