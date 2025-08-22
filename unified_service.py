@@ -2206,16 +2206,35 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
     
     logger.info(f"🚀 Starting patent drafting for: {topic}")
     logger.info(f"🔧 Test mode: {request.test_mode}")
+    logger.info(f"📋 Previous results keys: {list(previous_results.keys())}")
     
     try:
         # Import and initialize Simplified Writer Agent
-        from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+        logger.info("📦 Attempting to import WriterAgentSimple...")
+        try:
+            from patent_agent_demo.agents.writer_agent_simple import WriterAgentSimple
+            logger.info("✅ WriterAgentSimple imported successfully")
+        except ImportError as import_error:
+            logger.error(f"❌ Failed to import WriterAgentSimple: {import_error}")
+            raise ImportError(f"WriterAgentSimple import failed: {import_error}")
         
         # Create Simplified Writer Agent instance
-        writer_agent = WriterAgentSimple(test_mode=request.test_mode)
-        await writer_agent.start()
+        logger.info("🔧 Creating WriterAgentSimple instance...")
+        try:
+            writer_agent = WriterAgentSimple(test_mode=request.test_mode)
+            logger.info("✅ WriterAgentSimple instance created")
+        except Exception as create_error:
+            logger.error(f"❌ Failed to create WriterAgentSimple instance: {create_error}")
+            raise Exception(f"WriterAgentSimple creation failed: {create_error}")
         
-        logger.info(f"✅ Writer Agent initialized successfully")
+        # Start the agent
+        logger.info("🚀 Starting WriterAgentSimple...")
+        try:
+            await writer_agent.start()
+            logger.info("✅ WriterAgentSimple started successfully")
+        except Exception as start_error:
+            logger.error(f"❌ Failed to start WriterAgentSimple: {start_error}")
+            raise Exception(f"WriterAgentSimple start failed: {start_error}")
         
         # Prepare task data for Writer Agent
         task_data = {
@@ -2230,7 +2249,13 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         logger.info(f"📋 Executing Writer Agent with task data: {task_data}")
         
         # Execute the task using Writer Agent
-        result = await writer_agent.execute_task(task_data)
+        logger.info("⏳ Executing Writer Agent task...")
+        try:
+            result = await writer_agent.execute_task(task_data)
+            logger.info(f"✅ Writer Agent task execution completed")
+        except Exception as execute_error:
+            logger.error(f"❌ Writer Agent task execution failed: {execute_error}")
+            raise Exception(f"Writer Agent task execution failed: {execute_error}")
         
         if result.success:
             logger.info(f"✅ Writer Agent completed successfully")
@@ -2290,15 +2315,18 @@ async def execute_writer_task(request: TaskRequest) -> Dict[str, Any]:
         logger.error(f"📋 Traceback: {traceback.format_exc()}")
         
         # Fallback to simple generation
-        return {
+        fallback_result = {
             "title": f"Patent Application: {topic}",
             "abstract": f"Fallback generation for {topic}",
-            "claims": ["Claim 1: A method for " + topic.lower()],
+            "claims": ["Claim 1: A method for {topic}"],
             "detailed_description": f"Fallback content due to error: {str(e)}",
             "test_mode": request.test_mode,
             "agent_generated": False,
             "error": str(e)
         }
+        
+        logger.info(f"🔄 Returning fallback result due to error")
+        return fallback_result
 
 async def execute_reviewer_task(request: TaskRequest) -> Dict[str, Any]:
     """Execute reviewer task using GLM API or fallback to mock"""
