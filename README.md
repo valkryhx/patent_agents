@@ -11,14 +11,21 @@
 - **智能体系统 (Agent System)**: 6个专业智能体协同工作
 - **工作流管理器 (Workflow Manager)**: 管理专利撰写流程状态
 - **统一服务 (Unified Service)**: 单端口提供所有服务接口
+- **LLM服务管理**: 统一的OpenAI Client管理，支持GLM-4.5-flash回退
 
 ### 智能体分工
 1. **规划智能体 (Planner)**: 分析专利主题，制定撰写计划
-2. **搜索智能体 (Searcher)**: 检索相关技术信息和专利文献
+2. **搜索智能体 (Searcher)**: 3轮迭代式检索（DuckDuckGo + GLM分析）
 3. **讨论智能体 (Discussion)**: 分析技术方案，确定创新点
 4. **撰写智能体 (Writer)**: 生成专利文档初稿
 5. **审查智能体 (Reviewer)**: 审查文档质量和合规性
 6. **重写智能体 (Rewriter)**: 根据审查意见优化文档
+
+### 核心技术特性
+- **迭代式搜索**: 3轮DuckDuckGo检索 + GLM分析优化关键词
+- **并发控制**: 智能信号量控制，避免GLM API 429错误
+- **统一LLM管理**: OpenAI Client统一接口，自动GLM回退
+- **错误处理**: 完善的超时重试和异常处理机制
 
 ## 🚀 快速开始
 
@@ -50,6 +57,12 @@
 - **异步处理**: 非阻塞的工作流执行
 - **资源优化**: 高效的内存和存储管理
 
+#### 🤖 智能LLM集成
+- **统一接口**: OpenAI Client统一管理所有LLM调用
+- **自动回退**: 智能回退到GLM-4.5-flash服务
+- **并发控制**: 信号量控制避免API限流
+- **迭代优化**: 3轮检索优化提升搜索质量
+
 ### 安装依赖
 ```bash
 pip install -r requirements.txt
@@ -72,18 +85,24 @@ python3 unified_service.py
 ├── API_INTERFACE_TESTING.md            # API接口测试文档
 ├── CLEANUP_SUMMARY.md                  # 代码清理总结
 ├── FINAL_CLEANUP_SUMMARY.md           # 最终清理总结
+├── PR_PATENT_GENERATION_COMPLETE.md   # 专利生成系统完成PR总结
 ├── unified_service.py                  # 统一服务主文件
 ├── workflow_manager.py                 # 工作流管理器
 ├── models.py                           # 数据模型定义
-├── agents/                             # 智能体模块目录
-│   ├── planner_agent.py               # 规划智能体
-│   ├── searcher_agent.py              # 搜索智能体
-│   ├── discussion_agent.py            # 讨论智能体
-│   ├── writer_agent.py                # 撰写智能体
-│   ├── reviewer_agent.py              # 审查智能体
-│   └── rewriter_agent.py              # 重写智能体
+├── patent_agent_demo/                  # 核心智能体模块
+│   ├── openai_client.py               # OpenAI Client统一接口
+│   ├── glm_client.py                  # GLM-4.5-flash客户端
+│   ├── agents/                        # 智能体实现
+│   │   ├── writer_agent_simple.py     # 撰写智能体（核心）
+│   │   ├── planner_agent.py           # 规划智能体
+│   │   ├── searcher_agent.py          # 搜索智能体
+│   │   ├── discussion_agent.py        # 讨论智能体
+│   │   ├── reviewer_agent.py          # 审查智能体
+│   │   └── rewriter_agent.py          # 重写智能体
 ├── test/                               # 测试代码目录
-├── to_delete/                          # 待删除文件目录
+├── output/                             # 专利生成输出目录
+│   └── progress/                       # 专利撰写进度文件
+├── workflow_stages/                    # 工作流阶段结果
 └── requirements.txt                    # 项目依赖
 ```
 
@@ -552,19 +571,33 @@ curl -X POST "http://localhost:8000/test-mode" \
 - **保持完整性**: 工作流程和状态管理完全正常
 
 ### 真实模式特点
-- **完整LLM调用**: 通过大模型API生成高质量内容
-- **真实数据**: 基于实际技术信息生成专利文档
+- **完整LLM调用**: 通过OpenAI Client和GLM-4.5-flash生成高质量内容
+- **智能回退**: 自动在OpenAI和GLM服务间切换
+- **并发控制**: 智能信号量控制避免API限流
+- **迭代优化**: 3轮DuckDuckGo检索 + GLM分析优化
 - **生产就绪**: 适合正式专利撰写使用
+
+### LLM服务配置
+- **主要服务**: OpenAI GPT-5（需要API密钥）
+- **回退服务**: GLM-4.5-flash（免费，需要API密钥）
+- **并发限制**: 最大并发数1，避免429错误
+- **重试机制**: 429错误自动等待30秒后重试
 
 ## 📋 工作流程说明
 
 ### 专利撰写流程
 1. **规划阶段 (Planning)**: 分析主题，制定撰写策略
-2. **搜索阶段 (Search)**: 检索相关技术和专利文献
+2. **搜索阶段 (Search)**: 3轮迭代式检索（DuckDuckGo + GLM分析优化）
 3. **讨论阶段 (Discussion)**: 分析技术方案，确定创新点
 4. **撰写阶段 (Drafting)**: 生成专利文档初稿
 5. **审查阶段 (Review)**: 审查文档质量和合规性
 6. **重写阶段 (Rewrite)**: 根据审查意见优化文档
+
+### 迭代式搜索策略
+- **第1轮**: 使用初始关键词进行DuckDuckGo检索
+- **第2轮**: GLM分析第1轮结果，生成优化关键词，再次检索
+- **第3轮**: GLM分析前两轮结果，生成最终关键词，最终检索
+- **结果整合**: GLM对所有检索结果进行最终分析和增强
 
 ### 状态说明
 - **pending**: 等待执行
@@ -579,6 +612,9 @@ curl -X POST "http://localhost:8000/test-mode" \
 3. **描述字段**: `description` 为可选，不提供时会自动生成
 4. **测试模式**: 建议开发阶段使用 `test_mode: true`
 5. **服务端口**: 确保8000端口未被占用
+6. **LLM服务**: 真实模式需要配置OpenAI或GLM API密钥
+7. **并发限制**: GLM API有严格的并发限制，系统已优化处理
+8. **搜索策略**: 搜索阶段采用3轮迭代策略，耗时较长但质量更高
 
 ## 🔍 故障排除
 
@@ -590,6 +626,9 @@ curl -X POST "http://localhost:8000/test-mode" \
 5. **WebSocket连接失败**: 检查浏览器是否支持WebSocket，网络是否正常
 6. **下载失败**: 检查工作流是否已完成，文件是否存在
 7. **进度查询异常**: 检查workflow_id是否正确，工作流是否在运行
+8. **GLM API 429错误**: 系统已优化并发控制，如仍出现请等待后重试
+9. **搜索阶段耗时过长**: 正常现象，3轮迭代搜索需要时间
+10. **LLM服务调用失败**: 检查API密钥配置和网络连接
 
 ### 调试命令
 ```bash
@@ -635,11 +674,13 @@ curl -I "http://localhost:8000/download/workflow/{workflow_id}"
 - **[DOCS_INDEX.md](DOCS_INDEX.md)** - 文档导航索引，快速找到所需文档
 - **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - 项目结构详细说明
 - **[API_INTERFACE_TESTING.md](API_INTERFACE_TESTING.md)** - API接口测试文档和结果
-- **[DEBUG_LOG_TEST_MODE_BUG.md](DEBUG_LOG_TEST_MODE_BUG.md)** - Test Mode Bug调试日志和经验总结
-- **[REAL_TIME_SAVING_PR_SUMMARY.md](REAL_TIME_SAVING_PR_SUMMARY.md)** - 实时保存系统功能总结
+- **[PR_PATENT_GENERATION_COMPLETE.md](PR_PATENT_GENERATION_COMPLETE.md)** - 专利生成系统完成PR总结
+- **[GLM_API_TIMEOUT_FIX_SUMMARY.md](GLM_API_TIMEOUT_FIX_SUMMARY.md)** - GLM API超时问题修复总结
+- **[ITERATIVE_SEARCH_AGENT_SUMMARY.md](ITERATIVE_SEARCH_AGENT_SUMMARY.md)** - 迭代式搜索智能体升级总结
+- **[DATA_PASSING_BUG_FIX_SUMMARY.md](DATA_PASSING_BUG_FIX_SUMMARY.md)** - 数据传递Bug修复总结
 
 ---
 
-**版本**: 1.0.0  
-**最后更新**: 2025年8月17日  
+**版本**: 2.0.0  
+**最后更新**: 2025年8月23日  
 **维护者**: 多智能体专利系统开发团队
