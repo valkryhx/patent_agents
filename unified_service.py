@@ -1352,6 +1352,165 @@ async def list_patent_workflows():
         logger.error(f"Failed to list patent workflows: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to list patent workflows: {str(e)}")
 
+@app.post("/workflow/{workflow_id}/merge")
+async def merge_workflow_sections(workflow_id: str):
+    """Merge all sections of a workflow into a complete patent document"""
+    try:
+        # 查找工作流目录
+        workflow_dir = None
+        workflow_topic = ""
+        for item in os.listdir("workflow_stages"):
+            if item.startswith(workflow_id):
+                workflow_dir = os.path.join("workflow_stages", item)
+                workflow_topic = item.split("_", 1)[1] if "_" in item else "Unknown"
+                break
+        
+        if not workflow_dir:
+            raise HTTPException(status_code=404, detail="Workflow not found")
+        
+        logger.info(f"🔗 开始合并工作流 {workflow_id} 的章节文件")
+        
+        # 定义章节顺序和对应的文件名模式
+        section_order = [
+            ("planning", "规划阶段"),
+            ("search", "搜索阶段"), 
+            ("discussion", "讨论阶段"),
+            ("drafting", "撰写阶段"),
+            ("review", "审查阶段"),
+            ("rewrite", "重写阶段")
+        ]
+        
+        merged_content = []
+        merged_content.append(f"# 完整专利文档\n")
+        merged_content.append(f"**专利主题**: {workflow_topic}\n")
+        merged_content.append(f"**工作流ID**: {workflow_id}\n")
+        merged_content.append(f"**生成时间**: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        merged_content.append(f"**文档状态**: 章节合并完成\n\n")
+        merged_content.append("---\n\n")
+        
+        # 按顺序合并各个章节
+        for section_key, section_name in section_order:
+            section_files = []
+            
+            # 查找该章节的所有文件
+            for file in os.listdir(workflow_dir):
+                if file.startswith(section_key + "_") and file.endswith(".md"):
+                    section_files.append(file)
+            
+            if section_files:
+                # 按时间戳排序，取最新的文件
+                section_files.sort(reverse=True)
+                latest_file = section_files[0]
+                file_path = os.path.join(workflow_dir, latest_file)
+                
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        content = f.read()
+                    
+                    # 添加章节标题和内容
+                    merged_content.append(f"## {section_name}\n")
+                    merged_content.append(f"**文件**: {latest_file}\n")
+                    merged_content.append(f"**生成时间**: {time.ctime(os.path.getmtime(file_path))}\n\n")
+                    merged_content.append(content)
+                    merged_content.append("\n\n---\n\n")
+                    
+                    logger.info(f"✅ 已合并 {section_name}: {latest_file}")
+                    
+                except Exception as e:
+                    logger.error(f"❌ 读取 {section_name} 文件失败: {e}")
+                    merged_content.append(f"## {section_name}\n")
+                    merged_content.append(f"**状态**: 文件读取失败 - {e}\n\n")
+                    merged_content.append("---\n\n")
+            else:
+                # 章节文件不存在
+                merged_content.append(f"## {section_name}\n")
+                merged_content.append(f"**状态**: 章节文件未找到\n\n")
+                merged_content.append("---\n\n")
+                logger.warning(f"⚠️ {section_name} 章节文件未找到")
+        
+        # 查找是否有最终专利文件
+        final_patent_files = []
+        for file in os.listdir(workflow_dir):
+            if file.startswith("final_patent_") and file.endswith(".md"):
+                final_patent_files.append(file)
+        
+        if final_patent_files:
+            # 按时间戳排序，取最新的文件
+            final_patent_files.sort(reverse=True)
+            latest_final_file = final_patent_files[0]
+            final_file_path = os.path.join(workflow_dir, latest_final_file)
+            
+            try:
+                with open(final_file_path, "r", encoding="utf-8") as f:
+                    final_content = f.read()
+                
+                merged_content.append("## 最终专利文档\n")
+                merged_content.append(f"**文件**: {latest_final_file}\n")
+                merged_content.append(f"**生成时间**: {time.ctime(os.path.getmtime(final_file_path))}\n\n")
+                merged_content.append(final_content)
+                merged_content.append("\n\n---\n\n")
+                
+                logger.info(f"✅ 已合并最终专利文档: {latest_final_file}")
+                
+            except Exception as e:
+                logger.error(f"❌ 读取最终专利文档失败: {e}")
+                merged_content.append("## 最终专利文档\n")
+                merged_content.append(f"**状态**: 文件读取失败 - {e}\n\n")
+                merged_content.append("---\n\n")
+        
+        # 生成合并后的完整文档
+        merged_filename = f"merged_patent_{workflow_id}_{int(time.time())}.md"
+        merged_file_path = os.path.join(workflow_dir, merged_filename)
+        
+        # 写入合并后的文件
+        with open(merged_file_path, "w", encoding="utf-8") as f:
+            f.write("".join(merged_content))
+        
+        # 计算合并后文档的统计信息
+        merged_content_str = "".join(merged_content)
+        total_size = len(merged_content_str.encode('utf-8'))
+        
+        # 统计各章节文件信息
+        section_stats = []
+        for section_key, section_name in section_order:
+            section_files = [f for f in os.listdir(workflow_dir) if f.startswith(section_key + "_") and f.endswith(".md")]
+            if section_files:
+                section_files.sort(reverse=True)
+                latest_file = section_files[0]
+                file_path = os.path.join(workflow_dir, latest_file)
+                file_size = os.path.getsize(file_path)
+                section_stats.append({
+                    "section": section_name,
+                    "file": latest_file,
+                    "size": file_size,
+                    "status": "merged"
+                })
+            else:
+                section_stats.append({
+                    "section": section_name,
+                    "file": "N/A",
+                    "size": 0,
+                    "status": "not_found"
+                })
+        
+        logger.info(f"🎉 工作流 {workflow_id} 章节合并完成，生成文件: {merged_filename}")
+        
+        return {
+            "workflow_id": workflow_id,
+            "topic": workflow_topic,
+            "merged_filename": merged_filename,
+            "merged_file_path": merged_file_path,
+            "total_size": total_size,
+            "section_count": len(section_order),
+            "sections": section_stats,
+            "message": "Workflow sections merged successfully",
+            "download_url": f"/download/workflow/{workflow_id}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error merging workflow sections: {e}")
+        raise HTTPException(status_code=500, detail=f"Error merging workflow sections: {e}")
+
 # ============================================================================
 # COORDINATOR ENDPOINTS
 # ============================================================================
