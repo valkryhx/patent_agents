@@ -1,0 +1,20 @@
+{
+  "stages": {
+    "planning": {
+      "filename": "planning_1755891436.md",
+      "timestamp": 1755891436,
+      "generated_at": "2025-08-22 19:37:16"
+    },
+    "search": {
+      "filename": "search_1755891578.md",
+      "timestamp": 1755891578,
+      "generated_at": "2025-08-22 19:39:38"
+    },
+    "discussion": {
+      "filename": "discussion_1755924636.md",
+      "timestamp": 1755924636,
+      "generated_at": "2025-08-23 04:50:36"
+    }
+  },
+  "final_patent": null
+}
