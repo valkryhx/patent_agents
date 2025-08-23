@@ -63,6 +63,12 @@
 - **并发控制**: 信号量控制避免API限流
 - **迭代优化**: 3轮检索优化提升搜索质量
 
+#### 🔗 章节合并管理
+- **智能合并**: 自动识别和匹配工作流章节文件
+- **顺序保证**: 严格按照专利撰写流程顺序合并
+- **原始保留**: 合并过程中不修改任何原始文件
+- **格式统一**: 生成标准化的完整专利文档
+
 ### 安装依赖
 ```bash
 pip install -r requirements.txt
@@ -419,8 +425,64 @@ workflow_{workflow_id}.zip
 ├── drafting_{timestamp}.md    # 草稿阶段结果
 ├── review_{timestamp}.md      # 审查阶段结果
 ├── rewrite_{timestamp}.md     # 重写阶段结果
-└── final_patent_{timestamp}.md # 最终专利文档
+├── final_patent_{timestamp}.md # 最终专利文档
+└── merged_patent_{workflow_id}_{timestamp}.md # 合并后的完整专利文档
 ```
+
+### 5.2 合并工作流章节（新增功能）
+
+**接口**: `POST /workflow/{workflow_id}/merge`
+
+**功能**: 将工作流的所有章节按顺序合并为完整的专利文档，同时保留原始文件
+
+**cURL调用**:
+```bash
+curl -X POST "http://localhost:8000/workflow/{workflow_id}/merge" \
+  -H "Content-Type: application/json"
+```
+
+**合并章节顺序**:
+1. **规划阶段 (Planning)**: 专利主题分析和撰写策略
+2. **搜索阶段 (Search)**: 相关技术检索和文献分析
+3. **讨论阶段 (Discussion)**: 技术方案讨论和创新点确定
+4. **撰写阶段 (Drafting)**: 专利文档初稿生成
+5. **审查阶段 (Review)**: 文档质量审查和合规性检查
+6. **重写阶段 (Rewrite)**: 根据审查意见优化文档
+
+**响应示例**:
+```json
+{
+  "workflow_id": "workflow_id",
+  "topic": "专利主题",
+  "merged_filename": "merged_patent_workflow_id_timestamp.md",
+  "merged_file_path": "workflow_stages/workflow_id_专利主题/merged_patent_workflow_id_timestamp.md",
+  "total_size": 37305,
+  "section_count": 6,
+  "sections": [
+    {
+      "section": "规划阶段",
+      "file": "planning_timestamp.md",
+      "size": 1269,
+      "status": "merged"
+    }
+  ],
+  "message": "Workflow sections merged successfully",
+  "download_url": "/download/workflow/{workflow_id}"
+}
+```
+
+**合并文档存储位置**:
+```
+./workflow_stages/{workflow_id}_{专利主题}/merged_patent_{workflow_id}_{timestamp}.md
+```
+
+**功能特点**:
+- ✅ **智能合并**: 自动识别和匹配章节文件
+- ✅ **顺序保证**: 严格按照专利撰写流程顺序合并
+- ✅ **原始保留**: 合并过程中不修改任何原始文件
+- ✅ **版本选择**: 按时间戳自动选择最新的章节文件
+- ✅ **错误容错**: 优雅处理缺失或损坏的文件
+- ✅ **格式统一**: 生成标准化的完整专利文档
 
 #### 5.2 仅下载最终专利文档
 
@@ -444,6 +506,29 @@ curl -X GET "http://localhost:8000/download/patent/{workflow_id}" \
 ```bash
 curl -X GET "http://localhost:8000/workflow/{workflow_id}/stages"
 ```
+
+### 7. 合并工作流章节（新增功能）
+
+**接口**: `POST /workflow/{workflow_id}/merge`
+
+**功能**: 将工作流的所有章节按顺序合并为完整的专利文档
+
+**cURL调用**:
+```bash
+curl -X POST "http://localhost:8000/workflow/{workflow_id}/merge"
+```
+
+**使用场景**:
+- 需要查看完整专利文档时
+- 需要将分章节文件整合为一个文档时
+- 需要分享完整专利内容时
+- 需要存档完整专利文档时
+
+**注意事项**:
+- 合并过程中会保留所有原始章节文件
+- 合并文件会保存在原工作流目录中
+- 文件名包含时间戳，确保唯一性
+- 支持缺失章节的优雅处理
 
 **预期响应**:
 ```json
