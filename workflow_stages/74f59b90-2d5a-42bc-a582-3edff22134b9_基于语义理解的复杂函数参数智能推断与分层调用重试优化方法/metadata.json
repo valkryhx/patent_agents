@@ -1,0 +1,14 @@
+{
+  "workflow_id": "74f59b90-2d5a-42bc-a582-3edff22134b9",
+  "topic": "基于语义理解的复杂函数参数智能推断与分层调用重试优化方法",
+  "created_at": "2025-08-23 13:18:54",
+  "stages": [
+    "planning",
+    "search",
+    "discussion",
+    "drafting",
+    "review",
+    "rewrite"
+  ],
+  "status": "created"
+}
